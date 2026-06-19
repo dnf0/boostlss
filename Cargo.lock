@@ -85,6 +85,7 @@ name = "boostlss-py"
 version = "0.1.0"
 dependencies = [
  "boostlss",
+ "ndarray 0.17.2",
  "numpy",
  "pyo3",
 ]

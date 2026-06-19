@@ -6,6 +6,8 @@ use crate::util::{weighted_mean, weighted_sd};
 use ndarray::Array1;
 use statrs::function::gamma::ln_gamma;
 
+const EPSILON: f64 = 1e-10;
+
 #[derive(Debug)]
 pub struct GammaLss {
     params: Vec<ParamSpec>,
@@ -42,9 +44,9 @@ impl Family for GammaLss {
         let w = data.weights();
 
         for i in 0..data.n_obs() {
-            let m = mu[i].max(1e-10);
-            let s = sigma[i].max(1e-10);
-            let yi = y[i].max(1e-10); // Response must be strictly positive
+            let m = mu[i].max(EPSILON);
+            let s = sigma[i].max(EPSILON);
+            let yi = y[i].max(EPSILON); // Response must be strictly positive
 
             // Gamma distribution parameterized by mean (mu) and coeff of var (sigma)
             // shape (alpha) = 1 / sigma^2
@@ -65,12 +67,12 @@ impl Family for GammaLss {
 
     fn init_offsets(&self, data: &Dataset) -> Result<Vec<f64>, BoostlssError> {
         let mean = weighted_mean(data.response(), data.weights());
-        let sd = weighted_sd(data.response(), data.weights()).max(1e-10);
+        let sd = weighted_sd(data.response(), data.weights()).max(EPSILON);
 
         // For gamma, sigma is the coefficient of variation (sd / mean)
-        let cv = sd / mean.max(1e-10);
+        let cv = sd / mean.max(EPSILON);
 
-        Ok(vec![mean.max(1e-10).ln(), cv.max(1e-10).ln()])
+        Ok(vec![mean.max(EPSILON).ln(), cv.max(EPSILON).ln()])
     }
 }
 
@@ -90,5 +92,22 @@ mod tests {
 
         assert_relative_eq!(offsets[0], 2.0_f64.ln(), epsilon = 1e-4);
         assert_relative_eq!(offsets[1], (2.0_f64.sqrt() / 2.0).ln(), epsilon = 1e-4);
+    }
+
+    #[test]
+    fn gamma_nll_is_accurate() {
+        let fam = GammaLss::new();
+        let ds = Dataset::new(Array2::<f64>::zeros((1, 1)), array![2.0], None).unwrap();
+
+        // Set mu = 2.0, sigma = 0.5
+        let eta = vec![array![2.0_f64.ln()], array![0.5_f64.ln()]];
+        let nll = fam.nll(&ds, &eta).unwrap();
+
+        // Expected NLL for y=2, mu=2, sigma=0.5:
+        // alpha = 1 / 0.5^2 = 4.0
+        // beta = alpha / mu = 4.0 / 2.0 = 2.0
+        // log_lik = 4.0*ln(2) - ln_gamma(4) + 3.0*ln(2) - 4.0 = ~ -0.93973
+        // nll = 0.93973
+        assert_relative_eq!(nll, 0.93973, epsilon = 1e-4);
     }
 }

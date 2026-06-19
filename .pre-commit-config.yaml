@@ -1,0 +1,78 @@
+# This is a comprehensive pre-commit configuration.
+# During agent onboarding, this file should be trimmed down to only
+# include the hooks relevant to the repository's primary languages.
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+
+  # Python
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.4
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      # Python Specific local hooks
+      - id: mypy
+        name: mypy
+        entry: uv run mypy
+        language: system
+        types: [python]
+        require_serial: true
+      - id: vulture
+        name: vulture
+        entry: uv run vulture --min-confidence 90
+        language: system
+        types: [python]
+        require_serial: true
+      - id: radon
+        name: radon cc
+        entry: uv run radon cc -s -a
+        language: system
+        types: [python]
+      - id: xenon
+        name: xenon complexity gates
+        entry: uv run xenon --max-absolute C --max-modules C --max-average B
+        language: system
+        types: [python]
+      - id: smellcheck
+        name: smellcheck
+        entry: uv run smellcheck --min-severity warning --fail-on error
+        language: system
+        types: [python]
+        require_serial: true
+      - id: commitizen-check
+        name: commitizen check
+        entry: uv run cz check --allow-abort --commit-msg-file
+        language: system
+        stages: [commit-msg]
+
+  # TypeScript / JavaScript / Web
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+
+  # Go
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: v0.5.1
+    hooks:
+      - id: go-fmt
+      - id: go-vet
+
+  # Rust
+  - repo: https://github.com/doublify/pre-commit-rust
+    rev: v1.0
+    hooks:
+      - id: fmt
+      - id: cargo-check

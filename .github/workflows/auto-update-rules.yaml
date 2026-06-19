@@ -1,0 +1,47 @@
+name: Auto-Update Agent Rules
+
+on:
+  schedule:
+    # Run every Monday at 8 AM UTC
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Update agent rules
+        env:
+          GH_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: |
+          uvx --from "git+https://x-access-token:${GH_TOKEN}@github.com/climate-x-org/agent-rules" agent-rules install --dest . --provider all --clean --force || {
+            echo "Failed to install agent-rules. Clearing uv git cache..."
+            rm -rf ~/.cache/uv/git-v0/
+            exit 1
+          }
+
+      - name: Auto-format rules
+        run: |
+          uvx pre-commit run --all-files || true
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update AI agent rules and tooling"
+          title: "chore: update AI agent rules and tooling"
+          body: |
+            Automated PR to pull in the latest engineering standards and AI tooling configuration from [agent-rules](https://github.com/climate-x-org/agent-rules).
+
+            This ensures your repository stays aligned with the company's latest rules. Please review the changes before merging!
+          branch: "chore/update-agent-rules"
+          delete-branch: true

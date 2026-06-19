@@ -1,0 +1,113 @@
+name: Pre-Commit & Unit Test
+
+on: [pull_request]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Install dependencies
+        run: uv sync --group dev
+      - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --all-files
+
+  unit-test:
+    runs-on: ubuntu-latest
+    if: "(!contains(github.event.head_commit.message, '[skip ci]')) && (hashFiles('pyproject.toml') != '' || hashFiles('requirements.txt') != '')"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Run tests
+        run: |
+          set -eo pipefail
+          # TODO: Replace boostlss with your package name
+          mkdir -p tests/coverage && \
+          uv run pytest --cov=boostlss \
+          --junitxml=tests/coverage/pytest.xml \
+          --cov-report=term-missing:skip-covered \
+          --cov-report xml:tests/coverage/pytest-coverage.xml \
+          --cov-fail-under=80 tests/
+
+      - name: Run E2E tests
+        run: make test-e2e
+
+      - name: Pytest coverage comment
+        if: "!cancelled()"
+        id: coverageComment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-xml-coverage-path: tests/coverage/pytest-coverage.xml
+          junitxml-path: tests/coverage/pytest.xml
+          # TODO: Replace with your project name
+          title: boostlss Test Coverage Report
+          badge-title: boostlss Test Coverage
+          hide-badge: false
+          hide-report: false
+          create-new-comment: false
+          hide-comment: false
+          report-only-changed-files: false
+          remove-link-from-badge: false
+
+  rust-ci-checks:
+    name: Rust CI Checks
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+          - os: windows-latest
+          - os: macos-latest
+    if: "(!contains(github.event.head_commit.message, '[skip ci]')) && hashFiles('Cargo.toml') != ''"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache Cargo index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache Cargo build
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+      - name: Run formatting check
+        run: cargo fmt -- --check
+      - name: Run Clippy
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      - name: Run tests
+        run: cargo test --workspace --all-features
+
+  rust-audit-and-coverage:
+    name: Rust Security Audit & Coverage
+    runs-on: ubuntu-latest
+    if: "(!contains(github.event.head_commit.message, '[skip ci]')) && hashFiles('Cargo.toml') != ''"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - name: Install tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov,cargo-audit
+      - name: Run cargo audit
+        run: cargo audit
+      - name: Generate code coverage
+        run: cargo llvm-cov --workspace --lcov --output-path lcov.info

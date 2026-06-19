@@ -62,6 +62,10 @@ impl<F: Family> BoostLss<F> {
         self.learners.push((k, learner));
         Ok(self)
     }
+
+    pub fn into_parts(self) -> (F, Config, Vec<(usize, BaseLearner)>) {
+        (self.family, self.config, self.learners)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -84,27 +88,51 @@ pub struct Fitted<F: Family> {
     offsets: Vec<f64>,
     /// Accumulated fits for each parameter's learners over iterations
     /// Will store the selected sequence of updates.
-    updates: Vec<UpdateStep>,
+    pub updates: Vec<UpdateStep>,
+    /// The base learners used during fitting, needed for prediction
+    learners: Vec<(usize, BaseLearner)>,
 }
 
 impl<F: Family> Fitted<F> {
-    pub fn new(family: F, offsets: Vec<f64>) -> Self {
+    pub fn new(family: F, offsets: Vec<f64>, learners: Vec<(usize, BaseLearner)>) -> Self {
         Self {
             family,
             offsets,
             updates: Vec::new(),
+            learners,
         }
     }
 
     pub fn predict(
-        &self,
+        &mut self,
         data: &Dataset,
-        _param: &str,
-        _scale: Scale,
+        param: &str,
+        scale: Scale,
     ) -> Result<Array1<f64>, BoostlssError> {
-        // Placeholder for v1 execution since we lack the full update trace in this setup.
-        // Full predict loops over `self.updates` evaluating design matrix * coef.
-        Ok(Array1::zeros(data.design().nrows()))
+        let params = self.family.params();
+        let k = params
+            .iter()
+            .position(|p| p.name == param)
+            .ok_or_else(|| BoostlssError::InvalidConfig(format!("Unknown parameter {}", param)))?;
+
+        let mut pred = Array1::from_elem(data.n_obs(), self.offsets[k]);
+        let x_col = data.design().column(0).to_owned();
+
+        for update in &self.updates {
+            if update.param_idx != k {
+                continue;
+            }
+
+            let learner = &mut self.learners[update.learner_idx].1;
+            let design = learner.build_design(&x_col)?;
+            let u_hat = design.dot(&update.coef);
+            pred = pred + u_hat;
+        }
+
+        match scale {
+            Scale::Link => Ok(pred),
+            Scale::Response => Ok(pred.mapv(|x| params[k].link.response(x))),
+        }
     }
 }
 
@@ -141,7 +169,7 @@ mod tests {
     fn test_fitted_new_and_predict() {
         use ndarray::{Array1, Array2};
         let family = GaussianLss::new();
-        let fitted = Fitted::new(family, vec![0.0, 0.0]);
+        let mut fitted = Fitted::new(family, vec![0.0, 0.0], vec![]);
         let data = Dataset::new(Array2::zeros((5, 2)), Array1::zeros(5), None).unwrap();
 
         let pred = fitted.predict(&data, "mu", Scale::Link).unwrap();

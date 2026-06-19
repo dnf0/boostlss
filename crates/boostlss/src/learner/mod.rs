@@ -8,9 +8,36 @@ pub mod penalty;
 pub mod pspline;
 pub use pspline::PSpline;
 
+#[derive(Debug, Clone)]
 pub enum BaseLearner {
     Linear(Linear),
     PSpline(PSpline),
+}
+
+impl BaseLearner {
+    pub fn build_design(
+        &mut self,
+        x: &Array1<f64>,
+    ) -> Result<Array2<f64>, crate::error::BoostlssError> {
+        match self {
+            Self::Linear(l) => l.build_design(x),
+            Self::PSpline(p) => p.build_design(x),
+        }
+    }
+
+    pub fn penalty_matrix(&self, n_cols: usize) -> Array2<f64> {
+        match self {
+            Self::Linear(l) => l.penalty_matrix(n_cols),
+            Self::PSpline(p) => p.penalty_matrix(n_cols),
+        }
+    }
+
+    pub fn target_df(&self) -> Option<f64> {
+        match self {
+            Self::Linear(_) => None,
+            Self::PSpline(p) => Some(p.df),
+        }
+    }
 }
 
 use crate::error::BoostlssError;

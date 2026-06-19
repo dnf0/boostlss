@@ -3,9 +3,9 @@ use ndarray::{Array1, Array2};
 
 #[derive(Debug, Clone)]
 pub struct Dataset {
-    pub design: Array2<f64>,
-    pub response: Array1<f64>,
-    pub weights: Option<Array1<f64>>,
+    design: Array2<f64>,
+    response: Array1<f64>,
+    weights: Option<Array1<f64>>,
 }
 
 impl Dataset {
@@ -45,6 +45,18 @@ impl Dataset {
 
     pub fn n_obs(&self) -> usize {
         self.design.nrows()
+    }
+
+    pub fn design(&self) -> &Array2<f64> {
+        &self.design
+    }
+
+    pub fn response(&self) -> &Array1<f64> {
+        &self.response
+    }
+
+    pub fn weights(&self) -> Option<&Array1<f64>> {
+        self.weights.as_ref()
     }
 }
 

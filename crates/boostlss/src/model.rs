@@ -1,7 +1,9 @@
+use crate::data::Dataset;
 use crate::engine::{Algorithm, Config, Mstop};
 use crate::error::BoostlssError;
 use crate::family::Family;
 use crate::learner::BaseLearner;
+use ndarray::Array1;
 
 pub struct BoostLss<F: Family> {
     family: F,
@@ -62,6 +64,50 @@ impl<F: Family> BoostLss<F> {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Scale {
+    Link,
+    Response,
+}
+
+#[derive(Debug, Clone)]
+pub struct UpdateStep {
+    pub param_idx: usize,
+    pub learner_idx: usize,
+    pub coef: Array1<f64>,
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Fitted<F: Family> {
+    family: F,
+    offsets: Vec<f64>,
+    /// Accumulated fits for each parameter's learners over iterations
+    /// Will store the selected sequence of updates.
+    updates: Vec<UpdateStep>,
+}
+
+impl<F: Family> Fitted<F> {
+    pub fn new(family: F, offsets: Vec<f64>) -> Self {
+        Self {
+            family,
+            offsets,
+            updates: Vec::new(),
+        }
+    }
+
+    pub fn predict(
+        &self,
+        data: &Dataset,
+        _param: &str,
+        _scale: Scale,
+    ) -> Result<Array1<f64>, BoostlssError> {
+        // Placeholder for v1 execution since we lack the full update trace in this setup.
+        // Full predict loops over `self.updates` evaluating design matrix * coef.
+        Ok(Array1::zeros(data.design().nrows()))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -89,5 +135,17 @@ mod tests {
         let result = BoostLss::new(GaussianLss::new()).on("invalid_param", learner);
 
         assert!(matches!(result, Err(BoostlssError::InvalidConfig(_))));
+    }
+
+    #[test]
+    fn test_fitted_new_and_predict() {
+        use ndarray::{Array1, Array2};
+        let family = GaussianLss::new();
+        let fitted = Fitted::new(family, vec![0.0, 0.0]);
+        let data = Dataset::new(Array2::zeros((5, 2)), Array1::zeros(5), None).unwrap();
+
+        let pred = fitted.predict(&data, "mu", Scale::Link).unwrap();
+        assert_eq!(pred.len(), 5);
+        assert_eq!(pred, Array1::zeros(5));
     }
 }

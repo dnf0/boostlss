@@ -1,5 +1,12 @@
 //! Base-learners and cached factorization state.
 
+pub mod linear;
+pub use linear::Linear;
+
+pub enum BaseLearner {
+    Linear(Linear),
+}
+
 use crate::error::BoostlssError;
 use faer::linalg::solvers::Llt;
 use faer::prelude::Solve;

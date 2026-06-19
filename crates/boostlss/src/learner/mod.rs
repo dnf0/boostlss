@@ -2,9 +2,7 @@
 
 use crate::error::BoostlssError;
 use faer::linalg::solvers::Llt;
-use faer::linalg::triangular_solve::{
-    solve_lower_triangular_in_place, solve_upper_triangular_in_place,
-};
+use faer::prelude::Solve;
 use faer::Mat;
 use ndarray::{Array1, Array2, ArrayView1};
 
@@ -15,7 +13,7 @@ pub struct LearnerFit {
     /// Accumulated coefficients
     pub coef: Array1<f64>,
     /// Cholesky factor L from faer. (L * L^T = A)
-    pub chol_l: Mat<f64>,
+    pub llt: Llt<f64>,
     /// Number of times this learner was selected
     pub selected_count: usize,
 }
@@ -26,12 +24,7 @@ impl LearnerFit {
         let p = x.ncols();
         let xtx = x.t().dot(x);
 
-        let mut a = Mat::zeros(p, p);
-        for j in 0..p {
-            for k in 0..p {
-                a[(j, k)] = xtx[[j, k]] + lambda * penalty[[j, k]];
-            }
-        }
+        let a = Mat::from_fn(p, p, |j, k| xtx[[j, k]] + lambda * penalty[[j, k]]);
 
         let llt = Llt::new(a.as_ref(), faer::Side::Lower).map_err(|_| {
             BoostlssError::DataError(
@@ -39,17 +32,9 @@ impl LearnerFit {
             )
         })?;
 
-        let mut chol_l = Mat::zeros(p, p);
-        let l_ref = llt.L();
-        for j in 0..p {
-            for k in 0..=j {
-                chol_l[(j, k)] = l_ref[(j, k)];
-            }
-        }
-
         Ok(Self {
             coef: Array1::zeros(p),
-            chol_l,
+            llt,
             selected_count: 0,
         })
     }
@@ -60,20 +45,10 @@ impl LearnerFit {
 
         let xtu_nd = x.t().dot(&u);
 
-        let mut xtu = Mat::zeros(p, 1);
-        for j in 0..p {
-            xtu[(j, 0)] = xtu_nd[j];
-        }
+        let mut xtu = Mat::from_fn(p, 1, |j, _| xtu_nd[j]);
 
-        // Solve L L^T beta = X^T u
-        // First solve L y = X^T u in-place
-        solve_lower_triangular_in_place(self.chol_l.as_ref(), xtu.as_mut(), faer::Par::Seq);
-        // Then solve L^T beta = y in-place
-        solve_upper_triangular_in_place(
-            self.chol_l.as_ref().transpose(),
-            xtu.as_mut(),
-            faer::Par::Seq,
-        );
+        // Solve L L^T beta = X^T u in-place
+        self.llt.solve_in_place(xtu.as_mut());
 
         Array1::from_shape_fn(p, |i| xtu[(i, 0)])
     }

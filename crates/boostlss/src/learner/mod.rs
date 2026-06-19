@@ -5,8 +5,12 @@ pub use linear::Linear;
 
 pub mod penalty;
 
+pub mod pspline;
+pub use pspline::PSpline;
+
 pub enum BaseLearner {
     Linear(Linear),
+    PSpline(PSpline),
 }
 
 use crate::error::BoostlssError;

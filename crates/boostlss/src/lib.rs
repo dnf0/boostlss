@@ -1,10 +1,14 @@
 //! boostlss — boosting GAMLSS (distributional regression) in Rust.
 
 pub mod data;
+pub mod engine;
 pub mod error;
 pub mod family;
+pub mod model;
 pub mod param;
 pub mod util;
+
+pub mod learner;
 
 pub use data::Dataset;
 pub use error::BoostlssError;

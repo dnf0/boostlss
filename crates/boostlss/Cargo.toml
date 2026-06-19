@@ -6,6 +6,7 @@ description = "Boosting GAMLSS (distributional regression) in Rust"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
+faer = "0.24.0"
 ndarray = "0.17.2"
 statrs = "0.18.0"
 thiserror = "2.0.18"

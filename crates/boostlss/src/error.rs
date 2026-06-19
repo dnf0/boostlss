@@ -10,6 +10,9 @@ pub enum BoostlssError {
 
     #[error("Model not converged: {0}")]
     NotConverged(String),
+
+    #[error("Value out of range: {0}")]
+    OutOfRange(String),
 }
 
 #[cfg(test)]

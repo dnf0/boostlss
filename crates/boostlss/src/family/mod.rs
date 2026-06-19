@@ -8,6 +8,9 @@ use ndarray::Array1;
 pub mod gaussian;
 pub use gaussian::GaussianLss;
 
+pub mod student_t;
+pub use student_t::StudentTLss;
+
 pub trait Family: std::fmt::Debug {
     /// Information about the parameters of this family, in fixed order.
     fn params(&self) -> &[ParamSpec];

@@ -6,6 +6,8 @@ pub mod family;
 pub mod param;
 pub mod util;
 
+pub mod learner;
+
 pub use data::Dataset;
 pub use error::BoostlssError;
 pub use family::gamma::GammaLss;

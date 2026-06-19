@@ -11,5 +11,7 @@ statrs = "0.18.0"
 thiserror = "2.0.18"
 
 [dev-dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 approx = "0.5.1"
 proptest = "1.11.0"

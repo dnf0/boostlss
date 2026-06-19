@@ -3,6 +3,8 @@
 pub mod linear;
 pub use linear::Linear;
 
+pub mod penalty;
+
 pub enum BaseLearner {
     Linear(Linear),
 }

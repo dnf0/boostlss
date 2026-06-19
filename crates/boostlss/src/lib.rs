@@ -6,4 +6,4 @@ pub mod util; // Task 2
               // pub mod param;  // Task 5
               // pub mod family; // Task 6
 
-// pub use error::BoostlssError;  // uncomment in Task 3
+pub use error::BoostlssError;

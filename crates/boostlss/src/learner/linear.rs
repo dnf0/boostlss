@@ -3,16 +3,12 @@ use ndarray::{Array1, Array2};
 
 #[derive(Debug, Clone)]
 pub struct Linear {
-    pub col_name: String,
-    pub intercept: bool,
+    intercept: bool,
 }
 
 impl Linear {
-    pub fn new(col_name: &str) -> Self {
-        Self {
-            col_name: col_name.to_string(),
-            intercept: true,
-        }
+    pub fn new(_col_name: &str) -> Self {
+        Self { intercept: true }
     }
 
     pub fn intercept(mut self, intercept: bool) -> Self {
@@ -23,18 +19,13 @@ impl Linear {
     pub fn build_design(&self, x: &Array1<f64>) -> Result<Array2<f64>, BoostlssError> {
         let n = x.len();
         if self.intercept {
-            let mut xt = Array2::zeros((n, 2));
-            for i in 0..n {
-                xt[[i, 0]] = 1.0;
-                xt[[i, 1]] = x[i];
-            }
+            let mut xt = Array2::ones((n, 2));
+            xt.column_mut(1).assign(x);
             Ok(xt)
         } else {
-            let mut xt = Array2::zeros((n, 1));
-            for i in 0..n {
-                xt[[i, 0]] = x[i];
-            }
-            Ok(xt)
+            Ok(x.to_owned()
+                .into_shape_with_order((n, 1))
+                .expect("Shape is guaranteed to match"))
         }
     }
 

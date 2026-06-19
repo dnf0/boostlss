@@ -307,6 +307,31 @@ Defaults (from mboost `bbs`):
   root-finding. Edge cases: `df ≥ rank(X) ⇒ λ = 0`; `df` and `λ` are mutually
   exclusive.
 
+### 6.5 Prediction on unseen / out-of-range feature values
+
+Robust behavior for feature values not seen in training (common in deployed
+pipelines, e.g. drifting FX features) is a first-class requirement, matched to
+mboost (verified against `R/bl.R` and the mboost 2.5-0 changelog):
+
+- **`Linear` (bols)** learners are globally linear, so any unseen / out-of-range
+  value is a linear extrapolation by construction — safe.
+- **`PSpline` (bbs)** learners distinguish fit time from predict time:
+  - **Fit time:** values outside the boundary knots are rejected
+    (`BoostlssError::OutOfRange`) — the basis is only defined on the fitted
+    support. Boundary knots default to the training-data range.
+  - **Predict time:** values beyond a boundary knot use **linear
+    extrapolation** — a straight line tangent to the fitted spline at that
+    boundary knot (design row `[1, x − boundary_knot]` times the basis value and
+    first derivative there, after `mgcv::Predict.matrix.pspline.smooth`). This is
+    **unconditionally linear**, independent of the penalty order `differences`
+    (the Eilers–Marx penalty-degree correspondence shapes the in-data fit, not
+    this predict-time mechanism). Extrapolation emits a recoverable warning via
+    the structured logger; no clamping, NaN, or error.
+
+This guarantees bounded, linear out-of-support behavior for every v1 base-learner
+and is asserted by a dedicated test (predict beyond the training range stays
+finite and on the boundary tangent).
+
 ---
 
 ## 7. Boosting engine
@@ -479,8 +504,10 @@ Tests are co-located with the code they validate where structure allows
 ## 12. Error handling and quality gates
 
 - One `BoostlssError` enum (`thiserror`): `DimensionMismatch`, `UnknownColumn`,
-  `NonFinite`, `UnsupportedResponse`, `Singular`, `InvalidConfig`, `NotConverged`,
-  … All fallible APIs return `Result<_, BoostlssError>`. No `unwrap`/`expect` on
+  `NonFinite`, `UnsupportedResponse`, `OutOfRange`, `Singular`, `InvalidConfig`,
+  `NotConverged`, … All fallible APIs return `Result<_, BoostlssError>`. The
+  structured logger emits a recoverable warning on predict-time P-spline
+  extrapolation (§6.5). No `unwrap`/`expect` on
   production paths; panics only in tests.
 - Inputs validated at the boundary (fail fast): finite checks, per-family
   response-support checks, dimension checks, config validity (e.g. P-spline

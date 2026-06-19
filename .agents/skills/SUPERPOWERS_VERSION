@@ -1,7 +1,7 @@
 # Vendored snapshot of obra/superpowers skills (delivered into .agents/skills/).
 # Source: https://github.com/obra/superpowers
 # Re-vendor with: scripts/vendor-superpowers.sh <ref-or-sha>
-pinned: obra/superpowers@6fd4507659784c351abbd2bc264c7162cfd386dc
+pinned: obra/superpowers@896224c4b1879920ab573417e68fd51d2ccc9072
 skills:
   - brainstorming
   - dispatching-parallel-agents

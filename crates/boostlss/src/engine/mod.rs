@@ -1,7 +1,7 @@
 //! Boosting algorithms and configuration.
 
+pub mod cyclical;
 pub mod stabilization;
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Algorithm {
     Cyclic,

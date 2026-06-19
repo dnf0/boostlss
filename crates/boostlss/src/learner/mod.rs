@@ -14,8 +14,6 @@ use ndarray::{Array1, Array2, ArrayView1};
 pub struct LearnerFit {
     /// Accumulated coefficients
     pub coef: Array1<f64>,
-    /// Precomputed X^T (for unweighted steps)
-    pub xt: Array2<f64>,
     /// Cholesky factor L from faer. (L * L^T = A)
     pub chol_l: Mat<f64>,
     /// Number of times this learner was selected
@@ -25,17 +23,8 @@ pub struct LearnerFit {
 impl LearnerFit {
     /// Factorize A = X^T X + \lambda K using faer's Cholesky decomposition.
     pub fn new(x: &Array2<f64>, penalty: &Array2<f64>, lambda: f64) -> Result<Self, BoostlssError> {
-        let n = x.nrows();
         let p = x.ncols();
-
-        let mut xtx = Array2::<f64>::zeros((p, p));
-        for i in 0..n {
-            for j in 0..p {
-                for k in 0..p {
-                    xtx[[j, k]] += x[[i, j]] * x[[i, k]];
-                }
-            }
-        }
+        let xtx = x.t().dot(x);
 
         let mut a = Mat::zeros(p, p);
         for j in 0..p {
@@ -58,33 +47,22 @@ impl LearnerFit {
             }
         }
 
-        let mut xt = Array2::<f64>::zeros((p, n));
-        for j in 0..p {
-            for i in 0..n {
-                xt[[j, i]] = x[[i, j]];
-            }
-        }
-
         Ok(Self {
             coef: Array1::zeros(p),
-            xt,
             chol_l,
             selected_count: 0,
         })
     }
 
     /// Solve (X^T X + \lambda K) beta = X^T u for the update step.
-    pub fn solve_update(&self, u: ArrayView1<f64>) -> Array1<f64> {
-        let p = self.xt.nrows();
-        let n = self.xt.ncols();
+    pub fn solve_update(&self, x: &Array2<f64>, u: ArrayView1<f64>) -> Array1<f64> {
+        let p = x.ncols();
+
+        let xtu_nd = x.t().dot(&u);
 
         let mut xtu = Mat::zeros(p, 1);
         for j in 0..p {
-            let mut sum = 0.0;
-            for i in 0..n {
-                sum += self.xt[[j, i]] * u[i];
-            }
-            xtu[(j, 0)] = sum;
+            xtu[(j, 0)] = xtu_nd[j];
         }
 
         // Solve L L^T beta = X^T u
@@ -115,8 +93,13 @@ mod tests {
         let fit = LearnerFit::new(&x, &penalty, lambda).unwrap();
 
         let u = array![1.0, 0.5, -0.5];
-        let beta = fit.solve_update(u.view());
+        let beta = fit.solve_update(&x, u.view());
+
+        let expected_beta0 = 52.0 / 21.0;
+        let expected_beta1 = -5.0 / 7.0;
 
         assert_eq!(beta.len(), 2);
+        assert!((beta[0] - expected_beta0).abs() < 1e-8);
+        assert!((beta[1] - expected_beta1).abs() < 1e-8);
     }
 }

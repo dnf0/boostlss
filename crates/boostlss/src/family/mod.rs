@@ -11,6 +11,9 @@ pub use gaussian::GaussianLss;
 pub mod student_t;
 pub use student_t::StudentTLss;
 
+pub mod gamma;
+pub use gamma::GammaLss;
+
 pub trait Family: std::fmt::Debug {
     /// Information about the parameters of this family, in fixed order.
     fn params(&self) -> &[ParamSpec];

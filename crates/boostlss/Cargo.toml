@@ -1,0 +1,15 @@
+[package]
+name = "boostlss"
+version = "0.0.0"
+edition = "2021"
+description = "Boosting GAMLSS (distributional regression) in Rust"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+ndarray = "0.17.2"
+statrs = "0.18.0"
+thiserror = "2.0.18"
+
+[dev-dependencies]
+approx = "0.5.1"
+proptest = "1.11.0"

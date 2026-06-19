@@ -32,3 +32,6 @@ htmlcov/
 # Ignore superpowers generated plans and specs
 docs/superpowers/
 .worktrees/
+
+# Rust build artifacts
+/target

@@ -4,6 +4,7 @@ pub mod data;
 pub mod engine;
 pub mod error;
 pub mod family;
+pub mod model;
 pub mod param;
 pub mod util;
 

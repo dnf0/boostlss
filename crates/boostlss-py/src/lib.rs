@@ -1,12 +1,13 @@
-use pyo3::prelude::*;
+mod family;
+mod learner;
 
-#[pyfunction]
-fn hello() -> PyResult<String> {
-    Ok("Hello from boostlss!".to_string())
-}
+use family::PyFamily;
+use learner::PyLinearLearner;
+use pyo3::prelude::*;
 
 #[pymodule]
 fn boostlss_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(hello, m)?)?;
+    m.add_class::<PyFamily>()?;
+    m.add_class::<PyLinearLearner>()?;
     Ok(())
 }

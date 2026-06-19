@@ -79,14 +79,14 @@ impl Family for GaussianLss {
             if k == 0 {
                 // d(NLL)/d(mu) * d(mu)/d(eta)
                 // d(NLL)/d(mu) = - (y - mu) / sigma^2
-                // mu link is identity, so deriv is 1
+                // mu link is identity, so deriv is 1. d(mu)/d(eta) = 1 / deriv(mu)
                 let d_nll_d_mu = -diff / sig2;
-                grad[i] = -weight * d_nll_d_mu * self.params[0].link.deriv(mu[i]);
+                grad[i] = -weight * d_nll_d_mu / self.params[0].link.deriv(mu[i]);
             } else if k == 1 {
                 // d(NLL)/d(sigma) * d(sigma)/d(eta)
                 // d(NLL)/d(sigma) = (1 / sigma) - (y - mu)^2 / sigma^3
                 let d_nll_d_sigma = (1.0 / sig) - (diff * diff) / (sig2 * sig);
-                grad[i] = -weight * d_nll_d_sigma * self.params[1].link.deriv(sigma[i]);
+                grad[i] = -weight * d_nll_d_sigma / self.params[1].link.deriv(sigma[i]);
             }
         }
         Ok(grad)
@@ -127,9 +127,28 @@ mod tests {
         let ds = Dataset::new(Array2::<f64>::zeros((2, 1)), array![1.0, 3.0], None).unwrap();
         let eta = vec![array![0.5, 2.5], array![0.1, -0.2]]; // [mu_eta, sigma_eta]
 
-        let analytical_grad_mu = fam.ngradient(&ds, &eta, 0).unwrap();
-        // To test finite diff, we need to temporarily un-implement the analytical override,
-        // but here we just check it produces sane output directly.
-        assert!(analytical_grad_mu.len() == 2);
+        let eps = 1e-5;
+
+        for k in 0..2 {
+            let analytical_grad = fam.ngradient(&ds, &eta, k).unwrap();
+
+            let mut finite_diff_grad = Array1::zeros(ds.n_obs());
+            for i in 0..ds.n_obs() {
+                let mut eta_plus = eta.clone();
+                let mut eta_minus = eta.clone();
+
+                eta_plus[k][i] += eps;
+                eta_minus[k][i] -= eps;
+
+                let l_plus = fam.nll(&ds, &eta_plus).unwrap();
+                let l_minus = fam.nll(&ds, &eta_minus).unwrap();
+
+                finite_diff_grad[i] = -(l_plus - l_minus) / (2.0 * eps);
+            }
+
+            for i in 0..ds.n_obs() {
+                assert_relative_eq!(analytical_grad[i], finite_diff_grad[i], epsilon = 1e-3);
+            }
+        }
     }
 }

@@ -52,11 +52,11 @@ impl Link for LogitLink {
 #[derive(Debug)]
 pub struct ParamSpec {
     pub name: String,
-    pub link: Box<dyn Link>,
+    pub link: Box<dyn Link + Send + Sync>,
 }
 
 impl ParamSpec {
-    pub fn new(name: impl Into<String>, link: impl Link + 'static) -> Self {
+    pub fn new(name: impl Into<String>, link: impl Link + Send + Sync + 'static) -> Self {
         Self {
             name: name.into(),
             link: Box::new(link),
@@ -66,7 +66,6 @@ impl ParamSpec {
 
 #[cfg(test)]
 mod tests {
-    // Tests are failing because definitions are missing
     use super::*;
     use approx::assert_relative_eq;
 

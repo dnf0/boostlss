@@ -1,5 +1,6 @@
 use crate::family::PyFamily;
 use crate::learner::PyLinearLearner;
+use boostlss::cv::{CvRisk, Resampling};
 use boostlss::data::Dataset;
 use boostlss::engine::cyclical::fit_cyclical;
 use boostlss::engine::Mstop;
@@ -7,6 +8,7 @@ use boostlss::family::GaussianLss;
 use boostlss::model::{BoostLss, Fitted, Scale};
 use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
+use pyo3::types::PyDict;
 
 #[pyclass]
 pub struct BoostLssModel {
@@ -15,6 +17,7 @@ pub struct BoostLssModel {
     step_length: f64,
     learners: Vec<(String, PyLinearLearner)>,
     fitted_gaussian: Option<Fitted<GaussianLss>>,
+    train_data: Option<(ndarray::Array2<f64>, ndarray::Array1<f64>)>,
 }
 
 #[pymethods]
@@ -28,6 +31,7 @@ impl BoostLssModel {
             step_length,
             learners: Vec::new(),
             fitted_gaussian: None,
+            train_data: None,
         }
     }
 
@@ -47,8 +51,10 @@ impl BoostLssModel {
             ndarray::Array1::from_shape_vec((y_view.len(),), y_view.iter().copied().collect())
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
 
-        let dataset = Dataset::new(x_mat, y_vec, None)
+        let dataset = Dataset::new(x_mat.clone(), y_vec.clone(), None)
             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+
+        self.train_data = Some((x_mat, y_vec));
 
         match self.family {
             PyFamily::GaussianLss => {
@@ -97,6 +103,45 @@ impl BoostLssModel {
         } else {
             Err(pyo3::exceptions::PyRuntimeError::new_err(
                 "Model not fitted",
+            ))
+        }
+    }
+
+    #[pyo3(signature = (folds=10))]
+    fn cvrisk<'py>(&mut self, py: Python<'py>, folds: usize) -> PyResult<Bound<'py, PyDict>> {
+        if let Some((x_mat, y_vec)) = &self.train_data {
+            let dataset = Dataset::new(x_mat.clone(), y_vec.clone(), None)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+
+            match self.family {
+                PyFamily::GaussianLss => {
+                    let mut model = BoostLss::new(GaussianLss::new())
+                        .step_length(self.step_length)
+                        .mstop(Mstop::Scalar(self.mstop));
+
+                    for (param, learner) in &self.learners {
+                        model = model
+                            .on(param.as_str(), learner.clone().into())
+                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+                    }
+
+                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
+                    let result = cv
+                        .run(&dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+
+                    let dict = PyDict::new_bound(py);
+                    match result.optimal_mstop {
+                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
+                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
+                    }
+                    dict.set_item("mean_risk", result.mean_risk)?;
+                    Ok(dict)
+                }
+            }
+        } else {
+            Err(pyo3::exceptions::PyRuntimeError::new_err(
+                "Model not fitted, cannot run cvrisk without data",
             ))
         }
     }

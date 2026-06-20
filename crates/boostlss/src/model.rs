@@ -5,13 +5,14 @@ use crate::family::Family;
 use crate::learner::BaseLearner;
 use ndarray::Array1;
 
-pub struct BoostLss<F: Family> {
+#[derive(Clone)]
+pub struct BoostLss<F: Family + Clone> {
     family: F,
     config: Config,
     learners: Vec<(usize, BaseLearner)>, // (param_index, learner)
 }
 
-impl<F: Family> BoostLss<F> {
+impl<F: Family + Clone> BoostLss<F> {
     pub fn new(family: F) -> Self {
         Self {
             family,

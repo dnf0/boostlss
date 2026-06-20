@@ -6,7 +6,7 @@ use crate::util::{weighted_mean, weighted_sd};
 use ndarray::Array1;
 use std::f64::consts::PI;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GaussianLss {
     params: Vec<ParamSpec>,
 }

@@ -14,7 +14,7 @@ struct CachedLearner {
     fit_state: LearnerFit,
 }
 
-pub fn fit_cyclical<F: Family>(
+pub fn fit_cyclical<F: Family + Clone>(
     model: BoostLss<F>,
     data: &Dataset,
 ) -> Result<Fitted<F>, BoostlssError> {

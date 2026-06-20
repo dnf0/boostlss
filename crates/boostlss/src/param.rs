@@ -5,9 +5,10 @@ pub trait Link: std::fmt::Debug {
     fn response(&self, eta: f64) -> f64;
     /// Derivative d(eta)/d(theta)
     fn deriv(&self, theta: f64) -> f64;
+    fn clone_box(&self) -> Box<dyn Link + Send + Sync>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IdentityLink;
 impl Link for IdentityLink {
     fn link(&self, theta: f64) -> f64 {
@@ -19,9 +20,12 @@ impl Link for IdentityLink {
     fn deriv(&self, _theta: f64) -> f64 {
         1.0
     }
+    fn clone_box(&self) -> Box<dyn Link + Send + Sync> {
+        Box::new(self.clone())
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LogLink;
 impl Link for LogLink {
     fn link(&self, theta: f64) -> f64 {
@@ -33,9 +37,12 @@ impl Link for LogLink {
     fn deriv(&self, theta: f64) -> f64 {
         1.0 / theta
     }
+    fn clone_box(&self) -> Box<dyn Link + Send + Sync> {
+        Box::new(self.clone())
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LogitLink;
 impl Link for LogitLink {
     fn link(&self, theta: f64) -> f64 {
@@ -47,12 +54,24 @@ impl Link for LogitLink {
     fn deriv(&self, theta: f64) -> f64 {
         1.0 / (theta * (1.0 - theta))
     }
+    fn clone_box(&self) -> Box<dyn Link + Send + Sync> {
+        Box::new(self.clone())
+    }
 }
 
 #[derive(Debug)]
 pub struct ParamSpec {
     pub name: String,
     pub link: Box<dyn Link + Send + Sync>,
+}
+
+impl Clone for ParamSpec {
+    fn clone(&self) -> Self {
+        Self {
+            name: self.name.clone(),
+            link: self.link.clone_box(),
+        }
+    }
 }
 
 impl ParamSpec {

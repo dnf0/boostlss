@@ -1,3 +1,4 @@
+use crate::engine::Mstop;
 use ndarray::Array1;
 use rand::Rng;
 
@@ -67,6 +68,50 @@ impl Resampling {
     }
 }
 
+pub fn make_grid(params_count: usize, mstop_max: usize, length_out: usize) -> Vec<Mstop> {
+    if params_count == 0 || length_out == 0 || mstop_max == 0 {
+        return vec![];
+    }
+
+    let mut vals = Vec::with_capacity(length_out);
+    if length_out == 1 {
+        vals.push(mstop_max);
+    } else {
+        let ln_start = 0.0f64; // ln(1)
+        let ln_end = (mstop_max as f64).ln();
+        for i in 0..length_out {
+            let log_val = ln_start + (ln_end - ln_start) * (i as f64) / ((length_out - 1) as f64);
+            let val = log_val.exp().round() as usize;
+            let val = val.max(1).min(mstop_max);
+            vals.push(val);
+        }
+    }
+    vals.dedup();
+
+    let mut grid = Vec::new();
+    let mut current = vec![0; params_count];
+
+    loop {
+        let config: Vec<usize> = current.iter().map(|&idx| vals[idx]).collect();
+        grid.push(Mstop::PerParam(config));
+
+        let mut i = 0;
+        while i < params_count {
+            current[i] += 1;
+            if current[i] < vals.len() {
+                break;
+            }
+            current[i] = 0;
+            i += 1;
+        }
+        if i == params_count {
+            break;
+        }
+    }
+
+    grid
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -81,5 +126,14 @@ mod tests {
         assert_eq!(weights.len(), 2);
         assert_eq!(weights[0].sum(), 5.0);
         assert_eq!(weights[1].sum(), 5.0);
+    }
+
+    #[test]
+    fn test_make_grid() {
+        let grid = make_grid(2, 10, 3);
+        // length_out = 3, min = 1, max = 10. log-spaced rounded: 1, 3, 10.
+        // grid size = 3 * 3 = 9
+        assert_eq!(grid.len(), 9);
+        assert!(matches!(&grid[0], Mstop::PerParam(v) if v == &vec![1, 1]));
     }
 }

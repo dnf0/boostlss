@@ -74,6 +74,7 @@ dependencies = [
  "faer",
  "ndarray 0.17.2",
  "proptest",
+ "rand 0.8.6",
  "serde",
  "serde_json",
  "statrs",

@@ -8,6 +8,7 @@ pub mod model;
 pub mod param;
 pub mod util;
 
+pub mod cv;
 pub mod learner;
 
 pub use data::Dataset;

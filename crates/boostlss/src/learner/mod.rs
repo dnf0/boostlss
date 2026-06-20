@@ -8,10 +8,14 @@ pub mod penalty;
 pub mod pspline;
 pub use pspline::PSpline;
 
+pub mod stump;
+pub use stump::Stump;
+
 #[derive(Debug, Clone)]
 pub enum BaseLearner {
     Linear(Linear),
     PSpline(PSpline),
+    Stump(Stump),
 }
 
 impl BaseLearner {
@@ -22,6 +26,9 @@ impl BaseLearner {
         match self {
             Self::Linear(l) => l.build_design(x),
             Self::PSpline(p) => p.build_design(x),
+            Self::Stump(_) => Err(crate::error::BoostlssError::DataError(
+                "Stump does not use build_design".into(),
+            )),
         }
     }
 
@@ -29,6 +36,7 @@ impl BaseLearner {
         match self {
             Self::Linear(l) => l.penalty_matrix(n_cols),
             Self::PSpline(p) => p.penalty_matrix(n_cols),
+            Self::Stump(_) => Array2::zeros((0, 0)),
         }
     }
 
@@ -36,12 +44,24 @@ impl BaseLearner {
         match self {
             Self::Linear(_) => None,
             Self::PSpline(p) => Some(p.df),
+            Self::Stump(_) => None,
         }
     }
     pub fn initialize(
         &mut self,
         x: &Array1<f64>,
     ) -> Result<LearnerFit, crate::error::BoostlssError> {
+        if let Self::Stump(_) = self {
+            let mut sorted_x: Vec<(f64, usize)> = x
+                .iter()
+                .copied()
+                .enumerate()
+                .map(|(i, val)| (val, i))
+                .collect();
+            sorted_x.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+            return Ok(LearnerFit::Stump(stump::StumpFitState { sorted_x }));
+        }
+
         let design = self.build_design(x)?;
         let penalty = self.penalty_matrix(design.ncols());
         let lambda = match self.target_df() {
@@ -93,14 +113,14 @@ pub struct LinearFitState {
 #[derive(Debug, Clone)]
 pub enum LearnerFit {
     Linear(LinearFitState),
-    // Stump state will be added later
+    Stump(stump::StumpFitState),
 }
 
 impl LearnerFit {
     pub fn fit_update(
         &self,
         u: ArrayView1<f64>,
-        _weights: Option<ArrayView1<f64>>,
+        weights: Option<ArrayView1<f64>>,
     ) -> LearnerUpdate {
         match self {
             Self::Linear(state) => {
@@ -110,6 +130,7 @@ impl LearnerFit {
                 state.llt.solve_in_place(xtu.as_mut());
                 LearnerUpdate::Linear(Array1::from_shape_fn(p, |i| xtu[(i, 0)]))
             }
+            Self::Stump(state) => state.fit_update(u, weights),
         }
     }
 }

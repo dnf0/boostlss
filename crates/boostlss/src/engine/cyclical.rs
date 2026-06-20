@@ -78,7 +78,20 @@ pub fn fit_cyclical<F: Family + Clone>(
                             unreachable!()
                         }
                     }
-                    crate::learner::LearnerUpdate::Stump { .. } => unreachable!(),
+                    crate::learner::LearnerUpdate::Stump {
+                        split_val,
+                        left_val,
+                        right_val,
+                    } => {
+                        let x_col = data.design().column(0);
+                        x_col.mapv(|val| {
+                            if val <= *split_val {
+                                *left_val
+                            } else {
+                                *right_val
+                            }
+                        })
+                    }
                 };
 
                 let residuals = &gradients - &u_hat;

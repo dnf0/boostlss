@@ -154,7 +154,38 @@ impl<F: Family> Fitted<F> {
                     });
                     pred = pred + u_hat;
                 }
-                LearnerUpdate::Tree { .. } => unimplemented!(),
+                LearnerUpdate::Tree {
+                    node: root,
+                    param: _,
+                } => {
+                    if let BaseLearner::Tree(tree_learner) = learner {
+                        for i in 0..pred.len() {
+                            let mut node_ptr = root;
+                            loop {
+                                match node_ptr {
+                                    crate::learner::TreeNode::Leaf { value, .. } => {
+                                        pred[i] += *value;
+                                        break;
+                                    }
+                                    crate::learner::TreeNode::Split {
+                                        feature_idx,
+                                        threshold,
+                                        left,
+                                        right,
+                                    } => {
+                                        let col_idx = tree_learner.feature_indices[*feature_idx];
+                                        let val = data.design().column(col_idx)[i];
+                                        if val <= *threshold {
+                                            node_ptr = left;
+                                        } else {
+                                            node_ptr = right;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 

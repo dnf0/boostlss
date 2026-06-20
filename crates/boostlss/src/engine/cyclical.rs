@@ -92,7 +92,45 @@ pub fn fit_cyclical<F: Family + Clone>(
                             }
                         })
                     }
-                    crate::learner::LearnerUpdate::Tree { .. } => unimplemented!(),
+                    crate::learner::LearnerUpdate::Tree {
+                        node: root,
+                        param: _,
+                    } => {
+                        let mut u_hat = ndarray::Array1::zeros(data.response().len());
+                        for i in 0..u_hat.len() {
+                            let mut node_ptr = root;
+                            loop {
+                                match node_ptr {
+                                    crate::learner::TreeNode::Leaf { value, .. } => {
+                                        u_hat[i] = *value;
+                                        break;
+                                    }
+                                    crate::learner::TreeNode::Split {
+                                        feature_idx,
+                                        threshold,
+                                        left,
+                                        right,
+                                    } => {
+                                        if let LearnerFit::Tree(state) = &cached.fit_state {
+                                            let val = state.sorted_features[*feature_idx]
+                                                .iter()
+                                                .find(|(_, idx)| *idx == i)
+                                                .unwrap()
+                                                .0;
+                                            if val <= *threshold {
+                                                node_ptr = left;
+                                            } else {
+                                                node_ptr = right;
+                                            }
+                                        } else {
+                                            unreachable!()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        u_hat
+                    }
                 };
 
                 let residuals = &gradients - &u_hat;

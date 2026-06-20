@@ -1,19 +1,19 @@
-# Graph Report - boostlss (2026-06-19)
+# Graph Report - boostlss (2026-06-20)
 
 ## Corpus Check
 
-- 141 files · ~119,943 words
+- 142 files · ~120,199 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
 
-- 1609 nodes · 1693 edges · 160 communities (135 shown, 25 thin omitted)
+- 1616 nodes · 1702 edges · 161 communities (136 shown, 25 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 12 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
 
-- Built from commit: `1e2af641`
+- Built from commit: `9b683af3`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -172,6 +172,7 @@
 - [[_COMMUNITY_Community 156|Community 156]]
 - [[_COMMUNITY_Community 157|Community 157]]
 - [[_COMMUNITY_Community 159|Community 159]]
+- [[_COMMUNITY_Community 160|Community 160]]
 
 ## God Nodes (most connected - your core abstractions)
 
@@ -202,6 +203,7 @@
 - 1-file cycle: `crates/boostlss/src/engine/cyclical.rs -> crates/boostlss/src/engine/cyclical.rs`
 - 1-file cycle: `crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/mod.rs`
 - 1-file cycle: `crates/boostlss/src/learner/mod.rs -> crates/boostlss/src/learner/mod.rs`
+- 1-file cycle: `crates/boostlss/src/cv.rs -> crates/boostlss/src/cv.rs`
 - 1-file cycle: `crates/boostlss/src/data.rs -> crates/boostlss/src/data.rs`
 - 1-file cycle: `crates/boostlss/src/engine/stabilization.rs -> crates/boostlss/src/engine/stabilization.rs`
 - 1-file cycle: `crates/boostlss/src/family/gamma.rs -> crates/boostlss/src/family/gamma.rs`
@@ -213,7 +215,7 @@
 - 1-file cycle: `crates/boostlss/src/util.rs -> crates/boostlss/src/util.rs`
 - 2-file cycle: `crates/boostlss-py/src/model.rs -> crates/boostlss/src/model.rs -> crates/boostlss-py/src/model.rs`
 
-## Communities (160 total, 25 thin omitted)
+## Communities (161 total, 25 thin omitted)
 
 ### Community 0 - "Community 0"
 
@@ -693,7 +695,7 @@ Nodes (3): boostlss, Status, Validation and Testing
 ### Community 124 - "Community 124"
 
 Cohesion: 0.07
-Nodes (37): BoostLss, Bound, PyResult, Bound, Fitted, Option, PyResult, Self (+29 more)
+Nodes (30): Bound, PyResult, Bound, Fitted, Option, PyResult, Self, String (+22 more)
 
 ### Community 125 - "Community 125"
 
@@ -747,8 +749,8 @@ Nodes (10): Array1, Array2, BoostlssError, Option, Result, Self, Dataset, datase
 
 ### Community 135 - "Community 135"
 
-Cohesion: 0.22
-Nodes (11): Array1, BoostlssError, Dataset, Debug, ParamSpec, Result, Self, Vec (+3 more)
+Cohesion: 0.16
+Nodes (18): BoostLss, Array2, BoostlssError, Dataset, F, Fitted, Result, Array2 (+10 more)
 
 ### Community 136 - "Community 136"
 
@@ -855,9 +857,14 @@ Nodes (4): Checklist for effective Skills, Code and scripts, Core quality, Testi
 Cohesion: 0.50
 Nodes (4): Concise is key, Core principles, Set appropriate degrees of freedom, Test with all models you plan to use
 
+### Community 160 - "Community 160"
+
+Cohesion: 0.43
+Nodes (5): Array1, Vec, Rng, Resampling, test_kfold_weights()
+
 ## Knowledge Gaps
 
-- **1011 isolated node(s):** `start-server.sh script`, `stop-server.sh script`, `find-polluter.sh script`, `fs`, `path` (+1006 more)
+- **1012 isolated node(s):** `start-server.sh script`, `stop-server.sh script`, `find-polluter.sh script`, `fs`, `path` (+1007 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **25 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -867,12 +874,12 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `weighted_mean()` connect `Community 126` to `Community 130`, `Community 132`, `Community 133`?**
   _High betweenness centrality (0.011) - this node is a cross-community bridge._
-- **Why does `fit_cyclical()` connect `Community 124` to `Community 126`?**
-  _High betweenness centrality (0.010) - this node is a cross-community bridge._
-- **Why does `stabilize()` connect `Community 126` to `Community 124`?**
+- **Why does `stabilize()` connect `Community 126` to `Community 135`?**
+  _High betweenness centrality (0.009) - this node is a cross-community bridge._
+- **Why does `fit_cyclical()` connect `Community 135` to `Community 124`, `Community 126`?**
   _High betweenness centrality (0.009) - this node is a cross-community bridge._
 - **What connects `start-server.sh script`, `stop-server.sh script`, `find-polluter.sh script` to the rest of the system?**
-  _1011 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1012 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.06060606060606061 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**

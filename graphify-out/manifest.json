@@ -685,8 +685,8 @@
     "semantic_hash": ""
   },
   "crates/boostlss/src/lib.rs": {
-    "mtime": 1781899996.6608806,
-    "ast_hash": "c5d10933f318e5b368f4bc67419cc71c",
+    "mtime": 1781942867.0352619,
+    "ast_hash": "4f65182d77d6c384877073b52a212a16",
     "semantic_hash": ""
   },
   "crates/boostlss/src/model.rs": {
@@ -737,6 +737,11 @@
   "todo-python-bindings.md": {
     "mtime": 1781904909.8937974,
     "ast_hash": "675d623d8595799de06b1454cfe861be",
+    "semantic_hash": ""
+  },
+  "crates/boostlss/src/cv.rs": {
+    "mtime": 1781942928.1712744,
+    "ast_hash": "0aab3c834d185a40cf7c1624f61ab00b",
     "semantic_hash": ""
   }
 }

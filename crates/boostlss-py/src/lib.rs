@@ -3,7 +3,7 @@ mod learner;
 mod model;
 
 use family::PyFamily;
-use learner::PyLinearLearner;
+use learner::{PyLinearLearner, PyStumpLearner};
 use model::BoostLssModel;
 use pyo3::prelude::*;
 
@@ -11,6 +11,7 @@ use pyo3::prelude::*;
 fn boostlss_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyFamily>()?;
     m.add_class::<PyLinearLearner>()?;
+    m.add_class::<PyStumpLearner>()?;
     m.add_class::<BoostLssModel>()?;
     Ok(())
 }

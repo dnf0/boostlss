@@ -112,7 +112,7 @@ mod tests {
             right_val,
         } = update
         {
-            assert!(split_val >= 2.0 && split_val < 3.0);
+            assert!((2.0..3.0).contains(&split_val));
             assert_eq!(left_val, -1.0);
             assert_eq!(right_val, 1.0);
         } else {

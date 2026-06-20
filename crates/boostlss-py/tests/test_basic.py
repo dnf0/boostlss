@@ -48,3 +48,23 @@ def test_cvrisk():
     res = model.cvrisk(folds=2)
     assert res is not None
     assert "optimal_mstop" in res
+
+
+def test_stump_learner():
+    import numpy as np
+    from boostlss_py import PyFamily, PyStumpLearner, BoostLssModel
+
+    np.random.seed(42)
+    X = np.random.uniform(-3, 3, (20, 2))
+    y = np.random.normal(0, 1, 20)
+
+    family = PyFamily("GaussianLSS")
+    model = BoostLssModel(family, mstop=10, step_length=0.1)
+    # Add a stump instead of linear learner
+    model.add_learner("mu", PyStumpLearner("x"))
+    model.add_learner("sigma", PyStumpLearner("x"))
+
+    model.fit(X, y)
+
+    pred_mu = model.predict(X, "mu")
+    assert len(pred_mu) == 20

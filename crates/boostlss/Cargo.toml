@@ -11,6 +11,10 @@ ndarray = "0.17.2"
 statrs = "0.18.0"
 thiserror = "2.0.18"
 rand = "0.8.5"
+rayon = { version = "1.10.0", optional = true }
+
+[features]
+parallel = ["rayon"]
 
 [dev-dependencies]
 serde = { version = "1.0", features = ["derive"] }

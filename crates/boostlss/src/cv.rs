@@ -1,6 +1,14 @@
+use crate::data::Dataset;
 use crate::engine::Mstop;
+use crate::error::BoostlssError;
+use crate::family::Family;
+use crate::model::BoostLss;
+use crate::model::Scale;
 use ndarray::Array1;
 use rand::Rng;
+
+#[cfg(feature = "parallel")]
+use rayon::prelude::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Resampling {
@@ -112,6 +120,138 @@ pub fn make_grid(params_count: usize, mstop_max: usize, length_out: usize) -> Ve
     grid
 }
 
+#[derive(Clone, Debug)]
+pub struct CvRiskResult {
+    pub risk_matrix: Vec<Vec<f64>>, // [fold][mstop_index]
+    pub mean_risk: Vec<f64>,
+    pub optimal_mstop: Mstop,
+    pub mstop_grid: Vec<Mstop>,
+}
+
+#[cfg(feature = "parallel")]
+pub trait FamilyBound: Family + Clone + Sync + Send {}
+#[cfg(feature = "parallel")]
+impl<T: Family + Clone + Sync + Send> FamilyBound for T {}
+
+#[cfg(not(feature = "parallel"))]
+pub trait FamilyBound: Family + Clone {}
+#[cfg(not(feature = "parallel"))]
+impl<T: Family + Clone> FamilyBound for T {}
+
+pub struct CvRisk<F: FamilyBound> {
+    model: BoostLss<F>,
+    resampling: Resampling,
+    mstop_max: usize,
+    length_out: usize,
+}
+
+impl<F: FamilyBound> CvRisk<F> {
+    pub fn new(model: BoostLss<F>, resampling: Resampling) -> Self {
+        let mstop_max = match &model.config().mstop {
+            Mstop::Scalar(m) => *m,
+            Mstop::PerParam(ms) => *ms.iter().max().unwrap_or(&100),
+        };
+        Self {
+            model,
+            resampling,
+            mstop_max,
+            length_out: 10,
+        }
+    }
+
+    pub fn grid_resolution(mut self, length_out: usize) -> Self {
+        self.length_out = length_out;
+        self
+    }
+
+    pub fn mstop_max(mut self, max: usize) -> Self {
+        self.mstop_max = max;
+        self
+    }
+
+    pub fn run(&self, data: &Dataset) -> Result<CvRiskResult, BoostlssError> {
+        let params_count = self.model.family().params().len();
+        let grid = make_grid(params_count, self.mstop_max, self.length_out);
+
+        let mut rng = rand::thread_rng();
+        let weights = self.resampling.generate_weights(data.n_obs(), &mut rng);
+
+        #[cfg(feature = "parallel")]
+        let weights_iter = weights.par_iter().enumerate();
+        #[cfg(not(feature = "parallel"))]
+        let weights_iter = weights.iter().enumerate();
+
+        let risks: Result<Vec<Vec<f64>>, BoostlssError> = weights_iter
+            .map(|(_fold_idx, w)| {
+                let valid_indices: Vec<usize> = w
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, &wi)| wi == 0.0)
+                    .map(|(i, _)| i)
+                    .collect();
+
+                let train_data = data.with_weights(w.clone())?;
+                let valid_data = data.subset(&valid_indices)?;
+
+                let mut fold_risks = vec![0.0; grid.len()];
+
+                for (m_idx, m) in grid.iter().enumerate() {
+                    let model = self.model.clone().mstop(m.clone());
+                    let mut fitted = model.fit(&train_data)?;
+
+                    let mut eta = Vec::with_capacity(params_count);
+                    for param in self.model.family().params() {
+                        let pred = fitted.predict(&valid_data, &param.name, Scale::Link)?;
+                        eta.push(pred);
+                    }
+
+                    let risk =
+                        self.model.family().nll(&valid_data, &eta)? / valid_data.n_obs() as f64;
+                    fold_risks[m_idx] = risk;
+                }
+
+                Ok(fold_risks)
+            })
+            .collect();
+
+        let risk_matrix = risks?;
+
+        if risk_matrix.is_empty() || grid.is_empty() {
+            return Err(BoostlssError::DataError(
+                "Risk matrix or grid is empty".into(),
+            ));
+        }
+
+        let mut mean_risks = vec![0.0; grid.len()];
+        for fold_risks in &risk_matrix {
+            for (m_idx, &r) in fold_risks.iter().enumerate() {
+                mean_risks[m_idx] += r;
+            }
+        }
+        let n_folds = risk_matrix.len() as f64;
+        for r in &mut mean_risks {
+            *r /= n_folds;
+        }
+
+        let mut min_idx = 0;
+        let mut min_val = f64::INFINITY;
+        for (i, &val) in mean_risks.iter().enumerate() {
+            if val < min_val {
+                min_val = val;
+                min_idx = i;
+            }
+        }
+        let optimal_mstop = grid[min_idx].clone();
+
+        Ok(CvRiskResult {
+            risk_matrix,
+            mean_risk: mean_risks,
+            optimal_mstop,
+            mstop_grid: grid,
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -135,5 +275,35 @@ mod tests {
         // grid size = 3 * 3 = 9
         assert_eq!(grid.len(), 9);
         assert!(matches!(&grid[0], Mstop::PerParam(v) if v == &vec![1, 1]));
+    }
+
+    use crate::family::GaussianLss;
+    use crate::learner::{BaseLearner, Linear};
+    use ndarray::{array, Array2};
+
+    #[test]
+    fn test_cv_risk_run() {
+        let x = Array2::from_shape_vec((4, 1), vec![1.0, 2.0, 3.0, 4.0]).unwrap();
+        let y = array![2.0, 4.0, 6.0, 8.0];
+        let data = Dataset::new(x, y, None).unwrap();
+
+        let model = BoostLss::new(GaussianLss::new())
+            .step_length(0.1)
+            .on("mu", BaseLearner::Linear(Linear::new("x").intercept(true)))
+            .unwrap()
+            .on(
+                "sigma",
+                BaseLearner::Linear(Linear::new("x").intercept(true)),
+            )
+            .unwrap();
+
+        let cv = CvRisk::new(model, Resampling::KFold { k: 2 })
+            .mstop_max(3)
+            .grid_resolution(2);
+
+        let result = cv.run(&data).unwrap();
+
+        assert_eq!(result.risk_matrix.len(), 2);
+        assert_eq!(result.risk_matrix[0].len(), result.mstop_grid.len());
     }
 }

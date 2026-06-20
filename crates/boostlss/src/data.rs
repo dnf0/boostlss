@@ -58,6 +58,58 @@ impl Dataset {
     pub fn weights(&self) -> Option<&Array1<f64>> {
         self.weights.as_ref()
     }
+
+    pub fn with_weights(&self, new_weights: Array1<f64>) -> Result<Self, BoostlssError> {
+        let n = self.n_obs();
+        if new_weights.len() != n {
+            return Err(BoostlssError::DataError(format!(
+                "Design has {} rows, but new weights have length {}",
+                n,
+                new_weights.len()
+            )));
+        }
+        if new_weights.iter().any(|&wi| wi < 0.0) {
+            return Err(BoostlssError::DataError(
+                "Weights cannot be negative".into(),
+            ));
+        }
+
+        let combined_weights = if let Some(existing) = &self.weights {
+            existing * &new_weights
+        } else {
+            new_weights
+        };
+
+        Ok(Self {
+            design: self.design.clone(),
+            response: self.response.clone(),
+            weights: Some(combined_weights),
+        })
+    }
+
+    pub fn subset(&self, indices: &[usize]) -> Result<Self, BoostlssError> {
+        let n = indices.len();
+        let mut new_design = ndarray::Array2::zeros((n, self.design.ncols()));
+        let mut new_response = ndarray::Array1::zeros(n);
+        let mut new_weights = self.weights.as_ref().map(|_| ndarray::Array1::zeros(n));
+
+        for (i, &idx) in indices.iter().enumerate() {
+            if idx >= self.design.nrows() {
+                return Err(BoostlssError::DataError("Index out of bounds".to_string()));
+            }
+            new_design.row_mut(i).assign(&self.design.row(idx));
+            new_response[i] = self.response[idx];
+            if let Some(ref mut w) = new_weights {
+                w[i] = self.weights.as_ref().unwrap()[idx];
+            }
+        }
+
+        Ok(Self {
+            design: new_design,
+            response: new_response,
+            weights: new_weights,
+        })
+    }
 }
 
 #[cfg(test)]

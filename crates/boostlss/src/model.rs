@@ -67,6 +67,15 @@ impl<F: Family + Clone> BoostLss<F> {
     pub fn into_parts(self) -> (F, Config, Vec<(usize, BaseLearner)>) {
         (self.family, self.config, self.learners)
     }
+
+    pub fn fit(self, data: &Dataset) -> Result<Fitted<F>, BoostlssError> {
+        match self.config.algorithm {
+            Algorithm::Cyclic => crate::engine::cyclical::fit_cyclical(self, data),
+            Algorithm::NonCyclic => Err(BoostlssError::InvalidConfig(
+                "NonCyclic not yet implemented".into(),
+            )),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

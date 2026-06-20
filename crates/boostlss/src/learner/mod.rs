@@ -8,10 +8,14 @@ pub mod penalty;
 pub mod pspline;
 pub use pspline::PSpline;
 
+pub mod stump;
+pub use stump::Stump;
+
 #[derive(Debug, Clone)]
 pub enum BaseLearner {
     Linear(Linear),
     PSpline(PSpline),
+    Stump(Stump),
 }
 
 impl BaseLearner {
@@ -22,6 +26,9 @@ impl BaseLearner {
         match self {
             Self::Linear(l) => l.build_design(x),
             Self::PSpline(p) => p.build_design(x),
+            Self::Stump(_) => Err(crate::error::BoostlssError::DataError(
+                "Stump does not use build_design".into(),
+            )),
         }
     }
 
@@ -29,6 +36,7 @@ impl BaseLearner {
         match self {
             Self::Linear(l) => l.penalty_matrix(n_cols),
             Self::PSpline(p) => p.penalty_matrix(n_cols),
+            Self::Stump(_) => Array2::zeros((0, 0)),
         }
     }
 
@@ -36,61 +44,94 @@ impl BaseLearner {
         match self {
             Self::Linear(_) => None,
             Self::PSpline(p) => Some(p.df),
+            Self::Stump(_) => None,
         }
     }
-}
+    pub fn initialize(
+        &mut self,
+        x: &Array1<f64>,
+    ) -> Result<LearnerFit, crate::error::BoostlssError> {
+        if let Self::Stump(_) = self {
+            let mut sorted_x: Vec<(f64, usize)> = x
+                .iter()
+                .copied()
+                .enumerate()
+                .map(|(i, val)| (val, i))
+                .collect();
+            sorted_x.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+            return Ok(LearnerFit::Stump(stump::StumpFitState { sorted_x }));
+        }
 
-use crate::error::BoostlssError;
-use faer::linalg::solvers::Llt;
-use faer::prelude::Solve;
-use faer::Mat;
-use ndarray::{Array1, Array2, ArrayView1};
+        let design = self.build_design(x)?;
+        let penalty = self.penalty_matrix(design.ncols());
+        let lambda = match self.target_df() {
+            Some(df) => {
+                let xtx = design.t().dot(&design);
+                crate::learner::penalty::df_to_lambda(&xtx, &penalty, df)
+            }
+            None => 0.0,
+        };
 
-/// The fitted state for a base-learner.
-/// Caches the Cholesky factor of (X^T X + lambda K) to make updates O(p^2) instead of O(p^3).
-#[derive(Debug, Clone)]
-pub struct LearnerFit {
-    /// Accumulated coefficients
-    pub coef: Array1<f64>,
-    /// Cholesky factor L from faer. (L * L^T = A)
-    pub llt: Llt<f64>,
-    /// Number of times this learner was selected
-    pub selected_count: usize,
-}
-
-impl LearnerFit {
-    /// Factorize A = X^T X + \lambda K using faer's Cholesky decomposition.
-    pub fn new(x: &Array2<f64>, penalty: &Array2<f64>, lambda: f64) -> Result<Self, BoostlssError> {
-        let p = x.ncols();
-        let xtx = x.t().dot(x);
-
-        let a = Mat::from_fn(p, p, |j, k| xtx[[j, k]] + lambda * penalty[[j, k]]);
-
-        let llt = Llt::new(a.as_ref(), faer::Side::Lower).map_err(|_| {
-            BoostlssError::DataError(
+        let p = design.ncols();
+        let xtx = design.t().dot(&design);
+        let a = faer::Mat::from_fn(p, p, |j, k| xtx[[j, k]] + lambda * penalty[[j, k]]);
+        let llt = faer::linalg::solvers::Llt::new(a.as_ref(), faer::Side::Lower).map_err(|_| {
+            crate::error::BoostlssError::DataError(
                 "Cholesky decomposition failed: matrix not positive definite".to_string(),
             )
         })?;
 
-        Ok(Self {
+        Ok(LearnerFit::Linear(LinearFitState {
             coef: Array1::zeros(p),
             llt,
-            selected_count: 0,
-        })
+            design,
+        }))
     }
+}
 
-    /// Solve (X^T X + \lambda K) beta = X^T u for the update step.
-    pub fn solve_update(&self, x: &Array2<f64>, u: ArrayView1<f64>) -> Array1<f64> {
-        let p = x.ncols();
+use faer::linalg::solvers::Llt;
+use faer::prelude::Solve;
+use ndarray::{Array1, Array2, ArrayView1};
 
-        let xtu_nd = x.t().dot(&u);
+#[derive(Debug, Clone)]
+pub enum LearnerUpdate {
+    Linear(Array1<f64>),
+    Stump {
+        split_val: f64,
+        left_val: f64,
+        right_val: f64,
+    },
+}
 
-        let mut xtu = Mat::from_fn(p, 1, |j, _| xtu_nd[j]);
+#[derive(Debug, Clone)]
+pub struct LinearFitState {
+    pub coef: Array1<f64>,
+    pub llt: Llt<f64>,
+    pub design: Array2<f64>,
+}
 
-        // Solve L L^T beta = X^T u in-place
-        self.llt.solve_in_place(xtu.as_mut());
+#[derive(Debug, Clone)]
+pub enum LearnerFit {
+    Linear(LinearFitState),
+    Stump(stump::StumpFitState),
+}
 
-        Array1::from_shape_fn(p, |i| xtu[(i, 0)])
+impl LearnerFit {
+    pub fn fit_update(
+        &self,
+        u: ArrayView1<f64>,
+        weights: Option<ArrayView1<f64>>,
+    ) -> LearnerUpdate {
+        match self {
+            Self::Linear(state) => {
+                let p = state.design.ncols();
+                let xtu_nd = state.design.t().dot(&u);
+                let mut xtu = faer::Mat::from_fn(p, 1, |j, _| xtu_nd[j]);
+                state.llt.solve_in_place(xtu.as_mut());
+                LearnerUpdate::Linear(Array1::from_shape_fn(p, |i| xtu[(i, 0)]))
+            }
+            Self::Stump(state) => state.fit_update(u, weights),
+        }
     }
 }
 
@@ -105,10 +146,22 @@ mod tests {
         let penalty = array![[0.0, 0.0], [0.0, 1.0]];
         let lambda = 0.1;
 
-        let fit = LearnerFit::new(&x, &penalty, lambda).unwrap();
+        let p = x.ncols();
+        let xtx = x.t().dot(&x);
+        let a = faer::Mat::from_fn(p, p, |j, k| xtx[[j, k]] + lambda * penalty[[j, k]]);
+        let llt = faer::linalg::solvers::Llt::new(a.as_ref(), faer::Side::Lower).unwrap();
+
+        let fit = LearnerFit::Linear(LinearFitState {
+            coef: Array1::zeros(p),
+            llt,
+            design: x,
+        });
 
         let u = array![1.0, 0.5, -0.5];
-        let beta = fit.solve_update(&x, u.view());
+        let beta = match fit.fit_update(u.view(), None) {
+            LearnerUpdate::Linear(b) => b,
+            _ => panic!("Expected Linear update"),
+        };
 
         let expected_beta0 = 52.0 / 21.0;
         let expected_beta1 = -5.0 / 7.0;

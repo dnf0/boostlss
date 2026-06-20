@@ -1,4 +1,4 @@
-use boostlss::learner::{BaseLearner, Linear};
+use boostlss::learner::{BaseLearner, Linear, Stump};
 use pyo3::prelude::*;
 
 #[pyclass]
@@ -20,5 +20,25 @@ impl PyLinearLearner {
 impl From<PyLinearLearner> for BaseLearner {
     fn from(val: PyLinearLearner) -> Self {
         BaseLearner::Linear(Linear::new(&val.name).intercept(val.intercept))
+    }
+}
+
+#[pyclass]
+#[derive(Clone)]
+pub struct PyStumpLearner {
+    pub name: String,
+}
+
+#[pymethods]
+impl PyStumpLearner {
+    #[new]
+    fn new(name: String) -> Self {
+        Self { name }
+    }
+}
+
+impl From<PyStumpLearner> for BaseLearner {
+    fn from(val: PyStumpLearner) -> Self {
+        BaseLearner::Stump(Stump::new(&val.name))
     }
 }

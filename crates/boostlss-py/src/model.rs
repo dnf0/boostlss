@@ -1,10 +1,10 @@
 use crate::family::PyFamily;
-use crate::learner::PyLinearLearner;
 use boostlss::cv::{CvRisk, Resampling};
 use boostlss::data::Dataset;
 use boostlss::engine::cyclical::fit_cyclical;
 use boostlss::engine::Mstop;
 use boostlss::family::GaussianLss;
+use boostlss::learner::BaseLearner;
 use boostlss::model::{BoostLss, Fitted, Scale};
 use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
@@ -15,7 +15,7 @@ pub struct BoostLssModel {
     family: PyFamily,
     mstop: usize,
     step_length: f64,
-    learners: Vec<(String, PyLinearLearner)>,
+    learners: Vec<(String, BaseLearner)>,
     fitted_gaussian: Option<Fitted<GaussianLss>>,
     train_data: Option<(ndarray::Array2<f64>, ndarray::Array1<f64>)>,
 }
@@ -35,8 +35,18 @@ impl BoostLssModel {
         }
     }
 
-    fn add_learner(&mut self, param: String, learner: PyLinearLearner) {
-        self.learners.push((param, learner));
+    fn add_learner(&mut self, param: String, learner: &Bound<'_, PyAny>) -> PyResult<()> {
+        let base_learner = if let Ok(l) = learner.extract::<crate::learner::PyLinearLearner>() {
+            l.into()
+        } else if let Ok(s) = learner.extract::<crate::learner::PyStumpLearner>() {
+            s.into()
+        } else {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "Invalid learner type",
+            ));
+        };
+        self.learners.push((param, base_learner));
+        Ok(())
     }
 
     fn fit(&mut self, x: PyReadonlyArray2<f64>, y: PyReadonlyArray1<f64>) -> PyResult<()> {
@@ -64,7 +74,7 @@ impl BoostLssModel {
 
                 for (param, learner) in &self.learners {
                     model = model
-                        .on(param.as_str(), learner.clone().into())
+                        .on(param.as_str(), learner.clone())
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
@@ -121,7 +131,7 @@ impl BoostLssModel {
 
                     for (param, learner) in &self.learners {
                         model = model
-                            .on(param.as_str(), learner.clone().into())
+                            .on(param.as_str(), learner.clone())
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
 

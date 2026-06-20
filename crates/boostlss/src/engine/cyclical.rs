@@ -92,7 +92,7 @@ pub fn fit_cyclical<F: Family + Clone>(
                             }
                         })
                     }
-                    crate::learner::LearnerUpdate::Tree(_) => unimplemented!(),
+                    crate::learner::LearnerUpdate::Tree { .. } => unimplemented!(),
                 };
 
                 let residuals = &gradients - &u_hat;
@@ -129,9 +129,9 @@ pub fn fit_cyclical<F: Family + Clone>(
                             left_val: left_val * nu,
                             right_val: right_val * nu,
                         },
-                        crate::learner::LearnerUpdate::Tree(mut node) => {
+                        crate::learner::LearnerUpdate::Tree { mut node, param } => {
                             node.scale(nu);
-                            crate::learner::LearnerUpdate::Tree(node)
+                            crate::learner::LearnerUpdate::Tree { node, param }
                         }
                     },
                 });

@@ -1,39 +1,55 @@
-#[derive(Debug, Clone)]
-pub struct Tree {
-    pub feature_names: Vec<String>,
-    pub max_depth: usize,
-    pub min_samples_leaf: usize,
-}
+use ndarray::Array1;
+use serde::{Deserialize, Serialize};
 
-impl Tree {
-    pub fn new(feature_names: Vec<String>) -> Self {
-        Self {
-            feature_names,
-            max_depth: 2,
-            min_samples_leaf: 1,
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum TreeNode {
-    Leaf(f64),
+    Leaf {
+        value: f64,
+        samples: usize,
+    },
     Split {
         feature_idx: usize,
-        split_val: f64,
+        threshold: f64,
         left: Box<TreeNode>,
         right: Box<TreeNode>,
     },
 }
 
 impl TreeNode {
-    pub fn scale(&mut self, nu: f64) {
+    pub fn scale(&mut self, factor: f64) {
         match self {
-            TreeNode::Leaf(val) => *val *= nu,
+            TreeNode::Leaf { value, .. } => {
+                *value *= factor;
+            }
             TreeNode::Split { left, right, .. } => {
-                left.scale(nu);
-                right.scale(nu);
+                left.scale(factor);
+                right.scale(factor);
             }
         }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Tree {
+    pub max_depth: usize,
+    pub min_samples_leaf: usize,
+}
+
+impl Tree {
+    pub fn new() -> Self {
+        Self {
+            max_depth: 3,
+            min_samples_leaf: 1,
+        }
+    }
+
+    pub fn max_depth(mut self, depth: usize) -> Self {
+        self.max_depth = depth;
+        self
+    }
+
+    pub fn min_samples_leaf(mut self, min_samples: usize) -> Self {
+        self.min_samples_leaf = min_samples;
+        self
     }
 }

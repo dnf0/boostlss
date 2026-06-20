@@ -110,7 +110,10 @@ pub enum LearnerUpdate {
         left_val: f64,
         right_val: f64,
     },
-    Tree(TreeNode),
+    Tree {
+        node: TreeNode,
+        param: String,
+    },
 }
 
 #[derive(Debug, Clone)]

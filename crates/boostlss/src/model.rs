@@ -2,7 +2,7 @@ use crate::data::Dataset;
 use crate::engine::{Algorithm, Config, Mstop};
 use crate::error::BoostlssError;
 use crate::family::Family;
-use crate::learner::BaseLearner;
+use crate::learner::{BaseLearner, LearnerUpdate};
 use ndarray::Array1;
 
 #[derive(Clone)]
@@ -88,7 +88,7 @@ pub enum Scale {
 pub struct UpdateStep {
     pub param_idx: usize,
     pub learner_idx: usize,
-    pub coef: Array1<f64>,
+    pub update: LearnerUpdate,
 }
 
 #[allow(dead_code)]
@@ -134,9 +134,27 @@ impl<F: Family> Fitted<F> {
             }
 
             let learner = &mut self.learners[update.learner_idx].1;
-            let design = learner.build_design(&x_col)?;
-            let u_hat = design.dot(&update.coef);
-            pred = pred + u_hat;
+            match &update.update {
+                LearnerUpdate::Linear(coef) => {
+                    let design = learner.build_design(&x_col)?;
+                    let u_hat = design.dot(coef);
+                    pred = pred + u_hat;
+                }
+                LearnerUpdate::Stump {
+                    split_val,
+                    left_val,
+                    right_val,
+                } => {
+                    let u_hat = x_col.mapv(|val| {
+                        if val <= *split_val {
+                            *left_val
+                        } else {
+                            *right_val
+                        }
+                    });
+                    pred = pred + u_hat;
+                }
+            }
         }
 
         match scale {

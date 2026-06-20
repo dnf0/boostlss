@@ -3,14 +3,12 @@ use crate::engine::stabilization::stabilize;
 use crate::engine::Mstop;
 use crate::error::BoostlssError;
 use crate::family::Family;
-use crate::learner::penalty::df_to_lambda;
 use crate::learner::LearnerFit;
 use crate::model::{BoostLss, Fitted, UpdateStep};
 
 struct CachedLearner {
     param_idx: usize,
     learner_idx: usize,
-    design: ndarray::Array2<f64>,
     fit_state: LearnerFit,
 }
 
@@ -32,20 +30,10 @@ pub fn fit_cyclical<F: Family + Clone>(
 
     let (family, config, mut learners) = model.into_parts();
     for (idx, (param_idx, learner)) in learners.iter_mut().enumerate() {
-        let design = learner.build_design(&x_col)?;
-        let penalty = learner.penalty_matrix(design.ncols());
-        let lambda = match learner.target_df() {
-            Some(df) => {
-                let xtx = design.t().dot(&design);
-                df_to_lambda(&xtx, &penalty, df)
-            }
-            None => 0.0,
-        };
-        let fit_state = LearnerFit::new(&design, &penalty, lambda)?;
+        let fit_state = learner.initialize(&x_col)?;
         cached_learners.push(CachedLearner {
             param_idx: *param_idx,
             learner_idx: idx,
-            design,
             fit_state,
         });
     }
@@ -73,15 +61,25 @@ pub fn fit_cyclical<F: Family + Clone>(
             stabilize(&mut gradients, config.stabilization, data.weights());
 
             let mut best_rss = f64::INFINITY;
-            let mut best_update: Option<ndarray::Array1<f64>> = None;
+            let mut best_update: Option<crate::learner::LearnerUpdate> = None;
             let mut best_u_hat: Option<ndarray::Array1<f64>> = None;
             let mut best_learner_idx = None;
 
             for cached in cached_learners.iter().filter(|c| c.param_idx == k) {
                 let update = cached
                     .fit_state
-                    .solve_update(&cached.design, gradients.view());
-                let u_hat = cached.design.dot(&update);
+                    .fit_update(gradients.view(), data.weights().map(|w| w.view()));
+
+                let u_hat = match &update {
+                    crate::learner::LearnerUpdate::Linear(coef) => {
+                        if let LearnerFit::Linear(state) = &cached.fit_state {
+                            state.design.dot(coef)
+                        } else {
+                            unreachable!()
+                        }
+                    }
+                    crate::learner::LearnerUpdate::Stump { .. } => unreachable!(),
+                };
 
                 let residuals = &gradients - &u_hat;
                 let rss = match data.weights() {
@@ -104,7 +102,20 @@ pub fn fit_cyclical<F: Family + Clone>(
                 updates.push(UpdateStep {
                     param_idx: k,
                     learner_idx: l_idx,
-                    coef: update * nu,
+                    update: match update {
+                        crate::learner::LearnerUpdate::Linear(coef) => {
+                            crate::learner::LearnerUpdate::Linear(coef * nu)
+                        }
+                        crate::learner::LearnerUpdate::Stump {
+                            split_val,
+                            left_val,
+                            right_val,
+                        } => crate::learner::LearnerUpdate::Stump {
+                            split_val,
+                            left_val: left_val * nu,
+                            right_val: right_val * nu,
+                        },
+                    },
                 });
             }
         }

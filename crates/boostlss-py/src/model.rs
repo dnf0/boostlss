@@ -40,6 +40,8 @@ impl BoostLssModel {
             l.into()
         } else if let Ok(s) = learner.extract::<crate::learner::PyStumpLearner>() {
             s.into()
+        } else if let Ok(t) = learner.extract::<crate::learner::PyTreeLearner>() {
+            t.into()
         } else {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "Invalid learner type",

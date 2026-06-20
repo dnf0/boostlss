@@ -154,6 +154,7 @@ impl<F: Family> Fitted<F> {
                     });
                     pred = pred + u_hat;
                 }
+                LearnerUpdate::Tree(_) => unimplemented!(),
             }
         }
 

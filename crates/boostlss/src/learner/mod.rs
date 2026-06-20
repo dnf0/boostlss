@@ -11,11 +11,15 @@ pub use pspline::PSpline;
 pub mod stump;
 pub use stump::Stump;
 
+pub mod tree;
+pub use tree::{Tree, TreeNode};
+
 #[derive(Debug, Clone)]
 pub enum BaseLearner {
     Linear(Linear),
     PSpline(PSpline),
     Stump(Stump),
+    Tree(Tree),
 }
 
 impl BaseLearner {
@@ -29,6 +33,9 @@ impl BaseLearner {
             Self::Stump(_) => Err(crate::error::BoostlssError::DataError(
                 "Stump does not use build_design".into(),
             )),
+            Self::Tree(_) => Err(crate::error::BoostlssError::DataError(
+                "Tree does not use build_design".into(),
+            )),
         }
     }
 
@@ -37,6 +44,7 @@ impl BaseLearner {
             Self::Linear(l) => l.penalty_matrix(n_cols),
             Self::PSpline(p) => p.penalty_matrix(n_cols),
             Self::Stump(_) => Array2::zeros((0, 0)),
+            Self::Tree(_) => Array2::zeros((0, 0)),
         }
     }
 
@@ -45,6 +53,7 @@ impl BaseLearner {
             Self::Linear(_) => None,
             Self::PSpline(p) => Some(p.df),
             Self::Stump(_) => None,
+            Self::Tree(_) => None,
         }
     }
     pub fn initialize(
@@ -101,6 +110,7 @@ pub enum LearnerUpdate {
         left_val: f64,
         right_val: f64,
     },
+    Tree(TreeNode),
 }
 
 #[derive(Debug, Clone)]

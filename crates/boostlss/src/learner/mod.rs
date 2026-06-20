@@ -59,7 +59,28 @@ impl BaseLearner {
     pub fn initialize(
         &mut self,
         x: &Array1<f64>,
+        data: &crate::data::Dataset,
     ) -> Result<LearnerFit, crate::error::BoostlssError> {
+        if let Self::Tree(tree_learner) = self {
+            let mut sorted_features = Vec::with_capacity(tree_learner.feature_indices.len());
+            for &col_idx in &tree_learner.feature_indices {
+                let col = data.design().column(col_idx);
+                let mut sorted: Vec<(f64, usize)> = col
+                    .iter()
+                    .copied()
+                    .enumerate()
+                    .map(|(i, val)| (val, i))
+                    .collect();
+                sorted.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+                sorted_features.push(sorted);
+            }
+            return Ok(LearnerFit::Tree(tree::TreeFitState {
+                max_depth: tree_learner.max_depth,
+                min_samples_leaf: tree_learner.min_samples_leaf,
+                sorted_features,
+            }));
+        }
+
         if let Self::Stump(_) = self {
             let mut sorted_x: Vec<(f64, usize)> = x
                 .iter()
@@ -127,6 +148,7 @@ pub struct LinearFitState {
 pub enum LearnerFit {
     Linear(LinearFitState),
     Stump(stump::StumpFitState),
+    Tree(tree::TreeFitState),
 }
 
 impl LearnerFit {
@@ -144,6 +166,7 @@ impl LearnerFit {
                 LearnerUpdate::Linear(Array1::from_shape_fn(p, |i| xtu[(i, 0)]))
             }
             Self::Stump(state) => state.fit_update(u, weights),
+            Self::Tree(state) => state.fit_update(u, weights),
         }
     }
 }

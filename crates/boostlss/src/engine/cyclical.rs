@@ -30,7 +30,7 @@ pub fn fit_cyclical<F: Family + Clone>(
 
     let (family, config, mut learners) = model.into_parts();
     for (idx, (param_idx, learner)) in learners.iter_mut().enumerate() {
-        let fit_state = learner.initialize(&x_col)?;
+        let fit_state = learner.initialize(&x_col, data)?;
         cached_learners.push(CachedLearner {
             param_idx: *param_idx,
             learner_idx: idx,

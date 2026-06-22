@@ -10,14 +10,60 @@ use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
 use pyo3::types::{PyBytes, PyDict, PyType};
 
+enum FittedModel {
+    Gaussian(Fitted<GaussianLss>),
+    Binomial(Fitted<BinomialLss>),
+}
+
+impl FittedModel {
+    fn predict(
+        &mut self,
+        dataset: &Dataset,
+        param: &str,
+        scale: Scale,
+    ) -> pyo3::PyResult<ndarray::Array1<f64>> {
+        match self {
+            Self::Gaussian(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Binomial(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+        }
+    }
+
+    fn feature_importance(&self) -> Vec<f64> {
+        match self {
+            Self::Gaussian(fitted) => fitted.feature_importance(),
+            Self::Binomial(fitted) => fitted.feature_importance(),
+        }
+    }
+
+    fn partial_dependence(
+        &mut self,
+        dataset: &Dataset,
+        param: &str,
+        feature_idx: usize,
+        grid: &[f64],
+    ) -> pyo3::PyResult<Vec<f64>> {
+        match self {
+            Self::Gaussian(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Binomial(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+        }
+    }
+}
+
 #[pyclass(module = "boostlss_py")]
 pub struct BoostLssModel {
     family: PyFamily,
     mstop: usize,
     step_length: f64,
     learners: Vec<(String, BaseLearner)>,
-    fitted_gaussian: Option<Fitted<GaussianLss>>,
-    fitted_binomial: Option<Fitted<BinomialLss>>,
+    fitted: Option<FittedModel>,
     train_data: Option<(ndarray::Array2<f64>, ndarray::Array1<f64>)>,
 }
 
@@ -31,8 +77,7 @@ impl BoostLssModel {
             mstop,
             step_length,
             learners: Vec::new(),
-            fitted_gaussian: None,
-            fitted_binomial: None,
+            fitted: None,
             train_data: None,
         }
     }
@@ -86,7 +131,7 @@ impl BoostLssModel {
                 let fitted = fit_cyclical(model, &dataset)
                     .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
 
-                self.fitted_gaussian = Some(fitted);
+                self.fitted = Some(FittedModel::Gaussian(fitted));
             }
             PyFamily::BinomialLss => {
                 let mut model = BoostLss::new(BinomialLss::new())
@@ -102,7 +147,7 @@ impl BoostLssModel {
                 let fitted = fit_cyclical(model, &dataset)
                     .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
 
-                self.fitted_binomial = Some(fitted);
+                self.fitted = Some(FittedModel::Binomial(fitted));
             }
         }
         Ok(())
@@ -125,16 +170,8 @@ impl BoostLssModel {
         let dataset = Dataset::new(x_mat, y_dummy, None)
             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
 
-        if let Some(fitted) = &mut self.fitted_gaussian {
-            let pred = fitted
-                .predict(&dataset, param, Scale::Response)
-                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-            let pred_vec: Vec<f64> = pred.into_iter().collect();
-            Ok(PyArray1::from_vec_bound(py, pred_vec))
-        } else if let Some(fitted) = &mut self.fitted_binomial {
-            let pred = fitted
-                .predict(&dataset, param, Scale::Response)
-                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+        if let Some(fitted) = &mut self.fitted {
+            let pred = fitted.predict(&dataset, param, Scale::Response)?;
             let pred_vec: Vec<f64> = pred.into_iter().collect();
             Ok(PyArray1::from_vec_bound(py, pred_vec))
         } else {
@@ -209,9 +246,7 @@ impl BoostLssModel {
 
     /// Returns the feature importance (empirical risk reduction) for each base learner.
     pub fn feature_importance(&self) -> PyResult<Vec<f64>> {
-        if let Some(fitted) = &self.fitted_gaussian {
-            Ok(fitted.feature_importance())
-        } else if let Some(fitted) = &self.fitted_binomial {
+        if let Some(fitted) = &self.fitted {
             Ok(fitted.feature_importance())
         } else {
             Err(pyo3::exceptions::PyValueError::new_err(
@@ -242,16 +277,8 @@ impl BoostLssModel {
         let ds = Dataset::new(x_mat, dummy_response, None)
             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
 
-        if let Some(fitted) = &mut self.fitted_gaussian {
-            let pd = fitted
-                .partial_dependence(&ds, param, feature_idx, &grid)
-                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-            Ok(pd)
-        } else if let Some(fitted) = &mut self.fitted_binomial {
-            let pd = fitted
-                .partial_dependence(&ds, param, feature_idx, &grid)
-                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-            Ok(pd)
+        if let Some(fitted) = &mut self.fitted {
+            fitted.partial_dependence(&ds, param, feature_idx, &grid)
         } else {
             Err(pyo3::exceptions::PyValueError::new_err(
                 "Model must be fitted before calling partial_dependence",
@@ -275,15 +302,13 @@ impl BoostLssModel {
         dict.set_item("step_length", self.step_length)?;
         // Skip train_data entirely!
 
-        if let Some(fitted) = &self.fitted_gaussian {
-            let bytes = bincode::serialize(fitted)
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-            dict.set_item("fitted_gaussian", PyBytes::new_bound(py, &bytes))?;
-        }
-        if let Some(fitted) = &self.fitted_binomial {
-            let bytes = bincode::serialize(fitted)
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-            dict.set_item("fitted_binomial", PyBytes::new_bound(py, &bytes))?;
+        if let Some(fitted) = &self.fitted {
+            let bytes = match fitted {
+                FittedModel::Gaussian(f) => bincode::serialize(f),
+                FittedModel::Binomial(f) => bincode::serialize(f),
+            }
+            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+            dict.set_item("fitted", PyBytes::new_bound(py, &bytes))?;
         }
 
         // Serialize learners
@@ -313,17 +338,32 @@ impl BoostLssModel {
             .ok_or_else(|| pyo3::exceptions::PyKeyError::new_err("Missing key 'step_length'"))?
             .extract()?;
 
-        if let Some(bytes_any) = state.get_item("fitted_gaussian")? {
+        if let Some(bytes_any) = state.get_item("fitted")? {
             let bytes: &[u8] = bytes_any.extract()?;
-            let fitted: Fitted<GaussianLss> = bincode::deserialize(bytes)
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-            self.fitted_gaussian = Some(fitted);
-        }
-        if let Some(bytes_any) = state.get_item("fitted_binomial")? {
+            self.fitted = Some(match self.family {
+                PyFamily::GaussianLss => FittedModel::Gaussian(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                PyFamily::BinomialLss => FittedModel::Binomial(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+            });
+        } else if let Some(bytes_any) = state.get_item("fitted_gaussian")? {
             let bytes: &[u8] = bytes_any.extract()?;
-            let fitted: Fitted<BinomialLss> = bincode::deserialize(bytes)
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-            self.fitted_binomial = Some(fitted);
+            self.fitted = Some(FittedModel::Gaussian(
+                bincode::deserialize(bytes)
+                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+            ));
+        } else if let Some(bytes_any) = state.get_item("fitted_binomial")? {
+            let bytes: &[u8] = bytes_any.extract()?;
+            self.fitted = Some(FittedModel::Binomial(
+                bincode::deserialize(bytes)
+                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+            ));
+        } else {
+            self.fitted = None;
         }
 
         if let Some(learners_any) = state.get_item("learners")? {

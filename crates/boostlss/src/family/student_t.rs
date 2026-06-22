@@ -4,11 +4,17 @@ use crate::error::BoostlssError;
 use crate::param::{IdentityLink, LogLink, ParamSpec};
 use crate::util::{weighted_mean, weighted_sd};
 use ndarray::Array1;
+use serde::{Deserialize, Serialize};
 use statrs::function::gamma::ln_gamma;
 use std::f64::consts::PI;
 
-#[derive(Debug)]
+fn default_student_t_params() -> Vec<ParamSpec> {
+    StudentTLss::new().params
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StudentTLss {
+    #[serde(skip, default = "default_student_t_params")]
     params: Vec<ParamSpec>,
 }
 

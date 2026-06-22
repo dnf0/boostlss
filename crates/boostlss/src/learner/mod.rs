@@ -12,9 +12,10 @@ pub mod stump;
 pub use stump::Stump;
 
 pub mod tree;
+use serde::{Deserialize, Serialize};
 pub use tree::{Tree, TreeNode};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum BaseLearner {
     Linear(Linear),
     PSpline(PSpline),
@@ -147,7 +148,7 @@ use faer::linalg::solvers::Llt;
 use faer::prelude::Solve;
 use ndarray::{Array1, Array2, ArrayView1};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum LearnerUpdate {
     Linear(Array1<f64>),
     Stump {

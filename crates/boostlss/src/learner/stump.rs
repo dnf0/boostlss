@@ -1,7 +1,8 @@
 use crate::learner::LearnerUpdate;
 use ndarray::ArrayView1;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Stump {
     pub feature_name: String,
 }

@@ -1,7 +1,8 @@
 use crate::error::BoostlssError;
 use ndarray::{Array1, Array2};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Linear {
     intercept: bool,
 }

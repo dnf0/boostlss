@@ -4,6 +4,7 @@ use crate::error::BoostlssError;
 use crate::family::Family;
 use crate::learner::{BaseLearner, LearnerUpdate};
 use ndarray::Array1;
+use serde::{Deserialize, Serialize};
 
 pub struct ParamBuilder {
     pub(crate) learners: Vec<BaseLearner>,
@@ -24,7 +25,7 @@ impl ParamBuilder {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct BoostLss<F: Family + Clone> {
     family: F,
     config: Config,
@@ -110,13 +111,13 @@ impl<F: Family + Clone> BoostLss<F> {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Scale {
     Link,
     Response,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateStep {
     pub param_idx: usize,
     pub learner_idx: usize,
@@ -124,7 +125,7 @@ pub struct UpdateStep {
 }
 
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Fitted<F: Family> {
     family: F,
     offsets: Vec<f64>,

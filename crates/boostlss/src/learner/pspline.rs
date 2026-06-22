@@ -1,8 +1,9 @@
 use crate::error::BoostlssError;
 use crate::learner::penalty::penalty_matrix;
 use ndarray::{Array1, Array2};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PSpline {
     pub col_name: String,
     pub knots: usize,

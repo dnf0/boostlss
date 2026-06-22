@@ -54,17 +54,15 @@ impl BoostLssModel {
     fn fit(&mut self, x: PyReadonlyArray2<f64>, y: PyReadonlyArray1<f64>) -> PyResult<()> {
         let x_view = x.as_array();
         let y_view = y.as_array();
-        let x_mat_numpy = x_view.to_owned();
         let x_mat = ndarray::Array2::from_shape_vec(
-            (x_mat_numpy.nrows(), x_mat_numpy.ncols()),
-            x_mat_numpy.into_raw_vec(),
+            (x_view.nrows(), x_view.ncols()),
+            x_view.to_owned().into_raw_vec(),
         )
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+        .unwrap();
 
-        let y_vec_numpy = y_view.to_owned();
         let y_vec =
-            ndarray::Array1::from_shape_vec((y_vec_numpy.len(),), y_vec_numpy.into_raw_vec())
-                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+            ndarray::Array1::from_shape_vec((y_view.len(),), y_view.to_owned().into_raw_vec())
+                .unwrap();
 
         let dataset = Dataset::new(x_mat.clone(), y_vec.clone(), None)
             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
@@ -99,12 +97,11 @@ impl BoostLssModel {
         param: &str,
     ) -> PyResult<Bound<'py, PyArray1<f64>>> {
         let x_view = x.as_array();
-        let x_mat_numpy = x_view.to_owned();
         let x_mat = ndarray::Array2::from_shape_vec(
-            (x_mat_numpy.nrows(), x_mat_numpy.ncols()),
-            x_mat_numpy.into_raw_vec(),
+            (x_view.nrows(), x_view.ncols()),
+            x_view.to_owned().into_raw_vec(),
         )
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+        .unwrap();
         // create dummy y for Dataset constructor requirements
         let y_dummy = ndarray::Array1::zeros(x_mat.nrows());
         let dataset = Dataset::new(x_mat, y_dummy, None)
@@ -188,12 +185,11 @@ impl BoostLssModel {
         })?;
 
         let x_view = data.as_array();
-        let x_mat_numpy = x_view.to_owned();
         let x_mat = ndarray::Array2::from_shape_vec(
-            (x_mat_numpy.nrows(), x_mat_numpy.ncols()),
-            x_mat_numpy.into_raw_vec(),
+            (x_view.nrows(), x_view.ncols()),
+            x_view.to_owned().into_raw_vec(),
         )
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+        .unwrap();
 
         let n_samples = x_mat.nrows();
         let dummy_response = ndarray::Array1::<f64>::zeros(n_samples);

@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from boostlss_py import PyFamily, PyLinearLearner, BoostLssModel  # type: ignore
 
 
@@ -89,7 +90,8 @@ def test_tree_learner():
     assert len(pred_mu) == 20
 
 
-def test_feature_importance_and_pd():
+@pytest.fixture(scope="module")
+def fitted_model_and_data():
     import numpy as np
     from boostlss_py import PyFamily, PyLinearLearner, BoostLssModel
 
@@ -108,7 +110,11 @@ def test_feature_importance_and_pd():
     model.add_learner("mu", PyLinearLearner("x1", intercept=True))
 
     model.fit(X, y)
+    return model, X, y
 
+
+def test_feature_importance(fitted_model_and_data):
+    model, _, _ = fitted_model_and_data
     # 1. Feature Importance
     fi = model.feature_importance()
     assert len(fi) == 2
@@ -116,6 +122,11 @@ def test_feature_importance_and_pd():
     assert fi[0] > 0
     assert fi[0] > fi[1] * 10
 
+
+def test_partial_dependence(fitted_model_and_data):
+    import numpy as np
+
+    model, X, _ = fitted_model_and_data
     # 2. Partial Dependence
     grid = np.linspace(-3, 3, 10).tolist()
     # PD for the first feature (feature_idx=0), which is the signal

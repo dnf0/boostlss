@@ -92,9 +92,6 @@ def test_tree_learner():
 
 @pytest.fixture(scope="module")
 def fitted_model_and_data():
-    import numpy as np
-    from boostlss_py import PyFamily, PyLinearLearner, BoostLssModel
-
     np.random.seed(42)
     # 2D features: X[:, 0] is signal, X[:, 1] is noise
     X = np.random.uniform(-3, 3, (100, 2))
@@ -124,8 +121,6 @@ def test_feature_importance(fitted_model_and_data):
 
 
 def test_partial_dependence(fitted_model_and_data):
-    import numpy as np
-
     model, X, _ = fitted_model_and_data
     # 2. Partial Dependence
     grid = np.linspace(-3, 3, 10).tolist()

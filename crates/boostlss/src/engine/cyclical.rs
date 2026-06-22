@@ -154,6 +154,7 @@ pub fn fit_cyclical<F: Family + Clone>(
                 updates.push(UpdateStep {
                     param_idx: k,
                     learner_idx: l_idx,
+                    risk_reduction: 0.0, // Will be implemented in Task 2
                     update: match update {
                         crate::learner::LearnerUpdate::Linear(coef) => {
                             crate::learner::LearnerUpdate::Linear(coef * nu)

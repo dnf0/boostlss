@@ -125,6 +125,7 @@ pub struct UpdateStep {
     pub param_idx: usize,
     pub learner_idx: usize,
     pub update: LearnerUpdate,
+    pub risk_reduction: f64,
 }
 
 #[allow(dead_code)]
@@ -307,5 +308,16 @@ mod tests {
         let pred = fitted.predict(&data, "mu", Scale::Link).unwrap();
         assert_eq!(pred.len(), 5);
         assert_eq!(pred, Array1::<f64>::zeros(5));
+    }
+
+    #[test]
+    fn test_update_step_has_risk_reduction() {
+        let update = UpdateStep {
+            param_idx: 0,
+            learner_idx: 1,
+            update: crate::learner::LearnerUpdate::Linear(ndarray::Array1::zeros(2)),
+            risk_reduction: 1.5,
+        };
+        assert_eq!(update.risk_reduction, 1.5);
     }
 }

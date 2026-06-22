@@ -47,7 +47,6 @@ impl Family for BinomialLss {
 
     fn nll(&self, data: &Dataset, eta: &[Array1<f64>]) -> Result<f64, BoostlssError> {
         let y = data.response();
-        self.check_response(y)?;
 
         let mut total_nll = 0.0;
         let w = data.weights();
@@ -90,14 +89,12 @@ impl Family for BinomialLss {
         let w = data.weights();
         let eta_mu = &eta[0];
 
-        let mut grad = Array1::zeros(data.n_obs());
-        for i in 0..data.n_obs() {
-            // response maps eta back to mu
-            let mu = self.params[0].link.response(eta_mu[i]);
-            let weight = w.map(|w_arr| w_arr[i]).unwrap_or(1.0);
+        // Note: Analytical gradient simplification relies explicitly on LogitLink
+        let mu = eta_mu.mapv(|x| self.params[0].link.response(x));
+        let mut grad = y - &mu;
 
-            // ngradient = y - mu
-            grad[i] = weight * (y[i] - mu);
+        if let Some(w_arr) = w {
+            grad *= w_arr;
         }
 
         Ok(grad)

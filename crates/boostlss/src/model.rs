@@ -5,6 +5,25 @@ use crate::family::Family;
 use crate::learner::{BaseLearner, LearnerUpdate};
 use ndarray::Array1;
 
+pub struct ParamBuilder {
+    pub(crate) learners: Vec<BaseLearner>,
+}
+
+impl ParamBuilder {
+    #[allow(clippy::new_without_default)]
+    pub fn new() -> Self {
+        Self {
+            learners: Vec::new(),
+        }
+    }
+
+    #[allow(clippy::should_implement_trait)]
+    pub fn add<L: Into<BaseLearner>>(mut self, learner: L) -> Self {
+        self.learners.push(learner.into());
+        self
+    }
+}
+
 #[derive(Clone)]
 pub struct BoostLss<F: Family + Clone> {
     family: F,
@@ -48,11 +67,21 @@ impl<F: Family + Clone> BoostLss<F> {
         &self.learners
     }
 
-    /// Registers a base learner for a specific parameter.
+    /// Registers base learners for a specific parameter using a builder closure.
     ///
-    /// It is supported and intended to register multiple base learners for the same
-    /// parameter (e.g. adding both a Linear and a PSpline learner to `mu`).
-    pub fn on(mut self, param_name: &str, learner: BaseLearner) -> Result<Self, BoostlssError> {
+    /// Example:
+    /// ```
+    /// # use boostlss::model::BoostLss;
+    /// # use boostlss::family::GaussianLss;
+    /// # use boostlss::learner::{Linear, PSpline};
+    /// let model = BoostLss::new(GaussianLss::new())
+    ///     .on("mu", |p| p.add(Linear::new("x1")).add(PSpline::new("x2")));
+    /// ```
+    pub fn on(
+        mut self,
+        param_name: &str,
+        build_fn: impl FnOnce(ParamBuilder) -> ParamBuilder,
+    ) -> Result<Self, BoostlssError> {
         let params = self.family.params();
         let k = params
             .iter()
@@ -60,7 +89,9 @@ impl<F: Family + Clone> BoostLss<F> {
             .ok_or_else(|| {
                 BoostlssError::InvalidConfig(format!("Unknown parameter {}", param_name))
             })?;
-        self.learners.push((k, learner));
+
+        let builder = build_fn(ParamBuilder::new());
+        self.learners.extend(builder.learners.into_iter().map(|l| (k, l)));
         Ok(self)
     }
 
@@ -200,7 +231,7 @@ impl<F: Family> Fitted<F> {
 mod tests {
     use super::*;
     use crate::family::GaussianLss;
-    use crate::learner::{BaseLearner, Linear};
+    use crate::learner::Linear;
 
     #[test]
     fn test_boostlss_new() {
@@ -210,8 +241,9 @@ mod tests {
 
     #[test]
     fn test_boostlss_on_valid_param() {
-        let learner = BaseLearner::Linear(Linear::new("x"));
-        let model = BoostLss::new(GaussianLss::new()).on("mu", learner).unwrap();
+        let model = BoostLss::new(GaussianLss::new())
+            .on("mu", |p| p.add(Linear::new("x")))
+            .unwrap();
 
         assert_eq!(model.learners().len(), 1);
         assert_eq!(model.learners()[0].0, 0);
@@ -219,10 +251,24 @@ mod tests {
 
     #[test]
     fn test_boostlss_on_invalid_param() {
-        let learner = BaseLearner::Linear(Linear::new("x"));
-        let result = BoostLss::new(GaussianLss::new()).on("invalid_param", learner);
+        let result =
+            BoostLss::new(GaussianLss::new()).on("invalid_param", |p| p.add(Linear::new("x")));
 
         assert!(matches!(result, Err(BoostlssError::InvalidConfig(_))));
+    }
+
+    #[test]
+    fn test_boostlss_on_multiple_learners() {
+        let model = BoostLss::new(GaussianLss::new())
+            .on("mu", |p| {
+                p.add(Linear::new("x"))
+                    .add(crate::learner::PSpline::new("y"))
+            })
+            .unwrap();
+
+        assert_eq!(model.learners().len(), 2);
+        assert_eq!(model.learners()[0].0, 0);
+        assert_eq!(model.learners()[1].0, 0);
     }
 
     #[test]

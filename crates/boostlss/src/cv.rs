@@ -278,7 +278,7 @@ mod tests {
     }
 
     use crate::family::GaussianLss;
-    use crate::learner::{BaseLearner, Linear};
+    use crate::learner::Linear;
     use ndarray::{array, Array2};
 
     #[test]
@@ -288,14 +288,11 @@ mod tests {
         let data = Dataset::new(x, y, None).unwrap();
 
         let model = BoostLss::new(GaussianLss::new())
-            .step_length(0.1)
-            .on("mu", BaseLearner::Linear(Linear::new("x").intercept(true)))
+            .on("mu", |p| p.add(Linear::new("x").intercept(true)))
             .unwrap()
-            .on(
-                "sigma",
-                BaseLearner::Linear(Linear::new("x").intercept(true)),
-            )
-            .unwrap();
+            .on("sigma", |p| p.add(Linear::new("x").intercept(true)))
+            .unwrap()
+            .mstop(Mstop::Scalar(10));
 
         let cv = CvRisk::new(model, Resampling::KFold { k: 2 })
             .mstop_max(3)

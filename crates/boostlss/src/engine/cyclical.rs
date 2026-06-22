@@ -187,7 +187,7 @@ mod tests {
     use super::*;
     use crate::data::Dataset;
     use crate::family::GaussianLss;
-    use crate::learner::{BaseLearner, Linear};
+    use crate::learner::Linear;
     use crate::model::Scale;
     use ndarray::array;
 
@@ -198,15 +198,12 @@ mod tests {
         let data = Dataset::new(x, y.clone(), None).unwrap();
 
         let model = BoostLss::new(GaussianLss::new())
-            .step_length(0.1)
-            .mstop(crate::engine::Mstop::Scalar(10))
-            .on("mu", BaseLearner::Linear(Linear::new("x").intercept(true)))
+            .on("mu", |p| p.add(Linear::new("x").intercept(true)))
             .unwrap()
-            .on(
-                "sigma",
-                BaseLearner::Linear(Linear::new("x").intercept(true)),
-            )
-            .unwrap();
+            .on("sigma", |p| p.add(Linear::new("x").intercept(true)))
+            .unwrap()
+            .algorithm(crate::engine::Algorithm::Cyclic)
+            .mstop(Mstop::PerParam(vec![2, 2]));
 
         let mut fitted = fit_cyclical(model, &data).unwrap();
 

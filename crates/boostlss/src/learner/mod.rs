@@ -22,6 +22,30 @@ pub enum BaseLearner {
     Tree(Tree),
 }
 
+impl From<Linear> for BaseLearner {
+    fn from(l: Linear) -> Self {
+        Self::Linear(l)
+    }
+}
+
+impl From<PSpline> for BaseLearner {
+    fn from(p: PSpline) -> Self {
+        Self::PSpline(p)
+    }
+}
+
+impl From<Stump> for BaseLearner {
+    fn from(s: Stump) -> Self {
+        Self::Stump(s)
+    }
+}
+
+impl From<Tree> for BaseLearner {
+    fn from(t: Tree) -> Self {
+        Self::Tree(t)
+    }
+}
+
 impl BaseLearner {
     pub fn build_design(
         &mut self,
@@ -205,5 +229,24 @@ mod tests {
         assert_eq!(beta.len(), 2);
         assert!((beta[0] - expected_beta0).abs() < 1e-8);
         assert!((beta[1] - expected_beta1).abs() < 1e-8);
+    }
+
+    #[test]
+    fn test_from_impls() {
+        let l = Linear::new("x");
+        let bl: BaseLearner = l.into();
+        assert!(matches!(bl, BaseLearner::Linear(_)));
+
+        let p = PSpline::new("x");
+        let bl: BaseLearner = p.into();
+        assert!(matches!(bl, BaseLearner::PSpline(_)));
+
+        let s = Stump::new("x");
+        let bl: BaseLearner = s.into();
+        assert!(matches!(bl, BaseLearner::Stump(_)));
+
+        let t = Tree::new(vec![0]);
+        let bl: BaseLearner = t.into();
+        assert!(matches!(bl, BaseLearner::Tree(_)));
     }
 }

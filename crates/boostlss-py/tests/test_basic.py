@@ -87,3 +87,41 @@ def test_tree_learner():
 
     pred_mu = model.predict(X, "mu")
     assert len(pred_mu) == 20
+
+
+def test_feature_importance():
+    import numpy as np
+    from boostlss_py import PyFamily, PyLinearLearner, BoostLssModel
+
+    np.random.seed(42)
+    X = np.random.uniform(-3, 3, (20, 1))
+    y = np.random.normal(0, 1, 20)
+
+    family = PyFamily("GaussianLSS")
+    model = BoostLssModel(family, mstop=10, step_length=0.1)
+    model.add_learner("mu", PyLinearLearner("x", intercept=True))
+    model.add_learner("sigma", PyLinearLearner("x", intercept=True))
+
+    model.fit(X, y)
+
+    fi = model.feature_importance()
+    assert len(fi) == 2
+
+
+def test_partial_dependence():
+    import numpy as np
+    from boostlss_py import PyFamily, PyLinearLearner, BoostLssModel
+
+    np.random.seed(42)
+    X = np.random.uniform(-3, 3, (20, 2))
+    y = np.random.normal(0, 1, 20)
+
+    family = PyFamily("GaussianLSS")
+    model = BoostLssModel(family, mstop=10, step_length=0.1)
+    model.add_learner("mu", PyLinearLearner("x", intercept=True))
+
+    model.fit(X, y)
+
+    grid = np.linspace(-3, 3, 10).tolist()
+    pd = model.partial_dependence(X, "mu", 0, grid)
+    assert len(pd) == 10

@@ -158,6 +158,51 @@ impl BoostLssModel {
         }
     }
 
+    /// Returns the feature importance (empirical risk reduction) for each base learner.
+    pub fn feature_importance(&self) -> PyResult<Vec<f64>> {
+        let fitted = self.fitted_gaussian.as_ref().ok_or_else(|| {
+            pyo3::exceptions::PyValueError::new_err(
+                "Model must be fitted before calling feature_importance",
+            )
+        })?;
+        Ok(fitted.feature_importance())
+    }
+
+    /// Computes Friedman's partial dependence for a specific feature across a grid of values.
+    pub fn partial_dependence<'py>(
+        &mut self,
+        _py: Python<'py>,
+        data: PyReadonlyArray2<f64>,
+        param: &str,
+        feature_idx: usize,
+        grid: Vec<f64>,
+    ) -> PyResult<Vec<f64>> {
+        let fitted = self.fitted_gaussian.as_mut().ok_or_else(|| {
+            pyo3::exceptions::PyValueError::new_err(
+                "Model must be fitted before calling partial_dependence",
+            )
+        })?;
+
+        let x_view = data.as_array();
+        let x_mat = ndarray::Array2::from_shape_vec(
+            (x_view.nrows(), x_view.ncols()),
+            x_view.iter().copied().collect(),
+        )
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+
+        let n_samples = x_mat.nrows();
+        let dummy_response = ndarray::Array1::<f64>::zeros(n_samples);
+
+        let ds = Dataset::new(x_mat, dummy_response, None)
+            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+
+        let pd = fitted
+            .partial_dependence(&ds, param, feature_idx, &grid)
+            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+
+        Ok(pd)
+    }
+
     fn __getnewargs__(&self) -> (PyFamily, usize, f64) {
         (self.family.clone(), self.mstop, self.step_length)
     }

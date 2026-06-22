@@ -251,15 +251,16 @@ impl<F: Family> Fitted<F> {
     ) -> Result<Vec<f64>, BoostlssError> {
         let mut results = Vec::with_capacity(grid.len());
 
+        if feature_idx >= data.design().ncols() {
+            return Err(BoostlssError::DataError(format!(
+                "Feature index {} out of bounds for design matrix with {} columns",
+                feature_idx,
+                data.design().ncols()
+            )));
+        }
+
         for &val in grid {
             let mut modified_design = data.design().clone();
-            if feature_idx >= modified_design.ncols() {
-                return Err(BoostlssError::DataError(format!(
-                    "Feature index {} out of bounds for design matrix with {} columns",
-                    feature_idx,
-                    modified_design.ncols()
-                )));
-            }
             modified_design.column_mut(feature_idx).fill(val);
 
             let modified_data = Dataset::new(
@@ -426,5 +427,18 @@ mod tests {
         assert_eq!(pd[0], 2.0); // 2.0 * 1.0
         assert_eq!(pd[1], 4.0); // 2.0 * 2.0
         assert_eq!(pd[2], 6.0); // 2.0 * 3.0
+    }
+
+    #[test]
+    fn test_partial_dependence_out_of_bounds() {
+        use ndarray::{Array1, Array2};
+        let family = GaussianLss::new();
+        let mut fitted = Fitted::new(family, vec![0.0, 0.0], vec![]);
+        let data =
+            Dataset::new(Array2::<f64>::zeros((5, 2)), Array1::<f64>::zeros(5), None).unwrap();
+        let grid = vec![1.0, 2.0];
+
+        let result = fitted.partial_dependence(&data, "mu", 999, &grid);
+        assert!(matches!(result, Err(BoostlssError::DataError(_))));
     }
 }

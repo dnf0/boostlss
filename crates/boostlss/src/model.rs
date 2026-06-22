@@ -241,6 +241,40 @@ impl<F: Family> Fitted<F> {
         }
         importances
     }
+
+    pub fn partial_dependence(
+        &mut self,
+        data: &Dataset,
+        param: &str,
+        feature_idx: usize,
+        grid: &[f64],
+    ) -> Result<Vec<f64>, BoostlssError> {
+        let mut results = Vec::with_capacity(grid.len());
+
+        for &val in grid {
+            let mut modified_design = data.design().clone();
+            if feature_idx >= modified_design.ncols() {
+                return Err(BoostlssError::DataError(format!(
+                    "Feature index {} out of bounds for design matrix with {} columns",
+                    feature_idx,
+                    modified_design.ncols()
+                )));
+            }
+            modified_design.column_mut(feature_idx).fill(val);
+
+            let modified_data = Dataset::new(
+                modified_design,
+                data.response().clone(),
+                data.weights().cloned(),
+            )?;
+
+            let preds = self.predict(&modified_data, param, Scale::Link)?;
+            let mean_pred = preds.sum() / (preds.len() as f64);
+            results.push(mean_pred);
+        }
+
+        Ok(results)
+    }
 }
 
 impl<F: Family + serde::Serialize + serde::de::DeserializeOwned> Fitted<F> {
@@ -363,5 +397,34 @@ mod tests {
         assert_eq!(importance.len(), 2);
         assert_eq!(importance[0], 2.5); // 2.0 + 0.5
         assert_eq!(importance[1], 1.5);
+    }
+
+    #[test]
+    fn test_partial_dependence() {
+        use ndarray::{array, Array1, Array2};
+        let family = GaussianLss::new();
+        let learners = vec![(0, BaseLearner::Linear(Linear::new("x")))];
+        let mut fitted = Fitted::new(family, vec![0.0, 0.0], learners);
+
+        // Mock an update where predicted mu = 2.0 * x
+        fitted.updates.push(UpdateStep {
+            param_idx: 0,
+            learner_idx: 0,
+            update: crate::learner::LearnerUpdate::Linear(array![0.0, 2.0]),
+            risk_reduction: 0.0,
+        });
+
+        let data =
+            Dataset::new(Array2::<f64>::zeros((5, 2)), Array1::<f64>::zeros(5), None).unwrap();
+        let grid = vec![1.0, 2.0, 3.0];
+
+        // We evaluate feature_idx 1 (the 'x' column in the design matrix, since 0 is intercept for Linear usually, but let's test feature_idx=0 here)
+        let pd = fitted.partial_dependence(&data, "mu", 0, &grid).unwrap();
+
+        assert_eq!(pd.len(), 3);
+        // pred = offset(0) + 0.0(intercept) + 2.0 * grid_val
+        assert_eq!(pd[0], 2.0); // 2.0 * 1.0
+        assert_eq!(pd[1], 4.0); // 2.0 * 2.0
+        assert_eq!(pd[2], 6.0); // 2.0 * 3.0
     }
 }

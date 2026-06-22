@@ -91,7 +91,8 @@ impl<F: Family + Clone> BoostLss<F> {
             })?;
 
         let builder = build_fn(ParamBuilder::new());
-        self.learners.extend(builder.learners.into_iter().map(|l| (k, l)));
+        self.learners
+            .extend(builder.learners.into_iter().map(|l| (k, l)));
         Ok(self)
     }
 

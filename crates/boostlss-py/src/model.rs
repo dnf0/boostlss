@@ -76,7 +76,7 @@ impl BoostLssModel {
 
                 for (param, learner) in &self.learners {
                     model = model
-                        .on(param.as_str(), learner.clone())
+                        .on(param.as_str(), |p| p.add(learner.clone()))
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
@@ -133,7 +133,7 @@ impl BoostLssModel {
 
                     for (param, learner) in &self.learners {
                         model = model
-                            .on(param.as_str(), learner.clone())
+                            .on(param.as_str(), |p| p.add(learner.clone()))
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
 

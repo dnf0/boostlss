@@ -1,5 +1,51 @@
 # CHANGELOG
 
+## v0.2.0 (2026-06-22)
+
+### Chore
+
+* chore: update Cargo.lock ([`3679320`](https://github.com/dnf0/boostlss/commit/367932059a23de2bfb56eb543b46c33c565268d3))
+
+* chore: add serde, bincode, and serde_json dependencies ([`a2db83f`](https://github.com/dnf0/boostlss/commit/a2db83f50f1710000699063638e027c46e1d2f0b))
+
+* chore: update python bindings for new ParamBuilder API ([`3aaaf94`](https://github.com/dnf0/boostlss/commit/3aaaf94ac3874d42bfd9524abd6758053e7cc5df))
+
+* chore: fix unused import in tree.rs ([`5530180`](https://github.com/dnf0/boostlss/commit/5530180a258ac854d3996edcdb2cd2c5dcd24b27))
+
+### Documentation
+
+* docs: add formula DSL plan ([`cd88a19`](https://github.com/dnf0/boostlss/commit/cd88a19b93b6944c9881d07f1d757b258b645643))
+
+* docs: add formula DSL design spec ([`819bf16`](https://github.com/dnf0/boostlss/commit/819bf163573f86e1b025e68c604a2a993a2cc33f))
+
+* docs: add tree learner design spec ([`c7222f0`](https://github.com/dnf0/boostlss/commit/c7222f0da2542dddd928b9c29dc429cc7a3ca69f))
+
+### Feature
+
+* feat: implement __getstate__ and __setstate__ for Python pickling ([`2b6c3b3`](https://github.com/dnf0/boostlss/commit/2b6c3b38e673c56958b3e2a0ee100606c67c82c6))
+
+* feat: add save and load methods to Fitted model ([`38703b8`](https://github.com/dnf0/boostlss/commit/38703b8e342a14ee6f776fb84d70c13e1258ef04))
+
+* feat: derive Serialize and Deserialize for core models and families ([`f63254c`](https://github.com/dnf0/boostlss/commit/f63254cd6e124896ccca39382655d2392bd49cc8))
+
+* feat: implement ParamBuilder and update BoostLss::on API ([`135daee`](https://github.com/dnf0/boostlss/commit/135daee39a5322c82475179aed3a9791bd1fd857))
+
+* feat: add From impls for base learners to BaseLearner ([`7b51c45`](https://github.com/dnf0/boostlss/commit/7b51c45ef88809f8ecd7c139b1f9a3570f6585c3))
+
+* feat: expose tree learner to python ([`d8210f5`](https://github.com/dnf0/boostlss/commit/d8210f5f9f79b54aa3d5df1c0721a264fadf009b))
+
+* feat: integrate tree predictions and scaling into engine ([`13dfe1d`](https://github.com/dnf0/boostlss/commit/13dfe1daddb8e91d9eb652dad2f5654dc23e0c4d))
+
+* feat: implement recursive tree split search ([`eea7545`](https://github.com/dnf0/boostlss/commit/eea7545ead80f176b937023130c0031fbbff33a3))
+
+* feat: scaffold Tree base learner and update enums ([`4ffb93f`](https://github.com/dnf0/boostlss/commit/4ffb93f2349f4c422fdf10be228380f02b005f7d))
+
+* feat: define tree base learner and treenode structure ([`7af6d6a`](https://github.com/dnf0/boostlss/commit/7af6d6a9f7ce75271dc02b9284e1e36d8e856a90))
+
+### Unknown
+
+* Merge branch &#39;feat/formula-dsl&#39; ([`4933339`](https://github.com/dnf0/boostlss/commit/4933339dc7b7d2a8f8f2d378d1b5fb037adc1331))
+
 ## v0.1.0 (2026-06-20)
 
 ### Chore

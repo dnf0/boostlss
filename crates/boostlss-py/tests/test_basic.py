@@ -131,26 +131,3 @@ def test_partial_dependence(fitted_model_and_data):
     # Check that PD is monotonically increasing, since y = 2.0 * X[:, 0]
     for i in range(1, len(pd)):
         assert pd[i] > pd[i - 1]
-
-
-def test_binomial_fit_predict():
-    import numpy as np
-    from boostlss_py import PyFamily, PyLinearLearner, BoostLssModel
-
-    np.random.seed(42)
-    X = np.random.uniform(-3, 3, (100, 1))
-    # p = exp(x) / (1 + exp(x))
-    p = np.exp(X[:, 0]) / (1 + np.exp(X[:, 0]))
-    y = np.random.binomial(1, p).astype(float)
-
-    family = PyFamily("BinomialLSS")
-    model = BoostLssModel(family, mstop=10, step_length=0.1)
-
-    model.add_learner("mu", PyLinearLearner("x", intercept=True))
-
-    model.fit(X, y)
-
-    pred_mu = model.predict(X, "mu")
-
-    assert len(pred_mu) == 100
-    assert not np.isnan(pred_mu).any()

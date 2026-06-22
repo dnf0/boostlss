@@ -89,39 +89,39 @@ def test_tree_learner():
     assert len(pred_mu) == 20
 
 
-def test_feature_importance():
+def test_feature_importance_and_pd():
     import numpy as np
     from boostlss_py import PyFamily, PyLinearLearner, BoostLssModel
 
     np.random.seed(42)
-    X = np.random.uniform(-3, 3, (20, 1))
-    y = np.random.normal(0, 1, 20)
+    # 2D features: X[:, 0] is signal, X[:, 1] is noise
+    X = np.random.uniform(-3, 3, (100, 2))
+    # y depends only on X[:, 0] with a clear linear relationship
+    y = 2.0 * X[:, 0]
 
     family = PyFamily("GaussianLSS")
-    model = BoostLssModel(family, mstop=10, step_length=0.1)
-    model.add_learner("mu", PyLinearLearner("x", intercept=True))
-    model.add_learner("sigma", PyLinearLearner("x", intercept=True))
+    model = BoostLssModel(family, mstop=50, step_length=0.1)
+
+    # We add two learners: one for the signal, one for the noise
+    # Both are assigned to 'mu'
+    model.add_learner("mu", PyLinearLearner("x0", intercept=True))
+    model.add_learner("mu", PyLinearLearner("x1", intercept=True))
 
     model.fit(X, y)
 
+    # 1. Feature Importance
     fi = model.feature_importance()
     assert len(fi) == 2
+    # The first learner (signal) should have much higher importance than the second (noise)
+    assert fi[0] > 0
+    assert fi[0] > fi[1] * 10
 
-
-def test_partial_dependence():
-    import numpy as np
-    from boostlss_py import PyFamily, PyLinearLearner, BoostLssModel
-
-    np.random.seed(42)
-    X = np.random.uniform(-3, 3, (20, 2))
-    y = np.random.normal(0, 1, 20)
-
-    family = PyFamily("GaussianLSS")
-    model = BoostLssModel(family, mstop=10, step_length=0.1)
-    model.add_learner("mu", PyLinearLearner("x", intercept=True))
-
-    model.fit(X, y)
-
+    # 2. Partial Dependence
     grid = np.linspace(-3, 3, 10).tolist()
+    # PD for the first feature (feature_idx=0), which is the signal
     pd = model.partial_dependence(X, "mu", 0, grid)
     assert len(pd) == 10
+
+    # Check that PD is monotonically increasing, since y = 2.0 * X[:, 0]
+    for i in range(1, len(pd)):
+        assert pd[i] > pd[i - 1]

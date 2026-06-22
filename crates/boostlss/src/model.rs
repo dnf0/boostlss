@@ -5,6 +5,9 @@ use crate::family::Family;
 use crate::learner::{BaseLearner, LearnerUpdate};
 use ndarray::Array1;
 use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::{BufReader, BufWriter};
+use std::path::Path;
 
 pub struct ParamBuilder {
     pub(crate) learners: Vec<BaseLearner>,
@@ -229,6 +232,26 @@ impl<F: Family> Fitted<F> {
     }
 }
 
+impl<F: Family + serde::Serialize + serde::de::DeserializeOwned> Fitted<F> {
+    pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<(), BoostlssError> {
+        let file =
+            File::create(path).map_err(|e| BoostlssError::SerializationError(e.to_string()))?;
+        let writer = BufWriter::new(file);
+        serde_json::to_writer(writer, self)
+            .map_err(|e| BoostlssError::SerializationError(e.to_string()))?;
+        Ok(())
+    }
+
+    pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, BoostlssError> {
+        let file =
+            File::open(path).map_err(|e| BoostlssError::SerializationError(e.to_string()))?;
+        let reader = BufReader::new(file);
+        let fitted: Self = serde_json::from_reader(reader)
+            .map_err(|e| BoostlssError::SerializationError(e.to_string()))?;
+        Ok(fitted)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -278,10 +301,11 @@ mod tests {
         use ndarray::{Array1, Array2};
         let family = GaussianLss::new();
         let mut fitted = Fitted::new(family, vec![0.0, 0.0], vec![]);
-        let data = Dataset::new(Array2::zeros((5, 2)), Array1::zeros(5), None).unwrap();
+        let data =
+            Dataset::new(Array2::<f64>::zeros((5, 2)), Array1::<f64>::zeros(5), None).unwrap();
 
         let pred = fitted.predict(&data, "mu", Scale::Link).unwrap();
         assert_eq!(pred.len(), 5);
-        assert_eq!(pred, Array1::zeros(5));
+        assert_eq!(pred, Array1::<f64>::zeros(5));
     }
 }

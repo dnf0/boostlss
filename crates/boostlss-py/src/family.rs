@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 
-#[pyclass]
+#[pyclass(module = "boostlss_py")]
 #[derive(Clone)]
 pub enum PyFamily {
     GaussianLss,
@@ -16,6 +16,12 @@ impl PyFamily {
                 "Unknown family: {}",
                 name
             ))),
+        }
+    }
+
+    fn __getnewargs__(&self) -> (&str,) {
+        match self {
+            PyFamily::GaussianLss => ("GaussianLSS",),
         }
     }
 }

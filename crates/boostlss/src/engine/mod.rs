@@ -1,27 +1,28 @@
 //! Boosting algorithms and configuration.
+use serde::{Deserialize, Serialize};
 
 pub mod cyclical;
 pub mod stabilization;
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Algorithm {
     Cyclic,
     NonCyclic,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Stabilization {
     None,
     Mad,
     L2,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Mstop {
     Scalar(usize),
     PerParam(Vec<usize>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub algorithm: Algorithm,
     pub step_length: f64,

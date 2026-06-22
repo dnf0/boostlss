@@ -68,3 +68,22 @@ def test_stump_learner():
 
     pred_mu = model.predict(X, "mu")
     assert len(pred_mu) == 20
+
+
+def test_tree_learner():
+    import numpy as np
+    from boostlss_py import PyFamily, PyTreeLearner, BoostLssModel
+
+    np.random.seed(42)
+    X = np.random.uniform(-3, 3, (20, 2))
+    y = np.random.normal(0, 1, 20)
+
+    family = PyFamily("GaussianLSS")
+    model = BoostLssModel(family, mstop=10, step_length=0.1)
+    model.add_learner("mu", PyTreeLearner([0, 1], max_depth=2, min_samples_leaf=1))
+    model.add_learner("sigma", PyTreeLearner([0, 1]))
+
+    model.fit(X, y)
+
+    pred_mu = model.predict(X, "mu")
+    assert len(pred_mu) == 20

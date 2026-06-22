@@ -13,6 +13,9 @@ pub enum BoostlssError {
 
     #[error("Value out of range: {0}")]
     OutOfRange(String),
+
+    #[error("Serialization error: {0}")]
+    SerializationError(String),
 }
 
 #[cfg(test)]

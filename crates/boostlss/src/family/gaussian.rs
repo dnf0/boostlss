@@ -4,10 +4,16 @@ use crate::error::BoostlssError;
 use crate::param::{IdentityLink, LogLink, ParamSpec};
 use crate::util::{weighted_mean, weighted_sd};
 use ndarray::Array1;
+use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
-#[derive(Debug, Clone)]
+fn default_gaussian_params() -> Vec<ParamSpec> {
+    GaussianLss::new().params
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GaussianLss {
+    #[serde(skip, default = "default_gaussian_params")]
     params: Vec<ParamSpec>,
 }
 

@@ -4,12 +4,18 @@ use crate::error::BoostlssError;
 use crate::param::{LogLink, ParamSpec};
 use crate::util::{weighted_mean, weighted_sd};
 use ndarray::Array1;
+use serde::{Deserialize, Serialize};
 use statrs::function::gamma::ln_gamma;
 
 const EPSILON: f64 = 1e-10;
 
-#[derive(Debug)]
+fn default_nbinomial_params() -> Vec<ParamSpec> {
+    NBinomialLss::new().params
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NBinomialLss {
+    #[serde(skip, default = "default_nbinomial_params")]
     params: Vec<ParamSpec>,
 }
 

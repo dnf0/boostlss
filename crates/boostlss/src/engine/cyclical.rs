@@ -30,7 +30,7 @@ pub fn fit_cyclical<F: Family + Clone>(
 
     let (family, config, mut learners) = model.into_parts();
     for (idx, (param_idx, learner)) in learners.iter_mut().enumerate() {
-        let fit_state = learner.initialize(&x_col)?;
+        let fit_state = learner.initialize(&x_col, data)?;
         cached_learners.push(CachedLearner {
             param_idx: *param_idx,
             learner_idx: idx,
@@ -92,6 +92,45 @@ pub fn fit_cyclical<F: Family + Clone>(
                             }
                         })
                     }
+                    crate::learner::LearnerUpdate::Tree {
+                        node: root,
+                        param: _,
+                    } => {
+                        let mut u_hat = ndarray::Array1::zeros(data.response().len());
+                        for i in 0..u_hat.len() {
+                            let mut node_ptr = root;
+                            loop {
+                                match node_ptr {
+                                    crate::learner::TreeNode::Leaf { value, .. } => {
+                                        u_hat[i] = *value;
+                                        break;
+                                    }
+                                    crate::learner::TreeNode::Split {
+                                        feature_idx,
+                                        threshold,
+                                        left,
+                                        right,
+                                    } => {
+                                        if let LearnerFit::Tree(state) = &cached.fit_state {
+                                            let val = state.sorted_features[*feature_idx]
+                                                .iter()
+                                                .find(|(_, idx)| *idx == i)
+                                                .unwrap()
+                                                .0;
+                                            if val <= *threshold {
+                                                node_ptr = left;
+                                            } else {
+                                                node_ptr = right;
+                                            }
+                                        } else {
+                                            unreachable!()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        u_hat
+                    }
                 };
 
                 let residuals = &gradients - &u_hat;
@@ -128,6 +167,10 @@ pub fn fit_cyclical<F: Family + Clone>(
                             left_val: left_val * nu,
                             right_val: right_val * nu,
                         },
+                        crate::learner::LearnerUpdate::Tree { mut node, param } => {
+                            node.scale(nu);
+                            crate::learner::LearnerUpdate::Tree { node, param }
+                        }
                     },
                 });
             }
@@ -144,7 +187,7 @@ mod tests {
     use super::*;
     use crate::data::Dataset;
     use crate::family::GaussianLss;
-    use crate::learner::{BaseLearner, Linear};
+    use crate::learner::Linear;
     use crate::model::Scale;
     use ndarray::array;
 
@@ -155,15 +198,12 @@ mod tests {
         let data = Dataset::new(x, y.clone(), None).unwrap();
 
         let model = BoostLss::new(GaussianLss::new())
-            .step_length(0.1)
-            .mstop(crate::engine::Mstop::Scalar(10))
-            .on("mu", BaseLearner::Linear(Linear::new("x").intercept(true)))
+            .on("mu", |p| p.add(Linear::new("x").intercept(true)))
             .unwrap()
-            .on(
-                "sigma",
-                BaseLearner::Linear(Linear::new("x").intercept(true)),
-            )
-            .unwrap();
+            .on("sigma", |p| p.add(Linear::new("x").intercept(true)))
+            .unwrap()
+            .algorithm(crate::engine::Algorithm::Cyclic)
+            .mstop(Mstop::PerParam(vec![2, 2]));
 
         let mut fitted = fit_cyclical(model, &data).unwrap();
 

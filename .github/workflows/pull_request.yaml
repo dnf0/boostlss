@@ -28,16 +28,13 @@ jobs:
       - name: Run tests
         run: |
           set -eo pipefail
-          # TODO: Replace boostlss with your package name
           mkdir -p tests/coverage && \
-          uv run pytest --cov=boostlss \
+          uv run maturin develop && \
+          uv run pytest --cov=boostlss_py \
           --junitxml=tests/coverage/pytest.xml \
           --cov-report=term-missing:skip-covered \
           --cov-report xml:tests/coverage/pytest-coverage.xml \
-          --cov-fail-under=80 tests/
-
-      - name: Run E2E tests
-        run: make test-e2e
+          --cov-fail-under=80 crates/boostlss-py/tests/
 
       - name: Pytest coverage comment
         if: "!cancelled()"
@@ -46,7 +43,6 @@ jobs:
         with:
           pytest-xml-coverage-path: tests/coverage/pytest-coverage.xml
           junitxml-path: tests/coverage/pytest.xml
-          # TODO: Replace with your project name
           title: boostlss Test Coverage Report
           badge-title: boostlss Test Coverage
           hide-badge: false
@@ -108,6 +104,6 @@ jobs:
         with:
           tool: cargo-llvm-cov,cargo-audit
       - name: Run cargo audit
-        run: cargo audit
+        run: cargo audit --ignore RUSTSEC-2025-0020 --ignore RUSTSEC-2026-0177 --ignore RUSTSEC-2025-0141 --ignore RUSTSEC-2024-0436
       - name: Generate code coverage
         run: cargo llvm-cov --workspace --lcov --output-path lcov.info

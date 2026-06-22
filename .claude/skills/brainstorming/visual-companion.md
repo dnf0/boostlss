@@ -22,7 +22,7 @@ Decide per-question, not per-session. The test: **would the user understand this
 - **Technical decisions** — API design, data modeling, architectural approach selection
 - **Clarifying questions** — anything where the answer is words, not a visual preference
 
-A question *about* a UI topic is not automatically a visual question. "What kind of wizard do you want?" is conceptual — use the terminal. "Which of these wizard layouts feels right?" is visual — use the browser.
+A question _about_ a UI topic is not automatically a visual question. "What kind of wizard do you want?" is conceptual — use the terminal. "Which of these wizard layouts feels right?" is visual — use the browser.
 
 ## How It Works
 
@@ -50,21 +50,25 @@ Save `screen_dir` and `state_dir` from the response. Tell user to open the URL.
 **Launching the server by platform:**
 
 **Claude Code (macOS / Linux):**
+
 ```bash
 # Default mode works — the script backgrounds the server itself
 scripts/start-server.sh --project-dir /path/to/project
 ```
 
 **Claude Code (Windows):**
+
 ```bash
 # Windows auto-detects and uses foreground mode, which blocks the tool call.
 # Use run_in_background: true on the Bash tool call so the server survives
 # across conversation turns.
 scripts/start-server.sh --project-dir /path/to/project
 ```
+
 When calling this via the Bash tool, set `run_in_background: true`. Then read `$STATE_DIR/server-info` on the next turn to get the URL and port.
 
 **Codex:**
+
 ```bash
 # Codex reaps background processes. The script auto-detects CODEX_CI and
 # switches to foreground mode. Run it normally — no extra flags needed.
@@ -72,6 +76,7 @@ scripts/start-server.sh --project-dir /path/to/project
 ```
 
 **Gemini CLI:**
+
 ```bash
 # Use --foreground and set is_background: true on your shell tool call
 # so the process survives across turns
@@ -94,6 +99,7 @@ Use `--url-host` to control what hostname is printed in the returned URL JSON.
 ## The Loop
 
 1. **Check server is alive**, then **write HTML** to a new file in `screen_dir`:
+
    - Before each write, check that `$STATE_DIR/server-info` exists. If it doesn't (or `$STATE_DIR/server-stopped` exists), the server has shut down — restart it with `start-server.sh` before continuing. The server auto-exits after 30 minutes of inactivity.
    - Use semantic filenames: `platform.html`, `visual-style.html`, `layout.html`
    - **Never reuse filenames** — each screen gets a fresh file
@@ -101,11 +107,13 @@ Use `--url-host` to control what hostname is printed in the returned URL JSON.
    - Server automatically serves the newest file
 
 2. **Tell user what to expect and end your turn:**
+
    - Remind them of the URL (every step, not just first)
    - Give a brief text summary of what's on screen (e.g., "Showing 3 layout options for the homepage")
    - Ask them to respond in the terminal: "Take a look and let me know what you think. Click to select an option if you'd like."
 
 3. **On your next turn** — after the user responds in the terminal:
+
    - Read `$STATE_DIR/events` if it exists — this contains the user's browser interactions (clicks, selections) as JSON lines
    - Merge with the user's terminal text to get the full picture
    - The terminal message is the primary feedback; `state_dir/events` provides structured interaction data
@@ -116,7 +124,9 @@ Use `--url-host` to control what hostname is printed in the returned URL JSON.
 
    ```html
    <!-- filename: waiting.html (or waiting-2.html, etc.) -->
-   <div style="display:flex;align-items:center;justify-content:center;min-height:60vh">
+   <div
+     style="display:flex;align-items:center;justify-content:center;min-height:60vh"
+   >
      <p class="subtitle">Continuing in terminal...</p>
    </div>
    ```
@@ -217,8 +227,18 @@ The frame template provides these CSS classes for your content:
 
 ```html
 <div class="pros-cons">
-  <div class="pros"><h4>Pros</h4><ul><li>Benefit</li></ul></div>
-  <div class="cons"><h4>Cons</h4><ul><li>Drawback</li></ul></div>
+  <div class="pros">
+    <h4>Pros</h4>
+    <ul>
+      <li>Benefit</li>
+    </ul>
+  </div>
+  <div class="cons">
+    <h4>Cons</h4>
+    <ul>
+      <li>Drawback</li>
+    </ul>
+  </div>
 </div>
 ```
 
@@ -231,7 +251,7 @@ The frame template provides these CSS classes for your content:
   <div class="mock-content">Main content area</div>
 </div>
 <button class="mock-button">Action Button</button>
-<input class="mock-input" placeholder="Input field">
+<input class="mock-input" placeholder="Input field" />
 <div class="placeholder">Placeholder area</div>
 ```
 

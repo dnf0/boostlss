@@ -5,19 +5,23 @@
 Provider target: Universal
 
 ## Division of Responsibilities
+
 - **AGENTS.md (This file):** Defines the "What" (Core architectural boundaries, coding standards, language rules, and repository requirements).
 - **Provider Files (e.g. GEMINI.md, CLAUDE.md):** Defines the "How" (Operational workflows, tool usage loops, and provider-specific state machines).
 - **Conflict Resolution:** If there is a conflict, the Provider File takes precedence for behavioral execution, while AGENTS.md takes precedence for coding standards.
 
 ## Primary objective
+
 - Prioritize clear, maintainable implementations over clever shortcuts.
 
 ## Enforceable Boundaries
+
 - Host runtime controls context windows, memory compaction, and tool execution semantics.
 - Repo rules guide assistant behavior but cannot hard-enforce provider runtime actions.
 - Hard enforcement lives in deterministic checks: lint, tests, typing, and CI gates.
 
 ## Superpowers Integration
+
 <HARD-GATE>
 This repository vendors the [superpowers](https://github.com/obra/superpowers) skills directly into `.agents/skills/` (delivered by agent-rules — see `.agents/skills/SUPERPOWERS_VERSION` for the pinned commit). Runtimes that natively load `.agents/skills/` (for example agy / antigravity) pick them up automatically. If your runtime does not auto-load that directory, point it at `.agents/skills/` — do NOT git-clone the superpowers repository or fetch the skills yourself.
 </HARD-GATE>
@@ -25,6 +29,7 @@ This repository vendors the [superpowers](https://github.com/obra/superpowers) s
 superpowers skills take precedence for all planning, implementation, debugging, and review workflows.
 
 ## Base Rules
+
 - Use Rust with explicit ownership boundaries and narrow, composable modules.
 - Avoid `unwrap`/`expect` in production paths; propagate typed errors with context.
 - Prefer `Result`-centric APIs and domain enums/newtypes over primitive flags.
@@ -94,7 +99,9 @@ superpowers skills take precedence for all planning, implementation, debugging, 
 - Escalate to deeper refactors only when current structure blocks correctness or safety.
 
 ## Task Recipes
+
 ### Feature Implementation
+
 - Refine requirements before planning.
 - Create a detailed implementation plan before touching code.
 - Read relevant source files before describing existing behaviour in plans or implementations.
@@ -103,23 +110,27 @@ superpowers skills take precedence for all planning, implementation, debugging, 
 - End with `handoff` summarizing changes, evidence, and next steps.
 
 ### Debugging
+
 - Investigate root cause before proposing fixes.
 - Verify error messages and stack traces against actual tool output before diagnosing.
 - Follow the 4-phase process: observe, hypothesize, test, fix.
 - Run `verify` and provide `handoff` with root cause, fix, and regression evidence.
 
 ### Refactoring
+
 - Preserve external behavior unless the request explicitly changes it.
 - Plan refactoring steps before starting implementation.
 - Split risky changes into ordered, independently verifiable steps.
 - Complete `verify` and `handoff` before closing the task.
 
 ### Code Review
+
 - Prioritize correctness and regression risks before style concerns.
 - Reference concrete files and checks to support each finding.
 - Apply balanced strictness when deciding whether to block.
 
 ## Verification Checklist
+
 - Run `cargo fmt -- --check`.
 - Run `cargo clippy --workspace --all-targets --all-features -- -D warnings`.
 - Run `cargo test --workspace --all-features`.

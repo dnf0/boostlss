@@ -19,22 +19,27 @@ You lack the native superpowers plugin architecture, so you MUST manually enforc
 For ANY feature work, bug fix, or codebase change, you must locate your current state in this loop and execute the required prerequisite skill BEFORE taking any other action:
 
 1. **State: Idea / Request Received**
+
    - Required Skill: `brainstorming`
    - Output: Validated design spec. (Do NOT write code or plans yet).
 
 2. **State: Spec Exists, Needs Plan**
+
    - Required Skill: `writing-plans`
    - Output: Step-by-step implementation plan. (Do NOT write implementation code yet).
 
 3. **State: Ready to Execute Plan**
+
    - Required Skill: `using-git-worktrees`
    - Output: An isolated workspace setup. (Do NOT execute tasks in `main`).
 
 4. **State: In Worktree, Ready to Write Code**
+
    - Required Skills: `subagent-driven-development` (or `executing-plans`), AND `test-driven-development`
    - Output: Tests written first, then minimal passing implementation code.
 
 5. **State: Code is Written, Claiming "Done"**
+
    - Required Skill: `verification-before-completion`
    - Output: Hard proof that tests/linters pass before you are allowed to say "I'm finished."
 
@@ -44,7 +49,8 @@ For ANY feature work, bug fix, or codebase change, you must locate your current 
 
 **YOUR ENFORCEMENT PROTOCOL:**
 Before answering the user or taking any action, you must:
+
 1. Output a `<state-evaluation>` block where you identify which of the 6 states you are currently in.
-2. If you have not completed the required skill for the *previous* states, you MUST stop and execute them first (e.g., if you are asked to write a plan but have no spec, you must execute `brainstorming`).
+2. If you have not completed the required skill for the _previous_ states, you MUST stop and execute them first (e.g., if you are asked to write a plan but have no spec, you must execute `brainstorming`).
 3. You must use `view_file` to read the required skill for your current state and announce that you are following it.
-</SUPERPOWERS-DEVELOPMENT-LOOP>
+   </SUPERPOWERS-DEVELOPMENT-LOOP>

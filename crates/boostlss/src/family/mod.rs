@@ -5,17 +5,17 @@ use crate::error::BoostlssError;
 use crate::param::ParamSpec;
 use ndarray::Array1;
 
-pub mod gaussian;
-pub use gaussian::GaussianLss;
-
-pub mod student_t;
-pub use student_t::StudentTLss;
-
+pub mod binomial;
 pub mod gamma;
-pub use gamma::GammaLss;
-
+pub mod gaussian;
 pub mod nbinomial;
+pub mod student_t;
+
+pub use binomial::BinomialLss;
+pub use gamma::GammaLss;
+pub use gaussian::GaussianLss;
 pub use nbinomial::NBinomialLss;
+pub use student_t::StudentTLss;
 
 pub trait Family: std::fmt::Debug {
     /// Information about the parameters of this family, in fixed order.

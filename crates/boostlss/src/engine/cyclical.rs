@@ -60,6 +60,11 @@ pub fn fit_cyclical<F: Family + Clone>(
 
             stabilize(&mut gradients, config.stabilization, data.weights());
 
+            let base_rss = match data.weights() {
+                Some(w) => (&gradients * &gradients * w).sum(),
+                None => (&gradients * &gradients).sum(),
+            };
+
             let mut best_rss = f64::INFINITY;
             let mut best_update: Option<crate::learner::LearnerUpdate> = None;
             let mut best_u_hat: Option<ndarray::Array1<f64>> = None;
@@ -151,10 +156,11 @@ pub fn fit_cyclical<F: Family + Clone>(
                 (best_update, best_u_hat, best_learner_idx)
             {
                 current_predictions[k] = &current_predictions[k] + &(&u_hat * nu);
+                let risk_reduction = base_rss - best_rss;
                 updates.push(UpdateStep {
                     param_idx: k,
                     learner_idx: l_idx,
-                    risk_reduction: 0.0, // Will be implemented in Task 2
+                    risk_reduction,
                     update: match update {
                         crate::learner::LearnerUpdate::Linear(coef) => {
                             crate::learner::LearnerUpdate::Linear(coef * nu)
@@ -211,5 +217,23 @@ mod tests {
         let pred_mu = fitted.predict(&data, "mu", Scale::Response).unwrap();
         // Since it's a perfect relationship, predictions should move towards y
         assert!(pred_mu[3] > pred_mu[0]); // monotonic
+    }
+
+    #[test]
+    fn test_risk_reduction_calculation() {
+        let x = array![[1.0], [2.0], [3.0], [4.0]];
+        let y = array![2.0, 4.0, 6.0, 8.0];
+        let data = Dataset::new(x, y, None).unwrap();
+
+        let model = BoostLss::new(GaussianLss::new())
+            .on("mu", |p| p.add(Linear::new("x")))
+            .unwrap()
+            .algorithm(crate::engine::Algorithm::Cyclic)
+            .mstop(Mstop::Scalar(1));
+
+        let fitted = fit_cyclical(model, &data).unwrap();
+
+        assert_eq!(fitted.updates.len(), 1);
+        assert!(fitted.updates[0].risk_reduction > 0.0);
     }
 }

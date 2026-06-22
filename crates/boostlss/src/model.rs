@@ -231,6 +231,16 @@ impl<F: Family> Fitted<F> {
             Scale::Response => Ok(pred.mapv(|x| params[k].link.response(x))),
         }
     }
+
+    pub fn feature_importance(&self) -> Vec<f64> {
+        let mut importances = vec![0.0; self.learners.len()];
+        for update in &self.updates {
+            if update.learner_idx < importances.len() {
+                importances[update.learner_idx] += update.risk_reduction;
+            }
+        }
+        importances
+    }
 }
 
 impl<F: Family + serde::Serialize + serde::de::DeserializeOwned> Fitted<F> {
@@ -319,5 +329,39 @@ mod tests {
             risk_reduction: 1.5,
         };
         assert_eq!(update.risk_reduction, 1.5);
+    }
+
+    #[test]
+    fn test_feature_importance() {
+        let family = GaussianLss::new();
+        let learners = vec![
+            (0, BaseLearner::Linear(Linear::new("x"))),
+            (0, BaseLearner::Linear(Linear::new("x2"))),
+        ];
+        let mut fitted = Fitted::new(family, vec![0.0, 0.0], learners);
+
+        fitted.updates.push(UpdateStep {
+            param_idx: 0,
+            learner_idx: 0,
+            update: crate::learner::LearnerUpdate::Linear(ndarray::Array1::zeros(2)),
+            risk_reduction: 2.0,
+        });
+        fitted.updates.push(UpdateStep {
+            param_idx: 0,
+            learner_idx: 1,
+            update: crate::learner::LearnerUpdate::Linear(ndarray::Array1::zeros(2)),
+            risk_reduction: 1.5,
+        });
+        fitted.updates.push(UpdateStep {
+            param_idx: 0,
+            learner_idx: 0,
+            update: crate::learner::LearnerUpdate::Linear(ndarray::Array1::zeros(2)),
+            risk_reduction: 0.5,
+        });
+
+        let importance = fitted.feature_importance();
+        assert_eq!(importance.len(), 2);
+        assert_eq!(importance[0], 2.5); // 2.0 + 0.5
+        assert_eq!(importance[1], 1.5);
     }
 }

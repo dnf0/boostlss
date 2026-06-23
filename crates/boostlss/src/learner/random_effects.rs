@@ -2,6 +2,14 @@ use crate::error::BoostlssError;
 use ndarray::{Array1, Array2};
 use serde::{Deserialize, Serialize};
 
+const MAX_SAFE_COLS: usize = 100_000;
+const MAX_SAFE_ELEMENTS: usize = 100_000_000;
+
+/// Note: Currently, this relies on a dense matrix for the design matrix, which
+/// means memory usage scales as O(n_obs * n_categories). For datasets with thousands
+/// of categories, this guarantees massive wasted memory and limits the scale of data
+/// that can be processed. A switch to sparse matrices (e.g., using `sprs`) should be
+/// considered for a future refactor.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RandomEffects {
     pub feature: String,
@@ -40,11 +48,21 @@ impl RandomEffects {
             }
         }
 
+        if max_idx >= MAX_SAFE_COLS {
+            return Err(BoostlssError::DataError(
+                format!("RandomEffects max_idx {} exceeds safe threshold ({}) and would cause excessive memory allocation", max_idx, MAX_SAFE_COLS)
+            ));
+        }
+
         let n_cols = max_idx + 1;
 
-        if n_cols > 100_000 {
+        let total_elements = n_obs.checked_mul(n_cols).ok_or_else(|| {
+            BoostlssError::DataError("Dimensions overflow safe capacity".to_string())
+        })?;
+
+        if total_elements > MAX_SAFE_ELEMENTS {
             return Err(BoostlssError::DataError(
-                format!("RandomEffects max_idx {} exceeds safe threshold (100_000) and would cause excessive memory allocation", max_idx)
+                format!("RandomEffects total elements {} exceeds safe threshold ({}) and would cause an OOM", total_elements, MAX_SAFE_ELEMENTS)
             ));
         }
 
@@ -97,6 +115,15 @@ mod tests {
             assert!(e.to_string().contains("exceeds safe threshold"));
         } else {
             panic!("Expected an error for large index");
+        }
+
+        let x = ndarray::Array1::from_elem(2000, 59_999.0);
+        let result2 = re.build_design(&x);
+        assert!(result2.is_err());
+        if let Err(e) = result2 {
+            assert!(e.to_string().contains("total elements"));
+        } else {
+            panic!("Expected an error for large total elements");
         }
     }
 

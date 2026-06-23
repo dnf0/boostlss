@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v0.7.1 (2026-06-23)
+
+### Fix
+
+* fix: resolve PSpline rightmost edge bug, fix python bindings export ([`7451939`](https://github.com/dnf0/boostlss/commit/7451939a55d4337250d7e8f34cdaa5bf029946e3))
+
+### Unknown
+
+* Merge pull request #14 from dnf0/fix/pspline-rightmost-edge
+
+fix: resolve PSpline rightmost edge bug, fix python bindings export ([`9b60a7a`](https://github.com/dnf0/boostlss/commit/9b60a7ad03d94fd34d2a5e54f9dd3212b18095f3))
+
 ## v0.7.0 (2026-06-23)
 
 ### Documentation

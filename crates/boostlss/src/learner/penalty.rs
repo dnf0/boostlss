@@ -1,5 +1,5 @@
 use faer::{Mat, Side};
-use ndarray::Array2;
+use ndarray::{s, Array2};
 
 /// Create a difference matrix `D` of order `d` for `n` columns.
 /// Penalty matrix K = D^T D.
@@ -8,24 +8,18 @@ pub fn difference_matrix(n: usize, d: usize, cyclic: bool) -> Array2<f64> {
         return Array2::eye(n);
     }
 
-    let mut mat = Array2::zeros((n, n));
-    if cyclic {
-        for i in 0..n {
-            mat[[i, i]] = -1.0;
-            mat[[i, (i + 1) % n]] = 1.0;
-        }
-    } else {
-        for i in 0..(n - 1) {
-            mat[[i, i]] = -1.0;
-            mat[[i, i + 1]] = 1.0;
-        }
-    }
+    let prev = difference_matrix(n, d - 1, cyclic);
+    let nrows = prev.nrows();
 
-    if d > 1 {
-        let prev = difference_matrix(n, d - 1, cyclic);
+    if cyclic {
+        let mut mat = Array2::zeros((nrows, nrows));
+        for i in 0..nrows {
+            mat[[i, i]] = -1.0;
+            mat[[i, (i + 1) % nrows]] = 1.0;
+        }
         mat.dot(&prev)
     } else {
-        mat
+        &prev.slice(s![1.., ..]) - &prev.slice(s![..nrows - 1, ..])
     }
 }
 
@@ -121,7 +115,14 @@ mod tests {
     #[test]
     fn test_difference_matrix_d1() {
         let diff = difference_matrix(3, 1, false);
-        let expected = array![[-1.0, 1.0, 0.0], [0.0, -1.0, 1.0], [0.0, 0.0, 0.0]];
+        let expected = array![[-1.0, 1.0, 0.0], [0.0, -1.0, 1.0]];
+        assert_eq!(diff, expected);
+    }
+
+    #[test]
+    fn test_difference_matrix_d2() {
+        let diff = difference_matrix(4, 2, false);
+        let expected = array![[1.0, -2.0, 1.0, 0.0], [0.0, 1.0, -2.0, 1.0]];
         assert_eq!(diff, expected);
     }
 
@@ -148,6 +149,18 @@ mod tests {
 
         let mat = difference_matrix(3, 1, true);
         assert_eq!(mat, expected);
+    }
+
+    #[test]
+    fn test_cyclic_difference_matrix_d2() {
+        let diff = difference_matrix(4, 2, true);
+        let expected = array![
+            [1.0, -2.0, 1.0, 0.0],
+            [0.0, 1.0, -2.0, 1.0],
+            [1.0, 0.0, 1.0, -2.0],
+            [-2.0, 1.0, 0.0, 1.0]
+        ];
+        assert_eq!(diff, expected);
     }
 
     #[test]

@@ -62,6 +62,7 @@ use ndarray::ArrayView1;
 pub struct TreeFitState {
     pub max_depth: usize,
     pub min_samples_leaf: usize,
+    pub feature_indices: Vec<usize>,
     // Each outer vec corresponds to one feature.
     // Inner vec is the sorted (value, original_row_index) pairs.
     pub sorted_features: Vec<Vec<(f64, usize)>>,
@@ -210,6 +211,7 @@ mod tests {
         let state = TreeFitState {
             max_depth: 2,
             min_samples_leaf: 1,
+            feature_indices: vec![0, 1],
             sorted_features: vec![sorted_f0, sorted_f1],
         };
         let u = array![-1.0, -1.0, 1.0, 1.0];

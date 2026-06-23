@@ -18,6 +18,7 @@ impl Stump {
 #[derive(Debug, Clone)]
 pub struct StumpFitState {
     pub sorted_x: Vec<(f64, usize)>,
+    pub feature_idx: usize,
 }
 
 impl StumpFitState {
@@ -103,7 +104,10 @@ mod tests {
     #[test]
     fn test_stump_fit() {
         let x = vec![(1.0, 0), (2.0, 1), (3.0, 2), (4.0, 3)];
-        let state = StumpFitState { sorted_x: x };
+        let state = StumpFitState {
+            sorted_x: x,
+            feature_idx: 0,
+        };
         let u = array![-1.0, -1.0, 1.0, 1.0];
 
         let update = state.fit_update(u.view(), None);

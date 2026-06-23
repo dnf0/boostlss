@@ -3,7 +3,7 @@ use crate::engine::stabilization::stabilize;
 use crate::engine::Mstop;
 use crate::error::BoostlssError;
 use crate::family::Family;
-use crate::learner::LearnerFit;
+use crate::learner::{LearnerFit, LearnerUpdate};
 use crate::model::{BoostLss, Fitted, UpdateStep};
 
 struct CachedLearner {
@@ -12,13 +12,12 @@ struct CachedLearner {
     fit_state: LearnerFit,
 }
 
-pub fn fit_cyclical<F: Family + Clone>(
+pub fn fit_noncyclical<F: Family + Clone>(
     model: BoostLss<F>,
     data: &Dataset,
 ) -> Result<Fitted<F>, BoostlssError> {
     let mut current_predictions = Vec::new();
 
-    // 1. Initialize offsets
     let offsets = model.family().init_offsets(data)?;
 
     for offset in &offsets {
@@ -40,33 +39,29 @@ pub fn fit_cyclical<F: Family + Clone>(
 
     let max_mstop = match config.mstop {
         Mstop::Scalar(m) => m,
-        Mstop::PerParam(ref v) => *v.iter().max().unwrap_or(&0),
+        Mstop::PerParam(_) => {
+            return Err(BoostlssError::InvalidConfig(
+                "NonCyclic algorithm requires a Scalar Mstop".into(),
+            ));
+        }
     };
     let nu = config.step_length;
 
     let mut updates = Vec::new();
 
-    for m in 1..=max_mstop {
-        for k in 0..family.params().len() {
-            let mstop_k = match config.mstop {
-                Mstop::Scalar(ms) => ms,
-                Mstop::PerParam(ref v) => v[k],
-            };
-            if m > mstop_k {
-                continue;
-            }
+    for _m in 1..=max_mstop {
+        let base_nll = family.nll(data, &current_predictions)?;
+        let num_params = family.params().len();
 
+        let mut candidate_updates = Vec::new();
+
+        // Stage 1: Find best learner per parameter using RSS on negative gradients
+        for k in 0..num_params {
             let mut gradients = family.ngradient(data, &current_predictions, k)?;
-
             stabilize(&mut gradients, config.stabilization, data.weights());
 
-            let base_rss = match data.weights() {
-                Some(w) => (&gradients * &gradients * w).sum(),
-                None => (&gradients * &gradients).sum(),
-            };
-
             let mut best_rss = f64::INFINITY;
-            let mut best_update: Option<crate::learner::LearnerUpdate> = None;
+            let mut best_update: Option<LearnerUpdate> = None;
             let mut best_u_hat: Option<ndarray::Array1<f64>> = None;
             let mut best_learner_idx = None;
 
@@ -94,19 +89,50 @@ pub fn fit_cyclical<F: Family + Clone>(
             if let (Some(update), Some(u_hat), Some(l_idx)) =
                 (best_update, best_u_hat, best_learner_idx)
             {
-                current_predictions[k] = &current_predictions[k] + &(&u_hat * nu);
-                let risk_reduction = base_rss - best_rss;
-                updates.push(UpdateStep {
-                    param_idx: k,
-                    learner_idx: l_idx,
-                    risk_reduction,
-                    update: {
-                        let mut u = update.clone();
-                        u.scale(nu);
-                        u
-                    },
-                });
+                candidate_updates.push((k, l_idx, update, u_hat));
             }
+        }
+
+        // Stage 2: Select the candidate that minimizes total NLL
+        let mut best_nll = f64::INFINITY;
+        let mut selected_candidate = None;
+
+        for (k, l_idx, update, u_hat) in candidate_updates {
+            // Apply step length nu
+            let step = &u_hat * nu;
+
+            // Temporarily apply update
+            current_predictions[k] = &current_predictions[k] + &step;
+
+            let nll = family.nll(data, &current_predictions)?;
+
+            if nll < best_nll {
+                best_nll = nll;
+                selected_candidate = Some((k, l_idx, update, step));
+            }
+
+            // Revert update
+            current_predictions[k] = &current_predictions[k] - &(&u_hat * nu);
+        }
+
+        if let Some((k, l_idx, update, step)) = selected_candidate {
+            current_predictions[k] = &current_predictions[k] + &step;
+            let risk_reduction = base_nll - best_nll;
+
+            // Standard boosting applies the update even if empirical NLL increases slightly,
+            // but we use max(0.0) for risk_reduction to avoid negative importance.
+            let risk_reduction = risk_reduction.max(0.0);
+
+            updates.push(UpdateStep {
+                param_idx: k,
+                learner_idx: l_idx,
+                risk_reduction,
+                update: {
+                    let mut u = update.clone();
+                    u.scale(nu);
+                    u
+                },
+            });
         }
     }
 
@@ -119,34 +145,14 @@ pub fn fit_cyclical<F: Family + Clone>(
 mod tests {
     use super::*;
     use crate::data::Dataset;
+    use crate::engine::{Algorithm, Mstop};
     use crate::family::GaussianLss;
     use crate::learner::Linear;
-    use crate::model::Scale;
     use ndarray::array;
 
     #[test]
-    fn test_fit_cyclical() {
-        let x = array![[1.0], [2.0], [3.0], [4.0]];
-        let y = array![2.0, 4.0, 6.0, 8.0]; // Perfect linear relationship
-        let data = Dataset::new(x, y.clone(), None).unwrap();
-
-        let model = BoostLss::new(GaussianLss::new())
-            .on("mu", |p| p.add(Linear::new("x").intercept(true)))
-            .unwrap()
-            .on("sigma", |p| p.add(Linear::new("x").intercept(true)))
-            .unwrap()
-            .algorithm(crate::engine::Algorithm::Cyclic)
-            .mstop(Mstop::PerParam(vec![2, 2]));
-
-        let mut fitted = fit_cyclical(model, &data).unwrap();
-
-        let pred_mu = fitted.predict(&data, "mu", Scale::Response).unwrap();
-        // Since it's a perfect relationship, predictions should move towards y
-        assert!(pred_mu[3] > pred_mu[0]); // monotonic
-    }
-
-    #[test]
-    fn test_risk_reduction_calculation() {
+    fn test_fit_noncyclical_selects_best_param() {
+        // x is perfectly correlated with y
         let x = array![[1.0], [2.0], [3.0], [4.0]];
         let y = array![2.0, 4.0, 6.0, 8.0];
         let data = Dataset::new(x, y, None).unwrap();
@@ -154,12 +160,18 @@ mod tests {
         let model = BoostLss::new(GaussianLss::new())
             .on("mu", |p| p.add(Linear::new("x")))
             .unwrap()
-            .algorithm(crate::engine::Algorithm::Cyclic)
+            .on("sigma", |p| p.add(Linear::new("x")))
+            .unwrap()
+            .algorithm(Algorithm::NonCyclic)
             .mstop(Mstop::Scalar(1));
 
-        let fitted = fit_cyclical(model, &data).unwrap();
+        let fitted = fit_noncyclical(model, &data).unwrap();
 
+        // There should be exactly 1 update since mstop=1
         assert_eq!(fitted.updates.len(), 1);
-        assert!(fitted.updates[0].risk_reduction > 0.0);
+
+        // Since mu is far off (mean vs true values), it should be updated to reduce NLL.
+        // The single update should target param_idx 0 (mu).
+        assert_eq!(fitted.updates[0].param_idx, 0);
     }
 }

@@ -128,6 +128,7 @@ impl BaseLearner {
             return Ok(LearnerFit::Tree(tree::TreeFitState {
                 max_depth: tree_learner.max_depth,
                 min_samples_leaf: tree_learner.min_samples_leaf,
+                feature_indices: tree_learner.feature_indices.clone(),
                 sorted_features,
             }));
         }
@@ -140,7 +141,10 @@ impl BaseLearner {
                 .map(|(i, val)| (val, i))
                 .collect();
             sorted_x.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-            return Ok(LearnerFit::Stump(stump::StumpFitState { sorted_x }));
+            return Ok(LearnerFit::Stump(stump::StumpFitState {
+                sorted_x,
+                feature_idx: 0,
+            }));
         }
 
         let (design, penalty) = match self {
@@ -202,6 +206,27 @@ pub enum LearnerUpdate {
     },
 }
 
+impl LearnerUpdate {
+    pub fn scale(&mut self, factor: f64) {
+        match self {
+            Self::Linear(coef) => {
+                coef.mapv_inplace(|v| v * factor);
+            }
+            Self::Stump {
+                left_val,
+                right_val,
+                ..
+            } => {
+                *left_val *= factor;
+                *right_val *= factor;
+            }
+            Self::Tree { node, .. } => {
+                node.scale(factor);
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct LinearFitState {
     pub coef: Array1<f64>,
@@ -232,6 +257,65 @@ impl LearnerFit {
             }
             Self::Stump(state) => state.fit_update(u, weights),
             Self::Tree(state) => state.fit_update(u, weights),
+        }
+    }
+
+    pub fn predict_update(
+        &self,
+        update: &LearnerUpdate,
+        data: &crate::data::Dataset,
+    ) -> Array1<f64> {
+        match (self, update) {
+            (Self::Linear(state), LearnerUpdate::Linear(coef)) => state.design.dot(coef),
+            (
+                Self::Stump(state),
+                LearnerUpdate::Stump {
+                    split_val,
+                    left_val,
+                    right_val,
+                },
+            ) => {
+                let x_col = data.design().column(state.feature_idx);
+                x_col
+                    .mapv(|val| {
+                        if val <= *split_val {
+                            *left_val
+                        } else {
+                            *right_val
+                        }
+                    })
+                    .to_owned()
+            }
+            (Self::Tree(state), LearnerUpdate::Tree { node: root, .. }) => {
+                let mut u_hat = ndarray::Array1::zeros(data.n_obs());
+                for i in 0..u_hat.len() {
+                    let mut node_ptr = root;
+                    loop {
+                        match node_ptr {
+                            TreeNode::Leaf { value, .. } => {
+                                u_hat[i] = *value;
+                                break;
+                            }
+                            TreeNode::Split {
+                                feature_idx,
+                                threshold,
+                                left,
+                                right,
+                            } => {
+                                let col_idx = state.feature_indices[*feature_idx];
+                                let val = data.design().column(col_idx)[i];
+                                if val <= *threshold {
+                                    node_ptr = left;
+                                } else {
+                                    node_ptr = right;
+                                }
+                            }
+                        }
+                    }
+                }
+                u_hat
+            }
+            _ => unreachable!("LearnerFit and LearnerUpdate types must match"),
         }
     }
 }

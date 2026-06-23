@@ -25,35 +25,35 @@ repos:
       # Python Specific local hooks
       - id: mypy
         name: mypy
-        entry: uv run mypy
+        entry: uvx mypy
         language: system
         types: [python]
         require_serial: true
       - id: vulture
         name: vulture
-        entry: uv run vulture --min-confidence 90
+        entry: uvx vulture --min-confidence 90
         language: system
         types: [python]
         require_serial: true
       - id: radon
         name: radon cc
-        entry: uv run radon cc -s -a
+        entry: uvx radon cc -s -a
         language: system
         types: [python]
       - id: xenon
         name: xenon complexity gates
-        entry: uv run xenon --max-absolute C --max-modules C --max-average B
+        entry: uvx xenon --max-absolute C --max-modules C --max-average B
         language: system
         types: [python]
       - id: smellcheck
         name: smellcheck
-        entry: uv run smellcheck --min-severity warning --fail-on error
+        entry: uvx smellcheck --min-severity warning --fail-on error
         language: system
         types: [python]
         require_serial: true
       - id: commitizen-check
         name: commitizen check
-        entry: uv run cz check --allow-abort --commit-msg-file
+        entry: uvx --from commitizen cz check --allow-abort --commit-msg-file
         language: system
         stages: [commit-msg]
 

@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## v0.6.0 (2026-06-23)
+
+### Feature
+
+* feat: implement RandomEffects base-learner (#12)
+
+* docs: add Random Effects learner design spec
+
+* docs: add Random Effects learner implementation plan
+
+* feat: implement RandomEffects base-learner core
+
+* fix(random_effects): add sanity check on n_cols to prevent OOM panic
+
+* feat: implement RandomEffects base-learner core
+
+* feat: implement RandomEffects out-of-bounds predict logic
+
+* feat: expose RandomEffects learner to Python bindings
+
+* chore: rebuild graphify
+
+---------
+
+Co-authored-by: Daniel Fisher &lt;daniel.fisher@climate-x.com&gt; ([`01e30d6`](https://github.com/dnf0/boostlss/commit/01e30d6d7477dd7ddd809bc2fcaba2e9220de234))
+
 ## v0.5.0 (2026-06-23)
 
 ### Ci

@@ -103,10 +103,6 @@ impl PSpline {
                     n_basis[j] = 1.0;
                 }
             }
-            // fix rightmost edge
-            if (xi - max_val).abs() < 1e-9 {
-                n_basis[num_knots - 2 - self.degree] = 1.0;
-            }
 
             // degree 1..degree
             for d in 1..=self.degree {
@@ -193,9 +189,7 @@ mod tests {
         assert_eq!(design.shape(), &[3, 6]);
 
         // Ensure values sum to 1 row-wise (partition of unity)
-        // Note: The rightmost edge (i=2, xi=1.0) has a known bug in standard build_design
-        // that violates partition of unity. We skip it here since fixing it is out of scope.
-        for i in 0..2 {
+        for i in 0..3 {
             let sum: f64 = design.row(i).sum();
             assert!((sum - 1.0).abs() < 1e-6);
         }

@@ -6,7 +6,7 @@ use boostlss::engine::Mstop;
 use boostlss::family::{
     BetaLss, BinomialLss, GEVLss, GaussianLss, LogNormalLss, WeibullLss, ZIPLss,
 };
-use boostlss::learner::BaseLearner;
+use boostlss::learner::{BaseLearner, RandomEffects};
 use boostlss::model::{BoostLss, Fitted, Scale};
 use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
@@ -100,6 +100,25 @@ impl FittedModel {
 }
 
 #[pyclass(module = "boostlss_py")]
+#[derive(Clone)]
+pub struct PyRandomEffectsLearner {
+    feature: String,
+    df: f64,
+}
+
+#[pymethods]
+impl PyRandomEffectsLearner {
+    #[new]
+    #[pyo3(signature = (feature, df=4.0))]
+    fn new(feature: &str, df: f64) -> Self {
+        Self {
+            feature: feature.to_string(),
+            df,
+        }
+    }
+}
+
+#[pyclass(module = "boostlss_py")]
 pub struct BoostLssModel {
     family: PyFamily,
     mstop: usize,
@@ -131,6 +150,8 @@ impl BoostLssModel {
             s.into()
         } else if let Ok(t) = learner.extract::<crate::learner::PyTreeLearner>() {
             t.into()
+        } else if let Ok(r) = learner.extract::<PyRandomEffectsLearner>() {
+            BaseLearner::RandomEffects(RandomEffects::new(&r.feature).df(r.df))
         } else {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "Invalid learner type",

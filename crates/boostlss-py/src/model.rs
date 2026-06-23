@@ -2,6 +2,7 @@ use crate::family::PyFamily;
 use boostlss::cv::{CvRisk, Resampling};
 use boostlss::data::Dataset;
 use boostlss::engine::cyclical::fit_cyclical;
+use boostlss::engine::noncyclical::fit_noncyclical;
 use boostlss::engine::{Algorithm, Mstop};
 use boostlss::family::{
     BetaLss, BinomialLss, GEVLss, GaussianLss, LogNormalLss, WeibullLss, ZIPLss,
@@ -207,8 +208,15 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
-                let fitted = fit_cyclical(model, &dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+                let fitted = match self.algorithm {
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
 
                 self.fitted = Some(FittedModel::Gaussian(fitted));
             }
@@ -223,8 +231,15 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
-                let fitted = fit_cyclical(model, &dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+                let fitted = match self.algorithm {
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
 
                 self.fitted = Some(FittedModel::Binomial(fitted));
             }
@@ -239,8 +254,15 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
-                let fitted = fit_cyclical(model, &dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+                let fitted = match self.algorithm {
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
 
                 self.fitted = Some(FittedModel::Beta(fitted));
             }
@@ -255,8 +277,15 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
-                let fitted = fit_cyclical(model, &dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+                let fitted = match self.algorithm {
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
 
                 self.fitted = Some(FittedModel::Weibull(fitted));
             }
@@ -271,8 +300,15 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
-                let fitted = fit_cyclical(model, &dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+                let fitted = match self.algorithm {
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
 
                 self.fitted = Some(FittedModel::LogNormal(fitted));
             }
@@ -287,8 +323,15 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
-                let fitted = fit_cyclical(model, &dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+                let fitted = match self.algorithm {
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
 
                 self.fitted = Some(FittedModel::ZIP(fitted));
             }
@@ -303,8 +346,15 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
-                let fitted = fit_cyclical(model, &dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+                let fitted = match self.algorithm {
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
 
                 self.fitted = Some(FittedModel::GEV(fitted));
             }

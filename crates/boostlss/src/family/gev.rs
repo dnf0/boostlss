@@ -164,14 +164,18 @@ impl Family for GEVLss {
 
         let ds = Dataset::new(data.design().clone(), y_arr.clone(), w_arr.clone()).unwrap();
 
+        let mut eta = vec![
+            Array1::from_elem(y_arr.len(), self.params[0].link.link(mu_val)),
+            Array1::from_elem(y_arr.len(), self.params[1].link.link(sigma_val)),
+            Array1::from_elem(y_arr.len(), self.params[2].link.link(nu_val)),
+        ];
+
         for _ in 0..2 {
             let opt_eta_mu = minimize_1d(
                 |m| {
-                    let eta = vec![
-                        Array1::from_elem(y_arr.len(), m),
-                        Array1::from_elem(y_arr.len(), self.params[1].link.link(sigma_val)),
-                        Array1::from_elem(y_arr.len(), self.params[2].link.link(nu_val)),
-                    ];
+                    eta[0].fill(m);
+                    eta[1].fill(self.params[1].link.link(sigma_val));
+                    eta[2].fill(self.params[2].link.link(nu_val));
                     self.nll(&ds, &eta).unwrap_or(f64::MAX)
                 },
                 -10.0,
@@ -181,11 +185,9 @@ impl Family for GEVLss {
 
             let opt_eta_sigma = minimize_1d(
                 |s| {
-                    let eta = vec![
-                        Array1::from_elem(y_arr.len(), self.params[0].link.link(mu_val)),
-                        Array1::from_elem(y_arr.len(), s),
-                        Array1::from_elem(y_arr.len(), self.params[2].link.link(nu_val)),
-                    ];
+                    eta[0].fill(self.params[0].link.link(mu_val));
+                    eta[1].fill(s);
+                    eta[2].fill(self.params[2].link.link(nu_val));
                     self.nll(&ds, &eta).unwrap_or(f64::MAX)
                 },
                 -5.0,
@@ -195,11 +197,9 @@ impl Family for GEVLss {
 
             let opt_eta_nu = minimize_1d(
                 |n| {
-                    let eta = vec![
-                        Array1::from_elem(y_arr.len(), self.params[0].link.link(mu_val)),
-                        Array1::from_elem(y_arr.len(), self.params[1].link.link(sigma_val)),
-                        Array1::from_elem(y_arr.len(), n),
-                    ];
+                    eta[0].fill(self.params[0].link.link(mu_val));
+                    eta[1].fill(self.params[1].link.link(sigma_val));
+                    eta[2].fill(n);
                     self.nll(&ds, &eta).unwrap_or(f64::MAX)
                 },
                 -1.0,

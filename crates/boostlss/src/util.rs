@@ -37,7 +37,7 @@ pub fn weighted_sd(y: &Array1<f64>, w: Option<&Array1<f64>>) -> f64 {
 
 /// Minimize a unimodal `f` on `[lo, hi]` by golden-section search.
 /// Used for intercept-only MLE offsets that have no closed form.
-pub fn minimize_1d<F: Fn(f64) -> f64>(f: F, lo: f64, hi: f64) -> f64 {
+pub fn minimize_1d<F: FnMut(f64) -> f64>(mut f: F, lo: f64, hi: f64) -> f64 {
     const INV_PHI: f64 = 0.618_033_988_749_894_8; // 1/golden ratio
     const ITERS: usize = 100;
     let (mut a, mut b) = (lo, hi);

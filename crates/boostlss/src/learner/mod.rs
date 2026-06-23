@@ -1,5 +1,6 @@
 //! Base-learners and cached factorization state.
 
+pub mod bspatial;
 pub mod linear;
 pub use linear::Linear;
 

@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## v0.7.0 (2026-06-23)
+
+### Documentation
+
+* docs: add implementation plan for cyclic p-splines ([`a899cf8`](https://github.com/dnf0/boostlss/commit/a899cf862d056950c0515cc42fd449b36c18584b))
+
+* docs: add design spec for cyclic p-splines ([`c20e3e8`](https://github.com/dnf0/boostlss/commit/c20e3e8589549c9437ee3849333956db9d8085ba))
+
+### Feature
+
+* feat(python): expose cyclic P-spline parameter to Python API ([`71620f8`](https://github.com/dnf0/boostlss/commit/71620f809eba5d743ed921f0625762e4b097ce61))
+
+* feat(pspline): implement cyclic basis matrix wrapping ([`f20ae75`](https://github.com/dnf0/boostlss/commit/f20ae75d291c08e5f460872825447c980c3bcdc5))
+
+* feat(pspline): add cyclic state and cyclic penalty matrix ([`2a92df2`](https://github.com/dnf0/boostlss/commit/2a92df287b1de44e5dc9dc9ad9e9814ec38898fb))
+
+### Fix
+
+* fix(pspline): correct difference_matrix logic for non-cyclic boundaries and add d=2 tests ([`14aa499`](https://github.com/dnf0/boostlss/commit/14aa4998b7cb43cbfde1e84ffed7bf151c7e085d))
+
+### Unknown
+
+* Merge pull request #13 from dnf0/feat/cyclic-psplines
+
+feat: Cyclic P-splines implementation ([`59927ab`](https://github.com/dnf0/boostlss/commit/59927ab142a37e12c2a16c8279cf49678f1f5f21))
+
 ## v0.6.0 (2026-06-23)
 
 ### Feature

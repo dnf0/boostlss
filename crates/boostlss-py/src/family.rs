@@ -3,13 +3,13 @@ use pyo3::prelude::*;
 #[pyclass(module = "boostlss_py")]
 #[derive(Clone)]
 pub enum PyFamily {
-    GaussianLss,
-    BinomialLss,
-    BetaLss,
-    WeibullLss,
-    LogNormalLss,
-    ZIPLss,
-    GEVLss,
+    Gaussian,
+    Binomial,
+    Beta,
+    Weibull,
+    LogNormal,
+    Zip,
+    Gev,
 }
 
 #[pymethods]
@@ -17,13 +17,13 @@ impl PyFamily {
     #[new]
     fn new(name: &str) -> PyResult<Self> {
         match name {
-            "GaussianLSS" | "GaussianLss" => Ok(PyFamily::GaussianLss),
-            "BinomialLSS" | "BinomialLss" => Ok(PyFamily::BinomialLss),
-            "BetaLSS" | "BetaLss" => Ok(PyFamily::BetaLss),
-            "WeibullLSS" | "WeibullLss" => Ok(PyFamily::WeibullLss),
-            "LogNormalLSS" | "LogNormalLss" => Ok(PyFamily::LogNormalLss),
-            "ZIPLSS" | "ZIPLss" => Ok(PyFamily::ZIPLss),
-            "GEVLSS" | "GEVLss" => Ok(PyFamily::GEVLss),
+            "GaussianLSS" | "GaussianLss" => Ok(PyFamily::Gaussian),
+            "BinomialLSS" | "BinomialLss" => Ok(PyFamily::Binomial),
+            "BetaLSS" | "BetaLss" => Ok(PyFamily::Beta),
+            "WeibullLSS" | "WeibullLss" => Ok(PyFamily::Weibull),
+            "LogNormalLSS" | "LogNormalLss" => Ok(PyFamily::LogNormal),
+            "ZIPLSS" | "ZIPLss" | "ZipLss" => Ok(PyFamily::Zip),
+            "GEVLSS" | "GEVLss" | "GevLss" => Ok(PyFamily::Gev),
             _ => Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "Unknown family: {}",
                 name
@@ -33,13 +33,13 @@ impl PyFamily {
 
     fn __getnewargs__(&self) -> (&str,) {
         match self {
-            PyFamily::GaussianLss => ("GaussianLSS",),
-            PyFamily::BinomialLss => ("BinomialLSS",),
-            PyFamily::BetaLss => ("BetaLSS",),
-            PyFamily::WeibullLss => ("WeibullLSS",),
-            PyFamily::LogNormalLss => ("LogNormalLSS",),
-            PyFamily::ZIPLss => ("ZIPLSS",),
-            PyFamily::GEVLss => ("GEVLSS",),
+            PyFamily::Gaussian => ("GaussianLSS",),
+            PyFamily::Binomial => ("BinomialLSS",),
+            PyFamily::Beta => ("BetaLSS",),
+            PyFamily::Weibull => ("WeibullLSS",),
+            PyFamily::LogNormal => ("LogNormalLSS",),
+            PyFamily::Zip => ("ZIPLSS",),
+            PyFamily::Gev => ("GEVLSS",),
         }
     }
 }

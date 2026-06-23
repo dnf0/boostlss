@@ -148,7 +148,7 @@ mod tests {
     #[test]
     fn test_log_normal_gradients() {
         let fam = LogNormalLss::new();
-        let y = array![1.0, 2.718, 7.389];
+        let y = array![1.0, std::f64::consts::E, 7.389];
         let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None).unwrap();
         let eta = vec![array![0.0, 1.0, 2.0], array![-0.5, 0.0, 0.5]];
 

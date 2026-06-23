@@ -76,7 +76,12 @@ impl Resampling {
     }
 }
 
-pub fn make_grid(params_count: usize, mstop_max: usize, length_out: usize) -> Vec<Mstop> {
+pub fn make_grid(
+    params_count: usize,
+    mstop_max: usize,
+    length_out: usize,
+    algorithm: &crate::engine::Algorithm,
+) -> Vec<Mstop> {
     if params_count == 0 || length_out == 0 || mstop_max == 0 {
         return vec![];
     }
@@ -95,6 +100,10 @@ pub fn make_grid(params_count: usize, mstop_max: usize, length_out: usize) -> Ve
         }
     }
     vals.dedup();
+
+    if matches!(algorithm, crate::engine::Algorithm::NonCyclic) {
+        return vals.into_iter().map(Mstop::Scalar).collect();
+    }
 
     let mut grid = Vec::new();
     let mut current = vec![0; params_count];
@@ -171,18 +180,23 @@ impl<F: FamilyBound> CvRisk<F> {
 
     pub fn run(&self, data: &Dataset) -> Result<CvRiskResult, BoostlssError> {
         let params_count = self.model.family().params().len();
-        let grid = make_grid(params_count, self.mstop_max, self.length_out);
+        let grid = make_grid(
+            params_count,
+            self.mstop_max,
+            self.length_out,
+            &self.model.config().algorithm,
+        );
 
         let mut rng = rand::thread_rng();
         let weights = self.resampling.generate_weights(data.n_obs(), &mut rng);
 
         #[cfg(feature = "parallel")]
-        let weights_iter = weights.par_iter().enumerate();
+        let weights_iter = weights.par_iter();
         #[cfg(not(feature = "parallel"))]
-        let weights_iter = weights.iter().enumerate();
+        let weights_iter = weights.iter();
 
         let risks: Result<Vec<Vec<f64>>, BoostlssError> = weights_iter
-            .map(|(_fold_idx, w)| {
+            .map(|w| {
                 let valid_indices: Vec<usize> = w
                     .iter()
                     .enumerate()
@@ -270,7 +284,7 @@ mod tests {
 
     #[test]
     fn test_make_grid() {
-        let grid = make_grid(2, 10, 3);
+        let grid = make_grid(2, 10, 3, &crate::engine::Algorithm::Cyclic);
         // length_out = 3, min = 1, max = 10. log-spaced rounded: 1, 3, 10.
         // grid size = 3 * 3 = 9
         assert_eq!(grid.len(), 9);

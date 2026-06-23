@@ -2,12 +2,12 @@ use ndarray::{s, Array2};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct BivariatePSpline {
-    pub feature1: String,
-    pub feature2: String,
-    pub knots: usize,
-    pub degree: usize,
-    pub differences: usize,
-    pub df: f64,
+    pub(crate) feature1: String,
+    pub(crate) feature2: String,
+    pub(crate) knots: usize,
+    pub(crate) degree: usize,
+    pub(crate) differences: usize,
+    pub(crate) df: f64,
 }
 
 impl BivariatePSpline {
@@ -52,7 +52,7 @@ pub fn kronecker_product(a: &Array2<f64>, b: &Array2<f64>) -> Array2<f64> {
                 i * b_rows..(i + 1) * b_rows,
                 j * b_cols..(j + 1) * b_cols
             ]);
-            slice.assign(&(b * val));
+            slice.zip_mut_with(b, |out, &b_val| *out = b_val * val);
         }
     }
     res

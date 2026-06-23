@@ -3,7 +3,7 @@ use crate::error::BoostlssError;
 use crate::family::Family;
 use crate::param::{LogLink, LogitLink, ParamSpec};
 use crate::util::{minimize_1d, weighted_mean};
-use ndarray::Array1;
+use ndarray::{Array1, Array2};
 use serde::{Deserialize, Serialize};
 use statrs::function::gamma::digamma;
 
@@ -57,22 +57,14 @@ impl Family for BetaLss {
         let phi_link = &self.params[1].link;
 
         let mut nll = 0.0;
-        let iter = if let Some(w) = data.weights() {
-            y.iter()
-                .zip(eta[0].iter())
-                .zip(eta[1].iter())
-                .zip(w.iter())
-                .map(|(((yi, mui), phii), wi)| (*yi, *mui, *phii, *wi))
-                .collect::<Vec<_>>()
-        } else {
-            y.iter()
-                .zip(eta[0].iter())
-                .zip(eta[1].iter())
-                .map(|((yi, mui), phii)| (*yi, *mui, *phii, 1.0))
-                .collect::<Vec<_>>()
-        };
+        let w = data.weights();
 
-        for (yi, mui, phii, wi) in iter {
+        for i in 0..y.len() {
+            let yi = y[i];
+            let mui = eta[0][i];
+            let phii = eta[1][i];
+            let wi = w.map_or(1.0, |weights| weights[i]);
+
             let mu = mu_link.response(mui).clamp(EPSILON, 1.0 - EPSILON);
             let phi = phi_link.response(phii).max(EPSILON);
 
@@ -136,6 +128,8 @@ impl Family for BetaLss {
         // Refine with 1D optimization for phi
         let y_arr = y.clone();
         let w_arr = w.cloned();
+        let dummy_design = Array2::zeros((y.len(), 0));
+        let dummy_dataset = Dataset::new(dummy_design, y_arr.clone(), w_arr).unwrap();
 
         let opt_phi = minimize_1d(
             |log_phi| {
@@ -143,11 +137,7 @@ impl Family for BetaLss {
                     Array1::from_elem(y_arr.len(), self.params[0].link.link(mu_hat)),
                     Array1::from_elem(y_arr.len(), log_phi),
                 ];
-                self.nll(
-                    &Dataset::new(data.design().clone(), y_arr.clone(), w_arr.clone()).unwrap(),
-                    &eta,
-                )
-                .unwrap_or(f64::MAX)
+                self.nll(&dummy_dataset, &eta).unwrap_or(f64::MAX)
             },
             -5.0,
             10.0,

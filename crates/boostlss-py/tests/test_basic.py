@@ -131,3 +131,23 @@ def test_partial_dependence(fitted_model_and_data):
     # Check that PD is monotonically increasing, since y = 2.0 * X[:, 0]
     for i in range(1, len(pd)):
         assert pd[i] > pd[i - 1]
+
+
+def test_algorithm_param():
+    from boostlss_py import PyFamily, BoostLssModel
+
+    family = PyFamily("GaussianLSS")
+    
+    # default should be cyclic
+    model = BoostLssModel(family, mstop=10, step_length=0.1)
+    assert model is not None
+    
+    # explicit valid options
+    model_cyclic = BoostLssModel(family, mstop=10, step_length=0.1, algorithm="cyclic")
+    assert model_cyclic is not None
+    model_noncyclic = BoostLssModel(family, mstop=10, step_length=0.1, algorithm="noncyclic")
+    assert model_noncyclic is not None
+    
+    # invalid option
+    with pytest.raises(ValueError, match="algorithm must be 'cyclic' or 'noncyclic'"):
+        BoostLssModel(family, mstop=10, step_length=0.1, algorithm="invalid_algo")

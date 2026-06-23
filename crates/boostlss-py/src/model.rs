@@ -123,6 +123,7 @@ pub struct BoostLssModel {
     family: PyFamily,
     mstop: usize,
     step_length: f64,
+    algorithm: String,
     learners: Vec<(String, BaseLearner)>,
     fitted: Option<FittedModel>,
     train_data: Option<(ndarray::Array2<f64>, ndarray::Array1<f64>)>,
@@ -131,16 +132,23 @@ pub struct BoostLssModel {
 #[pymethods]
 impl BoostLssModel {
     #[new]
-    #[pyo3(signature = (family, mstop=100, step_length=0.1))]
-    fn new(family: PyFamily, mstop: usize, step_length: f64) -> Self {
-        Self {
+    #[pyo3(signature = (family, mstop=100, step_length=0.1, algorithm="cyclic"))]
+    fn new(family: PyFamily, mstop: usize, step_length: f64, algorithm: &str) -> PyResult<Self> {
+        if algorithm != "cyclic" && algorithm != "noncyclic" {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "algorithm must be 'cyclic' or 'noncyclic'",
+            ));
+        }
+
+        Ok(Self {
             family,
             mstop,
             step_length,
+            algorithm: algorithm.to_string(),
             learners: Vec::new(),
             fitted: None,
             train_data: None,
-        }
+        })
     }
 
     fn add_learner(&mut self, param: String, learner: &Bound<'_, PyAny>) -> PyResult<()> {
@@ -553,8 +561,8 @@ impl BoostLssModel {
         }
     }
 
-    fn __getnewargs__(&self) -> (PyFamily, usize, f64) {
-        (self.family.clone(), self.mstop, self.step_length)
+    fn __getnewargs__(&self) -> (PyFamily, usize, f64, String) {
+        (self.family.clone(), self.mstop, self.step_length, self.algorithm.clone())
     }
 
     fn __getstate__<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
@@ -572,6 +580,7 @@ impl BoostLssModel {
         dict.set_item("family", family_str)?;
         dict.set_item("mstop", self.mstop)?;
         dict.set_item("step_length", self.step_length)?;
+        dict.set_item("algorithm", self.algorithm.clone())?;
         // Skip train_data entirely!
 
         if let Some(fitted) = &self.fitted {
@@ -619,6 +628,11 @@ impl BoostLssModel {
             .get_item("step_length")?
             .ok_or_else(|| pyo3::exceptions::PyKeyError::new_err("Missing key 'step_length'"))?
             .extract()?;
+        self.algorithm = if let Some(algo_any) = state.get_item("algorithm")? {
+            algo_any.extract()?
+        } else {
+            "cyclic".to_string()
+        };
 
         if let Some(bytes_any) = state.get_item("fitted")? {
             let bytes: &[u8] = bytes_any.extract()?;

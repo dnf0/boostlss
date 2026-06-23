@@ -2,7 +2,7 @@ use crate::data::Dataset;
 use crate::error::BoostlssError;
 use crate::family::Family;
 use crate::param::{LogLink, LogitLink, ParamSpec};
-use crate::util::{minimize_1d, weighted_mean, weighted_sd};
+use crate::util::{minimize_1d, weighted_mean};
 use ndarray::Array1;
 use serde::{Deserialize, Serialize};
 use statrs::function::gamma::digamma;
@@ -132,9 +132,6 @@ impl Family for BetaLss {
         let y = data.response();
         let w = data.weights();
         let mu_hat = weighted_mean(y, w).clamp(EPSILON, 1.0 - EPSILON);
-        let var_y = weighted_sd(y, w).powi(2);
-
-        let phi_hat = (mu_hat * (1.0 - mu_hat) / var_y - 1.0).max(1.0);
 
         // Refine with 1D optimization for phi
         let y_arr = y.clone();
@@ -142,8 +139,7 @@ impl Family for BetaLss {
 
         let opt_phi = minimize_1d(
             |log_phi| {
-                let phi = log_phi.exp();
-                let mut eta = vec![
+                let eta = vec![
                     Array1::from_elem(y_arr.len(), self.params[0].link.link(mu_hat)),
                     Array1::from_elem(y_arr.len(), log_phi),
                 ];
@@ -190,10 +186,6 @@ mod tests {
             let l_p = fam.nll(&ds, &eta_plus).unwrap();
             let l_m = fam.nll(&ds, &eta_minus).unwrap();
             let fin_diff = -(l_p - l_m) / (2.0 * eps);
-            println!(
-                "mu i={}: grad_analytic={}, fin_diff={}",
-                i, grad_mu_analytic[i], fin_diff
-            );
             assert!(approx::relative_eq!(
                 grad_mu_analytic[i],
                 fin_diff,
@@ -211,10 +203,6 @@ mod tests {
             let l_p = fam.nll(&ds, &eta_plus).unwrap();
             let l_m = fam.nll(&ds, &eta_minus).unwrap();
             let fin_diff = -(l_p - l_m) / (2.0 * eps);
-            println!(
-                "phi i={}: grad_analytic={}, fin_diff={}",
-                i, grad_phi_analytic[i], fin_diff
-            );
             assert!(approx::relative_eq!(
                 grad_phi_analytic[i],
                 fin_diff,

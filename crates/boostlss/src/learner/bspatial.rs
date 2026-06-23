@@ -12,7 +12,9 @@ pub struct BivariatePSpline {
     pub(crate) degree: usize,
     pub(crate) differences: usize,
     pub(crate) df: f64,
+    #[serde(default)]
     pub(crate) p1: Option<PSpline>,
+    #[serde(default)]
     pub(crate) p2: Option<PSpline>,
 }
 
@@ -52,25 +54,21 @@ impl BivariatePSpline {
         x1: &Array1<f64>,
         x2: &Array1<f64>,
     ) -> Result<Array2<f64>, BoostlssError> {
-        if self.p1.is_none() {
-            self.p1 = Some(
-                PSpline::new("")
-                    .with_knots(self.knots)
-                    .with_degree(self.degree)
-                    .with_differences(self.differences),
-            );
-        }
-        if self.p2.is_none() {
-            self.p2 = Some(
-                PSpline::new("")
-                    .with_knots(self.knots)
-                    .with_degree(self.degree)
-                    .with_differences(self.differences),
-            );
-        }
+        let p1 = self.p1.get_or_insert_with(|| {
+            PSpline::new("")
+                .with_knots(self.knots)
+                .with_degree(self.degree)
+                .with_differences(self.differences)
+        });
+        let b1 = p1.build_design(x1)?;
 
-        let b1 = self.p1.as_mut().unwrap().build_design(x1)?;
-        let b2 = self.p2.as_mut().unwrap().build_design(x2)?;
+        let p2 = self.p2.get_or_insert_with(|| {
+            PSpline::new("")
+                .with_knots(self.knots)
+                .with_degree(self.degree)
+                .with_differences(self.differences)
+        });
+        let b2 = p2.build_design(x2)?;
 
         let n_obs = b1.nrows();
         let p_cols1 = b1.ncols();

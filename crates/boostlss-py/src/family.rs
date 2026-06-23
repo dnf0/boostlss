@@ -5,6 +5,11 @@ use pyo3::prelude::*;
 pub enum PyFamily {
     GaussianLss,
     BinomialLss,
+    BetaLss,
+    WeibullLss,
+    LogNormalLss,
+    ZIPLss,
+    GEVLss,
 }
 
 #[pymethods]
@@ -14,6 +19,11 @@ impl PyFamily {
         match name {
             "GaussianLSS" | "GaussianLss" => Ok(PyFamily::GaussianLss),
             "BinomialLSS" | "BinomialLss" => Ok(PyFamily::BinomialLss),
+            "BetaLSS" | "BetaLss" => Ok(PyFamily::BetaLss),
+            "WeibullLSS" | "WeibullLss" => Ok(PyFamily::WeibullLss),
+            "LogNormalLSS" | "LogNormalLss" => Ok(PyFamily::LogNormalLss),
+            "ZIPLSS" | "ZIPLss" => Ok(PyFamily::ZIPLss),
+            "GEVLSS" | "GEVLss" => Ok(PyFamily::GEVLss),
             _ => Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "Unknown family: {}",
                 name
@@ -25,6 +35,11 @@ impl PyFamily {
         match self {
             PyFamily::GaussianLss => ("GaussianLSS",),
             PyFamily::BinomialLss => ("BinomialLSS",),
+            PyFamily::BetaLss => ("BetaLSS",),
+            PyFamily::WeibullLss => ("WeibullLSS",),
+            PyFamily::LogNormalLss => ("LogNormalLSS",),
+            PyFamily::ZIPLss => ("ZIPLSS",),
+            PyFamily::GEVLss => ("GEVLSS",),
         }
     }
 }

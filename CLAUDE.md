@@ -1,4 +1,4 @@
-<!-- agent-rules@1_10_0 objective=general language=rust strictness=balanced repo_name=boostlss -->
+<!-- agent-rules@1_10_0 objective=general language=python strictness=balanced repo_name=boostlss -->
 
 # boostlss Claude Guidance
 

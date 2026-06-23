@@ -147,18 +147,10 @@ impl BaseLearner {
             Self::BivariatePSpline(bp) => {
                 let col1 = data.design().column(bp.feature1_idx).to_owned();
                 let col2 = data.design().column(bp.feature2_idx).to_owned();
-                let b1 = crate::learner::PSpline::new("")
-                    .with_knots(bp.knots)
-                    .with_degree(bp.degree)
-                    .with_differences(bp.differences)
-                    .build_design(&col1)?;
-                let b2 = crate::learner::PSpline::new("")
-                    .with_knots(bp.knots)
-                    .with_degree(bp.degree)
-                    .with_differences(bp.differences)
-                    .build_design(&col2)?;
                 let design = bp.build_design(&col1, &col2)?;
-                let penalty = bp.penalty_matrix(b1.ncols(), b2.ncols());
+                let p_cols1 = bp.knots + bp.degree + 1;
+                let p_cols2 = bp.knots + bp.degree + 1;
+                let penalty = bp.penalty_matrix(p_cols1, p_cols2);
                 (design, penalty)
             }
             _ => {

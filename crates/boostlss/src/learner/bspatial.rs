@@ -12,6 +12,8 @@ pub struct BivariatePSpline {
     pub(crate) degree: usize,
     pub(crate) differences: usize,
     pub(crate) df: f64,
+    pub(crate) p1: Option<PSpline>,
+    pub(crate) p2: Option<PSpline>,
 }
 
 impl BivariatePSpline {
@@ -23,6 +25,8 @@ impl BivariatePSpline {
             degree: 3,
             differences: 2,
             df: 4.0,
+            p1: None,
+            p2: None,
         }
     }
 
@@ -44,21 +48,29 @@ impl BivariatePSpline {
     }
 
     pub fn build_design(
-        &self,
+        &mut self,
         x1: &Array1<f64>,
         x2: &Array1<f64>,
     ) -> Result<Array2<f64>, BoostlssError> {
-        let mut p1 = PSpline::new("")
-            .with_knots(self.knots)
-            .with_degree(self.degree)
-            .with_differences(self.differences);
-        let mut p2 = PSpline::new("")
-            .with_knots(self.knots)
-            .with_degree(self.degree)
-            .with_differences(self.differences);
+        if self.p1.is_none() {
+            self.p1 = Some(
+                PSpline::new("")
+                    .with_knots(self.knots)
+                    .with_degree(self.degree)
+                    .with_differences(self.differences),
+            );
+        }
+        if self.p2.is_none() {
+            self.p2 = Some(
+                PSpline::new("")
+                    .with_knots(self.knots)
+                    .with_degree(self.degree)
+                    .with_differences(self.differences),
+            );
+        }
 
-        let b1 = p1.build_design(x1)?;
-        let b2 = p2.build_design(x2)?;
+        let b1 = self.p1.as_mut().unwrap().build_design(x1)?;
+        let b2 = self.p2.as_mut().unwrap().build_design(x2)?;
 
         let n_obs = b1.nrows();
         let p_cols1 = b1.ncols();
@@ -171,5 +183,23 @@ mod tests {
 
         let pred = fitted.predict(&ds, "mu", Scale::Link).unwrap();
         assert_eq!(pred.len(), 100);
+
+        // Verify prediction does not break when using a different prediction dataset
+        let mut design_pred = Array2::zeros((100, 2));
+        let mut x1_pred = Array1::zeros(100);
+        let mut x2_pred = Array1::zeros(100);
+        for i in 0..10 {
+            for j in 0..10 {
+                // Different bounds than training (0.0 to 1.0)
+                x1_pred[i * 10 + j] = 0.2 + (i as f64 / 9.0) * 0.6;
+                x2_pred[i * 10 + j] = 0.2 + (j as f64 / 9.0) * 0.6;
+            }
+        }
+        design_pred.column_mut(0).assign(&x1_pred);
+        design_pred.column_mut(1).assign(&x2_pred);
+        let ds_pred = Dataset::new(design_pred, Array1::zeros(100), None).unwrap();
+
+        let pred_new = fitted.predict(&ds_pred, "mu", Scale::Link).unwrap();
+        assert_eq!(pred_new.len(), 100);
     }
 }

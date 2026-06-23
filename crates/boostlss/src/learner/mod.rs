@@ -15,12 +15,16 @@ pub mod tree;
 use serde::{Deserialize, Serialize};
 pub use tree::{Tree, TreeNode};
 
+pub mod random_effects;
+pub use random_effects::RandomEffects;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum BaseLearner {
     Linear(Linear),
     PSpline(PSpline),
     Stump(Stump),
     Tree(Tree),
+    RandomEffects(RandomEffects),
 }
 
 impl From<Linear> for BaseLearner {
@@ -47,6 +51,12 @@ impl From<Tree> for BaseLearner {
     }
 }
 
+impl From<RandomEffects> for BaseLearner {
+    fn from(r: RandomEffects) -> Self {
+        Self::RandomEffects(r)
+    }
+}
+
 impl BaseLearner {
     pub fn build_design(
         &mut self,
@@ -55,6 +65,7 @@ impl BaseLearner {
         match self {
             Self::Linear(l) => l.build_design(x),
             Self::PSpline(p) => p.build_design(x),
+            Self::RandomEffects(r) => r.build_design(x),
             Self::Stump(_) => Err(crate::error::BoostlssError::DataError(
                 "Stump does not use build_design".into(),
             )),
@@ -68,6 +79,7 @@ impl BaseLearner {
         match self {
             Self::Linear(l) => l.penalty_matrix(n_cols),
             Self::PSpline(p) => p.penalty_matrix(n_cols),
+            Self::RandomEffects(r) => r.penalty_matrix(n_cols),
             Self::Stump(_) => Array2::zeros((0, 0)),
             Self::Tree(_) => Array2::zeros((0, 0)),
         }
@@ -77,6 +89,7 @@ impl BaseLearner {
         match self {
             Self::Linear(_) => None,
             Self::PSpline(p) => Some(p.df),
+            Self::RandomEffects(r) => Some(r.df),
             Self::Stump(_) => None,
             Self::Tree(_) => None,
         }
@@ -249,5 +262,12 @@ mod tests {
         let t = Tree::new(vec![0]);
         let bl: BaseLearner = t.into();
         assert!(matches!(bl, BaseLearner::Tree(_)));
+    }
+
+    #[test]
+    fn test_from_impls_random_effects() {
+        let r = RandomEffects::new("x");
+        let bl: BaseLearner = r.into();
+        assert!(matches!(bl, BaseLearner::RandomEffects(_)));
     }
 }

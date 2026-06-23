@@ -1,20 +1,37 @@
 use faer::{Mat, Side};
-use ndarray::{s, Array2};
+use ndarray::Array2;
 
 /// Create a difference matrix `D` of order `d` for `n` columns.
 /// Penalty matrix K = D^T D.
-pub fn difference_matrix(n: usize, d: usize) -> Array2<f64> {
+pub fn difference_matrix(n: usize, d: usize, cyclic: bool) -> Array2<f64> {
     if d == 0 {
         return Array2::eye(n);
     }
-    let prev = difference_matrix(n, d - 1);
-    let nrows = prev.nrows();
-    &prev.slice(s![1.., ..]) - &prev.slice(s![..nrows - 1, ..])
+
+    let mut mat = Array2::zeros((n, n));
+    if cyclic {
+        for i in 0..n {
+            mat[[i, i]] = -1.0;
+            mat[[i, (i + 1) % n]] = 1.0;
+        }
+    } else {
+        for i in 0..(n - 1) {
+            mat[[i, i]] = -1.0;
+            mat[[i, i + 1]] = 1.0;
+        }
+    }
+
+    if d > 1 {
+        let prev = difference_matrix(n, d - 1, cyclic);
+        mat.dot(&prev)
+    } else {
+        mat
+    }
 }
 
 /// Compute K = D^T D
-pub fn penalty_matrix(n: usize, d: usize) -> Array2<f64> {
-    let diff = difference_matrix(n, d);
+pub fn penalty_matrix(n: usize, d: usize, cyclic: bool) -> Array2<f64> {
+    let diff = difference_matrix(n, d, cyclic);
     diff.t().dot(&diff)
 }
 
@@ -103,16 +120,34 @@ mod tests {
 
     #[test]
     fn test_difference_matrix_d1() {
-        let diff = difference_matrix(3, 1);
-        let expected = array![[-1.0, 1.0, 0.0], [0.0, -1.0, 1.0]];
+        let diff = difference_matrix(3, 1, false);
+        let expected = array![[-1.0, 1.0, 0.0], [0.0, -1.0, 1.0], [0.0, 0.0, 0.0]];
         assert_eq!(diff, expected);
     }
 
     #[test]
     fn test_penalty_matrix() {
-        let pen = penalty_matrix(3, 1);
-        let diff = difference_matrix(3, 1);
+        let pen = penalty_matrix(3, 1, false);
+        let diff = difference_matrix(3, 1, false);
         assert_eq!(pen, diff.t().dot(&diff));
+    }
+
+    #[test]
+    fn test_cyclic_difference_matrix_d1() {
+        // d=1 difference matrix for 3 columns:
+        // [ -1   1   0 ]
+        // [  0  -1   1 ]
+        // [  1   0  -1 ]  <- The last row wraps around!
+        let mut expected = Array2::zeros((3, 3));
+        expected[[0, 0]] = -1.0;
+        expected[[0, 1]] = 1.0;
+        expected[[1, 1]] = -1.0;
+        expected[[1, 2]] = 1.0;
+        expected[[2, 0]] = 1.0;
+        expected[[2, 2]] = -1.0;
+
+        let mat = difference_matrix(3, 1, true);
+        assert_eq!(mat, expected);
     }
 
     #[test]

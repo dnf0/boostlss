@@ -9,6 +9,7 @@ pub struct PSpline {
     pub knots: usize,
     pub degree: usize,
     pub differences: usize,
+    pub is_cyclic: bool,
     pub df: f64,
     pub min_val: Option<f64>,
     pub max_val: Option<f64>,
@@ -22,6 +23,7 @@ impl PSpline {
             knots: 20,
             degree: 3,
             differences: 2,
+            is_cyclic: false,
             df: 4.0,
             min_val: None,
             max_val: None,
@@ -46,6 +48,11 @@ impl PSpline {
 
     pub fn with_df(mut self, df: f64) -> Self {
         self.df = df;
+        self
+    }
+
+    pub fn cyclic(mut self, cyclic: bool) -> Self {
+        self.is_cyclic = cyclic;
         self
     }
 
@@ -125,7 +132,7 @@ impl PSpline {
     }
 
     pub fn penalty_matrix(&self, n_cols: usize) -> Array2<f64> {
-        penalty_matrix(n_cols, self.differences)
+        penalty_matrix(n_cols, self.differences, self.is_cyclic)
     }
 }
 
@@ -140,6 +147,12 @@ mod tests {
         assert_eq!(ps.col_name, "x1");
         assert_eq!(ps.knots, 20);
         assert_eq!(ps.degree, 3);
+    }
+
+    #[test]
+    fn test_pspline_cyclic_builder() {
+        let ps = PSpline::new("x1").cyclic(true);
+        assert!(ps.is_cyclic);
     }
 
     #[test]

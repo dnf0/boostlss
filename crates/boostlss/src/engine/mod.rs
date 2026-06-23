@@ -2,6 +2,7 @@
 use serde::{Deserialize, Serialize};
 
 pub mod cyclical;
+pub mod noncyclical;
 pub mod stabilization;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Algorithm {

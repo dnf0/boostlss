@@ -107,9 +107,14 @@ impl<F: Family + Clone> BoostLss<F> {
     pub fn fit(self, data: &Dataset) -> Result<Fitted<F>, BoostlssError> {
         match self.config.algorithm {
             Algorithm::Cyclic => crate::engine::cyclical::fit_cyclical(self, data),
-            Algorithm::NonCyclic => Err(BoostlssError::InvalidConfig(
-                "NonCyclic not yet implemented".into(),
-            )),
+            Algorithm::NonCyclic => {
+                if matches!(self.config.mstop, Mstop::PerParam(_)) {
+                    return Err(BoostlssError::InvalidConfig(
+                        "NonCyclic algorithm requires a Scalar Mstop".into(),
+                    ));
+                }
+                crate::engine::noncyclical::fit_noncyclical(self, data)
+            }
         }
     }
 }
@@ -501,5 +506,27 @@ mod tests {
         assert!((preds[0] - offset).abs() > 1e-10);
         assert!((preds[1] - offset).abs() < 1e-10);
         assert!((preds[2] - offset).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_boostlss_fit_noncyclic_requires_scalar_mstop() {
+        use crate::data::Dataset;
+        use crate::engine::Mstop;
+        use crate::family::GaussianLss;
+        use crate::learner::Linear;
+        use ndarray::{array, Array2};
+
+        let x = Array2::<f64>::zeros((2, 1));
+        let y = array![1.0, 2.0];
+        let data = Dataset::new(x, y, None).unwrap();
+
+        let model = BoostLss::new(GaussianLss::new())
+            .on("mu", |p| p.add(Linear::new("x")))
+            .unwrap()
+            .algorithm(crate::engine::Algorithm::NonCyclic)
+            .mstop(Mstop::PerParam(vec![10, 10])); // Invalid for NonCyclic
+
+        let result = model.fit(&data);
+        assert!(matches!(result, Err(BoostlssError::InvalidConfig(_))));
     }
 }

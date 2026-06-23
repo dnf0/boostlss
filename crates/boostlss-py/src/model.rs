@@ -150,6 +150,8 @@ impl BoostLssModel {
             s.into()
         } else if let Ok(t) = learner.extract::<crate::learner::PyTreeLearner>() {
             t.into()
+        } else if let Ok(p) = learner.extract::<crate::learner::PyPSplineLearner>() {
+            p.into()
         } else if let Ok(r) = learner.extract::<PyRandomEffectsLearner>() {
             BaseLearner::RandomEffects(RandomEffects::new(&r.feature).df(r.df))
         } else {

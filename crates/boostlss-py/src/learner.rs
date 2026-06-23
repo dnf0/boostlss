@@ -72,3 +72,60 @@ impl From<PyTreeLearner> for BaseLearner {
         BaseLearner::Tree(tree)
     }
 }
+
+#[pyclass(name = "PSplineLearner")]
+#[derive(Clone)]
+pub struct PyPSplineLearner {
+    pub feature: String,
+    pub degree: usize,
+    pub knots: usize,
+    pub differences: usize,
+    pub df: f64,
+    pub cyclic: bool,
+}
+
+#[pymethods]
+impl PyPSplineLearner {
+    #[new]
+    #[pyo3(signature = (feature, degree=3, knots=20, differences=2, df=4.0, cyclic=false))]
+    fn new(
+        feature: String,
+        degree: usize,
+        knots: usize,
+        differences: usize,
+        df: f64,
+        cyclic: bool,
+    ) -> Self {
+        Self {
+            feature,
+            degree,
+            knots,
+            differences,
+            df,
+            cyclic,
+        }
+    }
+
+    #[getter]
+    fn get_cyclic(&self) -> bool {
+        self.cyclic
+    }
+
+    #[setter]
+    fn set_cyclic(&mut self, cyclic: bool) {
+        self.cyclic = cyclic;
+    }
+}
+
+impl From<PyPSplineLearner> for BaseLearner {
+    fn from(p: PyPSplineLearner) -> Self {
+        BaseLearner::PSpline(
+            boostlss::learner::PSpline::new(&p.feature)
+                .with_degree(p.degree)
+                .with_knots(p.knots)
+                .with_differences(p.differences)
+                .with_df(p.df)
+                .cyclic(p.cyclic),
+        )
+    }
+}

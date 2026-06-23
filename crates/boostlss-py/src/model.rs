@@ -408,6 +408,11 @@ impl BoostLssModel {
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
 
+                    let model = match self.algorithm {
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
+
                     let cv = CvRisk::new(model, Resampling::KFold { k: folds });
                     let result = cv
                         .run(&dataset)
@@ -431,6 +436,11 @@ impl BoostLssModel {
                             .on(param.as_str(), |p| p.add(learner.clone()))
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
+
+                    let model = match self.algorithm {
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
 
                     let cv = CvRisk::new(model, Resampling::KFold { k: folds });
                     let result = cv
@@ -456,6 +466,11 @@ impl BoostLssModel {
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
 
+                    let model = match self.algorithm {
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
+
                     let cv = CvRisk::new(model, Resampling::KFold { k: folds });
                     let result = cv
                         .run(&dataset)
@@ -479,6 +494,11 @@ impl BoostLssModel {
                             .on(param.as_str(), |p| p.add(learner.clone()))
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
+
+                    let model = match self.algorithm {
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
 
                     let cv = CvRisk::new(model, Resampling::KFold { k: folds });
                     let result = cv
@@ -504,6 +524,11 @@ impl BoostLssModel {
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
 
+                    let model = match self.algorithm {
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
+
                     let cv = CvRisk::new(model, Resampling::KFold { k: folds });
                     let result = cv
                         .run(&dataset)
@@ -528,6 +553,11 @@ impl BoostLssModel {
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
 
+                    let model = match self.algorithm {
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
+
                     let cv = CvRisk::new(model, Resampling::KFold { k: folds });
                     let result = cv
                         .run(&dataset)
@@ -551,6 +581,11 @@ impl BoostLssModel {
                             .on(param.as_str(), |p| p.add(learner.clone()))
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
+
+                    let model = match self.algorithm {
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
 
                     let cv = CvRisk::new(model, Resampling::KFold { k: folds });
                     let result = cv

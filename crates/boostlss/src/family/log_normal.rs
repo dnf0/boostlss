@@ -51,10 +51,10 @@ impl Family for LogNormalLss {
     }
 
     fn nll(&self, data: &Dataset, eta: &[Array1<f64>]) -> Result<f64, BoostlssError> {
-        self.check_response(data.response())?;
         let y = data.response();
         let mu_link = &self.params[0].link;
         let sigma_link = &self.params[1].link;
+        let weights = data.weights();
 
         let mut nll = 0.0;
 
@@ -62,7 +62,7 @@ impl Family for LogNormalLss {
             let yi = y[i];
             let mui = eta[0][i];
             let sigmai = eta[1][i];
-            let wi = data.weights().map_or(1.0, |w| w[i]);
+            let wi = weights.map_or(1.0, |w| w[i]);
 
             let mu = mu_link.response(mui);
             let sigma = sigma_link.response(sigmai).max(EPSILON);
@@ -85,13 +85,14 @@ impl Family for LogNormalLss {
         let y = data.response();
         let mu_link = &self.params[0].link;
         let sigma_link = &self.params[1].link;
+        let weights = data.weights();
         let mut grad = Array1::zeros(y.len());
 
         for i in 0..y.len() {
             let yi = y[i];
             let mu = mu_link.response(eta[0][i]);
             let sigma = sigma_link.response(eta[1][i]).max(EPSILON);
-            let wi = data.weights().map_or(1.0, |w| w[i]);
+            let wi = weights.map_or(1.0, |w| w[i]);
             let log_y = yi.ln();
 
             if k == 0 {
@@ -108,6 +109,7 @@ impl Family for LogNormalLss {
     }
 
     fn init_offsets(&self, data: &Dataset) -> Result<Vec<f64>, BoostlssError> {
+        self.check_response(data.response())?;
         let log_y = data.response().mapv(|val| val.ln());
         let mu = weighted_mean(&log_y, data.weights());
         let sigma = weighted_sd(&log_y, data.weights()).max(EPSILON);
@@ -123,6 +125,25 @@ impl Family for LogNormalLss {
 mod tests {
     use super::*;
     use ndarray::{array, Array2};
+
+    #[test]
+    fn test_log_normal_invalid_response() {
+        let fam = LogNormalLss::new();
+
+        let y_zero = array![1.0, 0.0, 3.0];
+        let ds_zero = Dataset::new(Array2::<f64>::zeros((3, 1)), y_zero, None).unwrap();
+        assert!(matches!(
+            fam.init_offsets(&ds_zero),
+            Err(BoostlssError::DataError(_))
+        ));
+
+        let y_neg = array![1.0, -1.0, 3.0];
+        let ds_neg = Dataset::new(Array2::<f64>::zeros((3, 1)), y_neg, None).unwrap();
+        assert!(matches!(
+            fam.init_offsets(&ds_neg),
+            Err(BoostlssError::DataError(_))
+        ));
+    }
 
     #[test]
     fn test_log_normal_gradients() {

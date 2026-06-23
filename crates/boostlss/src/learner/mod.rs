@@ -1,5 +1,6 @@
 //! Base-learners and cached factorization state.
 
+pub mod bspatial;
 pub mod linear;
 pub use linear::Linear;
 
@@ -25,6 +26,7 @@ pub enum BaseLearner {
     Stump(Stump),
     Tree(Tree),
     RandomEffects(RandomEffects),
+    BivariatePSpline(bspatial::BivariatePSpline),
 }
 
 impl From<Linear> for BaseLearner {
@@ -57,6 +59,12 @@ impl From<RandomEffects> for BaseLearner {
     }
 }
 
+impl From<bspatial::BivariatePSpline> for BaseLearner {
+    fn from(b: bspatial::BivariatePSpline) -> Self {
+        Self::BivariatePSpline(b)
+    }
+}
+
 impl BaseLearner {
     pub fn build_design(
         &mut self,
@@ -72,6 +80,9 @@ impl BaseLearner {
             Self::Tree(_) => Err(crate::error::BoostlssError::DataError(
                 "Tree does not use build_design".into(),
             )),
+            Self::BivariatePSpline(_) => Err(crate::error::BoostlssError::DataError(
+                "BivariatePSpline does not use build_design(x)".into(),
+            )),
         }
     }
 
@@ -82,6 +93,7 @@ impl BaseLearner {
             Self::RandomEffects(r) => r.penalty_matrix(n_cols),
             Self::Stump(_) => Array2::zeros((0, 0)),
             Self::Tree(_) => Array2::zeros((0, 0)),
+            Self::BivariatePSpline(_) => Array2::zeros((0, 0)),
         }
     }
 
@@ -92,6 +104,7 @@ impl BaseLearner {
             Self::RandomEffects(r) => Some(r.df),
             Self::Stump(_) => None,
             Self::Tree(_) => None,
+            Self::BivariatePSpline(bp) => Some(bp.df),
         }
     }
     pub fn initialize(
@@ -130,8 +143,22 @@ impl BaseLearner {
             return Ok(LearnerFit::Stump(stump::StumpFitState { sorted_x }));
         }
 
-        let design = self.build_design(x)?;
-        let penalty = self.penalty_matrix(design.ncols());
+        let (design, penalty) = match self {
+            Self::BivariatePSpline(bp) => {
+                let col1 = data.design().column(bp.feature1_idx).to_owned();
+                let col2 = data.design().column(bp.feature2_idx).to_owned();
+                let design = bp.build_design(&col1, &col2)?;
+                let p_cols1 = bp.knots + bp.degree + 1;
+                let p_cols2 = bp.knots + bp.degree + 1;
+                let penalty = bp.penalty_matrix(p_cols1, p_cols2);
+                (design, penalty)
+            }
+            _ => {
+                let d = self.build_design(x)?;
+                let p = self.penalty_matrix(d.ncols());
+                (d, p)
+            }
+        };
         let lambda = match self.target_df() {
             Some(df) => {
                 let xtx = design.t().dot(&design);

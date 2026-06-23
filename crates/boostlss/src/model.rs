@@ -184,6 +184,12 @@ impl<F: Family> Fitted<F> {
                             }
                         }
                         pred = pred + u_hat;
+                    } else if let BaseLearner::BivariatePSpline(bp) = learner {
+                        let col1 = data.design().column(bp.feature1_idx).to_owned();
+                        let col2 = data.design().column(bp.feature2_idx).to_owned();
+                        let design = bp.build_design(&col1, &col2)?;
+                        let u_hat = design.dot(coef);
+                        pred = pred + u_hat;
                     } else {
                         let design = learner.build_design(&x_col)?;
                         let u_hat = design.dot(coef);

@@ -129,3 +129,55 @@ impl From<PyPSplineLearner> for BaseLearner {
         )
     }
 }
+
+#[pyclass(module = "boostlss_py")]
+#[derive(Clone)]
+pub struct PyBivariatePSplineLearner {
+    #[pyo3(get)]
+    pub feature1_idx: usize,
+    #[pyo3(get)]
+    pub feature2_idx: usize,
+    #[pyo3(get)]
+    pub degree: usize,
+    #[pyo3(get)]
+    pub knots: usize,
+    #[pyo3(get)]
+    pub differences: usize,
+    #[pyo3(get)]
+    pub df: f64,
+}
+
+#[pymethods]
+impl PyBivariatePSplineLearner {
+    #[new]
+    #[pyo3(signature = (feature1_idx, feature2_idx, degree=3, knots=20, differences=2, df=4.0))]
+    fn new(
+        feature1_idx: usize,
+        feature2_idx: usize,
+        degree: usize,
+        knots: usize,
+        differences: usize,
+        df: f64,
+    ) -> Self {
+        Self {
+            feature1_idx,
+            feature2_idx,
+            degree,
+            knots,
+            differences,
+            df,
+        }
+    }
+}
+
+impl From<PyBivariatePSplineLearner> for BaseLearner {
+    fn from(b: PyBivariatePSplineLearner) -> Self {
+        BaseLearner::BivariatePSpline(
+            boostlss::learner::bspatial::BivariatePSpline::new(b.feature1_idx, b.feature2_idx)
+                .degree(b.degree)
+                .knots(b.knots)
+                .differences(b.differences)
+                .df(b.df),
+        )
+    }
+}

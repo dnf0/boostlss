@@ -173,9 +173,22 @@ impl<F: Family> Fitted<F> {
             let learner = &mut self.learners[update.learner_idx].1;
             match &update.update {
                 LearnerUpdate::Linear(coef) => {
-                    let design = learner.build_design(&x_col)?;
-                    let u_hat = design.dot(coef);
-                    pred = pred + u_hat;
+                    if let BaseLearner::RandomEffects(_) = learner {
+                        let mut u_hat = ndarray::Array1::zeros(x_col.len());
+                        for (i, &val) in x_col.iter().enumerate() {
+                            if val >= 0.0 && val.fract() == 0.0 {
+                                let idx = val as usize;
+                                if idx < coef.len() {
+                                    u_hat[i] = coef[idx];
+                                }
+                            }
+                        }
+                        pred = pred + u_hat;
+                    } else {
+                        let design = learner.build_design(&x_col)?;
+                        let u_hat = design.dot(coef);
+                        pred = pred + u_hat;
+                    }
                 }
                 LearnerUpdate::Stump {
                     split_val,
@@ -440,5 +453,47 @@ mod tests {
 
         let result = fitted.partial_dependence(&data, "mu", 999, &grid);
         assert!(matches!(result, Err(BoostlssError::DataError(_))));
+    }
+
+    #[test]
+    fn test_predict_random_effects_out_of_bounds() {
+        use crate::engine::Mstop;
+        use crate::learner::RandomEffects;
+        let model = BoostLss::new(GaussianLss::new())
+            .on("mu", |p| p.add(RandomEffects::new("x")))
+            .unwrap()
+            .step_length(0.1)
+            .mstop(Mstop::Scalar(1));
+
+        let x_train = ndarray::array![0.0, 1.0, 0.0, 1.0];
+        let y_train = ndarray::array![10.0, 20.0, 10.0, 20.0];
+        let ds_train = Dataset::new(
+            ndarray::Array2::from_shape_vec((4, 1), x_train.to_vec()).unwrap(),
+            y_train,
+            None,
+        )
+        .unwrap();
+
+        let mut fitted = model.fit(&ds_train).unwrap();
+
+        // Predict on unseen group index (2.0) and negative index (-1.0)
+        let x_test = ndarray::array![0.0, 2.0, -1.0];
+        let ds_test = Dataset::new(
+            ndarray::Array2::from_shape_vec((3, 1), x_test.to_vec()).unwrap(),
+            ndarray::Array1::zeros(3),
+            None,
+        )
+        .unwrap();
+
+        let preds = fitted.predict(&ds_test, "mu", Scale::Link).unwrap();
+
+        // Unseen/invalid groups should get exactly 0.0 addition to the intercept
+        // First element is seen, so it has a non-intercept effect.
+        // Elements 1 and 2 are unseen, so they should equal the global offset exactly.
+        // using fitted.offsets[0] instead of fitted.offset(0) since offset() is not defined
+        let offset = fitted.offsets[0];
+        assert!((preds[0] - offset).abs() > 1e-10);
+        assert!((preds[1] - offset).abs() < 1e-10);
+        assert!((preds[2] - offset).abs() < 1e-10);
     }
 }

@@ -1,19 +1,19 @@
-# Graph Report - boostlss (2026-06-22)
+# Graph Report - boostlss (2026-06-23)
 
 ## Corpus Check
 
-- 147 files · ~125,299 words
+- 174 files · ~139,477 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
 
-- 1748 nodes · 1988 edges · 167 communities (142 shown, 25 thin omitted)
-- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 12 edges (avg confidence: 0.8)
+- 1974 nodes · 2406 edges · 188 communities (161 shown, 27 thin omitted)
+- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 20 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
 
-- Built from commit: `51df5f7d`
+- Built from commit: `7236b6fb`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -178,50 +178,67 @@
 - [[_COMMUNITY_Community 163|Community 163]]
 - [[_COMMUNITY_Community 164|Community 164]]
 - [[_COMMUNITY_Community 165|Community 165]]
+- [[_COMMUNITY_Community 167|Community 167]]
+- [[_COMMUNITY_Community 168|Community 168]]
+- [[_COMMUNITY_Community 169|Community 169]]
+- [[_COMMUNITY_Community 170|Community 170]]
+- [[_COMMUNITY_Community 171|Community 171]]
+- [[_COMMUNITY_Community 172|Community 172]]
+- [[_COMMUNITY_Community 173|Community 173]]
+- [[_COMMUNITY_Community 174|Community 174]]
+- [[_COMMUNITY_Community 175|Community 175]]
+- [[_COMMUNITY_Community 176|Community 176]]
+- [[_COMMUNITY_Community 177|Community 177]]
+- [[_COMMUNITY_Community 178|Community 178]]
+- [[_COMMUNITY_Community 181|Community 181]]
+- [[_COMMUNITY_Community 182|Community 182]]
 
 ## God Nodes (most connected - your core abstractions)
 
 1. `Writing Skills` - 22 edges
 2. `Writing Skills` - 22 edges
-3. `BoostLssModel` - 20 edges
-4. `Testing Skills With Subagents` - 16 edges
+3. `BoostLssModel` - 21 edges
+4. `v0.1.0 (2026-06-20)` - 17 edges
 5. `Testing Skills With Subagents` - 16 edges
-6. `/graphify` - 15 edges
-7. `What You Must Do When Invoked` - 15 edges
-8. `Code Review Reception` - 15 edges
-9. `Test-Driven Development (TDD)` - 15 edges
-10. `/graphify` - 15 edges
+6. `Testing Skills With Subagents` - 16 edges
+7. `/graphify` - 15 edges
+8. `What You Must Do When Invoked` - 15 edges
+9. `Code Review Reception` - 15 edges
+10. `Test-Driven Development (TDD)` - 15 edges
 
 ## Surprising Connections (you probably didn't know these)
 
+- `stabilize()` --calls--> `weighted_mean()` [INFERRED]
+  crates/boostlss/src/engine/stabilization.rs → crates/boostlss/src/util.rs
 - `fit_cyclical()` --calls--> `stabilize()` [INFERRED]
   crates/boostlss/src/engine/cyclical.rs → crates/boostlss/src/engine/stabilization.rs
 - `fit_cyclical()` --calls--> `df_to_lambda()` [INFERRED]
   crates/boostlss/src/engine/cyclical.rs → crates/boostlss/src/learner/penalty.rs
-- `stabilize()` --calls--> `weighted_mean()` [INFERRED]
-  crates/boostlss/src/engine/stabilization.rs → crates/boostlss/src/util.rs
 
 ## Import Cycles
 
 - 1-file cycle: `crates/boostlss-py/src/model.rs -> crates/boostlss-py/src/model.rs`
-- 1-file cycle: `crates/boostlss/src/model.rs -> crates/boostlss/src/model.rs`
 - 1-file cycle: `crates/boostlss/src/engine/cyclical.rs -> crates/boostlss/src/engine/cyclical.rs`
-- 1-file cycle: `crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/mod.rs`
 - 1-file cycle: `crates/boostlss/src/cv.rs -> crates/boostlss/src/cv.rs`
 - 1-file cycle: `crates/boostlss/src/learner/mod.rs -> crates/boostlss/src/learner/mod.rs`
 - 1-file cycle: `crates/boostlss/src/data.rs -> crates/boostlss/src/data.rs`
 - 1-file cycle: `crates/boostlss/src/engine/stabilization.rs -> crates/boostlss/src/engine/stabilization.rs`
+- 1-file cycle: `crates/boostlss/src/family/beta.rs -> crates/boostlss/src/family/beta.rs`
+- 1-file cycle: `crates/boostlss/src/family/binomial.rs -> crates/boostlss/src/family/binomial.rs`
 - 1-file cycle: `crates/boostlss/src/family/gamma.rs -> crates/boostlss/src/family/gamma.rs`
 - 1-file cycle: `crates/boostlss/src/family/gaussian.rs -> crates/boostlss/src/family/gaussian.rs`
+- 1-file cycle: `crates/boostlss/src/family/gev.rs -> crates/boostlss/src/family/gev.rs`
+- 1-file cycle: `crates/boostlss/src/family/log_normal.rs -> crates/boostlss/src/family/log_normal.rs`
+- 1-file cycle: `crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/mod.rs`
 - 1-file cycle: `crates/boostlss/src/family/nbinomial.rs -> crates/boostlss/src/family/nbinomial.rs`
 - 1-file cycle: `crates/boostlss/src/family/student_t.rs -> crates/boostlss/src/family/student_t.rs`
+- 1-file cycle: `crates/boostlss/src/family/weibull.rs -> crates/boostlss/src/family/weibull.rs`
+- 1-file cycle: `crates/boostlss/src/family/zip.rs -> crates/boostlss/src/family/zip.rs`
 - 1-file cycle: `crates/boostlss/src/learner/linear.rs -> crates/boostlss/src/learner/linear.rs`
+- 1-file cycle: `crates/boostlss/src/model.rs -> crates/boostlss/src/model.rs`
 - 1-file cycle: `crates/boostlss/src/learner/pspline.rs -> crates/boostlss/src/learner/pspline.rs`
-- 1-file cycle: `crates/boostlss/src/learner/stump.rs -> crates/boostlss/src/learner/stump.rs`
-- 1-file cycle: `crates/boostlss/src/learner/tree.rs -> crates/boostlss/src/learner/tree.rs`
-- 1-file cycle: `crates/boostlss/src/util.rs -> crates/boostlss/src/util.rs`
 
-## Communities (167 total, 25 thin omitted)
+## Communities (188 total, 27 thin omitted)
 
 ### Community 0 - "Community 0"
 
@@ -590,8 +607,8 @@ Nodes (6): Address "Spirit vs Letter" Arguments, Build Rationalization Table, Bu
 
 ### Community 73 - "Community 73"
 
-Cohesion: 0.33
-Nodes (5): Key Changes, Overview, Related Issues, Risks & Impact, Verification Evidence
+Cohesion: 0.29
+Nodes (6): <!-- Bullet points of the main feature additions, bug fixes, or refactors. -->, Key Changes, Overview, Related Issues, Risks & Impact, Verification Evidence
 
 ### Community 74 - "Community 74"
 
@@ -701,7 +718,7 @@ Nodes (3): boostlss, Status, Validation and Testing
 ### Community 124 - "Community 124"
 
 Cohesion: 0.10
-Nodes (24): Bound, PyResult, Array1, Array2, BaseLearner, Bound, Fitted, Option (+16 more)
+Nodes (25): Bound, PyResult, Array1, Array2, BaseLearner, Bound, Dataset, Option (+17 more)
 
 ### Community 125 - "Community 125"
 
@@ -710,13 +727,13 @@ Nodes (38): 10. Python bindings (`boostlss-py`), 11. Testing strategy, 12. Error
 
 ### Community 126 - "Community 126"
 
-Cohesion: 0.09
-Nodes (27): Array1, Option, Array1, BoostlssError, Dataset, Default, Family, ParamSpec (+19 more)
+Cohesion: 0.08
+Nodes (31): Array1, BoostlssError, Dataset, Default, Family, ParamSpec, Result, Self (+23 more)
 
 ### Community 127 - "Community 127"
 
 Cohesion: 0.10
-Nodes (30): Algorithm, Config, Array1, BaseLearner, BoostlssError, Dataset, F, Fitted (+22 more)
+Nodes (32): Algorithm, Config, Array1, BaseLearner, BoostlssError, Dataset, F, Fitted (+24 more)
 
 ### Community 128 - "Community 128"
 
@@ -725,8 +742,8 @@ Nodes (13): Box, Clone, Debug, Self, Send, String, Sync, Into (+5 more)
 
 ### Community 129 - "Community 129"
 
-Cohesion: 0.13
-Nodes (20): Array1, Array2, ArrayView1, BoostlssError, Dataset, From, LearnerFit, Option (+12 more)
+Cohesion: 0.12
+Nodes (21): Array1, Array2, ArrayView1, BoostlssError, Dataset, From, LearnerFit, Option (+13 more)
 
 ### Community 130 - "Community 130"
 
@@ -755,8 +772,8 @@ Nodes (10): Array1, Array2, BoostlssError, Option, Result, Self, Dataset, datase
 
 ### Community 135 - "Community 135"
 
-Cohesion: 0.16
-Nodes (18): BoostLss, BoostlssError, Dataset, F, Fitted, LearnerFit, Result, Array2 (+10 more)
+Cohesion: 0.11
+Nodes (27): BoostLss, BoostlssError, Dataset, F, Fitted, LearnerFit, Result, Array1 (+19 more)
 
 ### Community 136 - "Community 136"
 
@@ -880,8 +897,8 @@ Nodes (9): ArrayView1, LearnerUpdate, Option, Self, String, Vec, Stump, StumpFit
 
 ### Community 163 - "Community 163"
 
-Cohesion: 0.18
-Nodes (10): CHANGELOG, Chore, Ci, Documentation, Feature, Fix, Refactor, Test (+2 more)
+Cohesion: 0.09
+Nodes (28): CHANGELOG, Chore, Chore, Chore, Ci, Ci, Conflicts:, Documentation (+20 more)
 
 ### Community 164 - "Community 164"
 
@@ -893,24 +910,84 @@ Nodes (7): Assessment, Critical (Must Fix), Important (Should Fix), Issues, Mino
 Cohesion: 0.50
 Nodes (4): Build evaluations first, Develop Skills iteratively with Claude, Evaluation and iteration, Observe how Claude navigates Skills
 
+### Community 167 - "Community 167"
+
+Cohesion: 0.22
+Nodes (13): Array1, BoostlssError, Dataset, Default, Family, ParamSpec, Result, Self (+5 more)
+
+### Community 168 - "Community 168"
+
+Cohesion: 0.22
+Nodes (14): Array1, BoostlssError, Dataset, Default, Family, ParamSpec, Result, Self (+6 more)
+
+### Community 169 - "Community 169"
+
+Cohesion: 0.22
+Nodes (13): Array1, BoostlssError, Dataset, Default, Family, ParamSpec, Result, Self (+5 more)
+
+### Community 170 - "Community 170"
+
+Cohesion: 0.24
+Nodes (12): Array1, BoostlssError, Dataset, Default, Family, ParamSpec, Result, Self (+4 more)
+
+### Community 171 - "Community 171"
+
+Cohesion: 0.24
+Nodes (12): Array1, BoostlssError, Dataset, Default, Family, ParamSpec, Result, Self (+4 more)
+
+### Community 172 - "Community 172"
+
+Cohesion: 0.21
+Nodes (11): Array1, Array2, BoostlssError, Result, Self, String, RandomEffects, test_random_effects_design() (+3 more)
+
+### Community 173 - "Community 173"
+
+Cohesion: 0.29
+Nodes (6): Antigravity CLI (`agy`) Tool Mapping, Invoking a skill — read its `SKILL.md`, Parallel dispatch, Prompt filling, Subagent support, Task tracking
+
+### Community 174 - "Community 174"
+
+Cohesion: 0.29
+Nodes (6): Antigravity CLI (`agy`) Tool Mapping, Invoking a skill — read its `SKILL.md`, Parallel dispatch, Prompt filling, Subagent support, Task tracking
+
+### Community 175 - "Community 175"
+
+Cohesion: 0.40
+Nodes (4): Claude Code Tool Mapping, Instructions file, Personal skills directory, Tools
+
+### Community 176 - "Community 176"
+
+Cohesion: 0.40
+Nodes (4): Pi Tool Mapping, Skills, Subagents, Task lists
+
+### Community 177 - "Community 177"
+
+Cohesion: 0.40
+Nodes (4): Claude Code Tool Mapping, Instructions file, Personal skills directory, Tools
+
+### Community 178 - "Community 178"
+
+Cohesion: 0.40
+Nodes (4): Pi Tool Mapping, Skills, Subagents, Task lists
+
 ## Knowledge Gaps
 
-- **1039 isolated node(s):** `start-server.sh script`, `stop-server.sh script`, `find-polluter.sh script`, `fs`, `path` (+1034 more)
+- **1075 isolated node(s):** `start-server.sh script`, `stop-server.sh script`, `find-polluter.sh script`, `fs`, `path` (+1070 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **25 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **27 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `fit_cyclical()` connect `Community 135` to `Community 124`, `Community 126`?**
-  _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **Why does `stabilize()` connect `Community 126` to `Community 135`?**
-  _High betweenness centrality (0.015) - this node is a cross-community bridge._
-- **Why does `weighted_mean()` connect `Community 126` to `Community 130`, `Community 132`, `Community 133`?**
-  _High betweenness centrality (0.014) - this node is a cross-community bridge._
+- **Why does `fit_cyclical()` connect `Community 135` to `Community 124`?**
+  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+- **Why does `weighted_mean()` connect `Community 126` to `Community 130`, `Community 132`, `Community 133`, `Community 167`, `Community 135`, `Community 169`, `Community 170`?**
+  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+- **Why does `stabilize()` connect `Community 135` to `Community 126`?**
+  _High betweenness centrality (0.025) - this node is a cross-community bridge._
 - **What connects `start-server.sh script`, `stop-server.sh script`, `find-polluter.sh script` to the rest of the system?**
-  _1039 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1075 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.06060606060606061 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**

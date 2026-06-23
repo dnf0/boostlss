@@ -75,68 +75,7 @@ pub fn fit_cyclical<F: Family + Clone>(
                     .fit_state
                     .fit_update(gradients.view(), data.weights().map(|w| w.view()));
 
-                let u_hat = match &update {
-                    crate::learner::LearnerUpdate::Linear(coef) => {
-                        if let LearnerFit::Linear(state) = &cached.fit_state {
-                            state.design.dot(coef)
-                        } else {
-                            unreachable!()
-                        }
-                    }
-                    crate::learner::LearnerUpdate::Stump {
-                        split_val,
-                        left_val,
-                        right_val,
-                    } => {
-                        let x_col = data.design().column(0);
-                        x_col.mapv(|val| {
-                            if val <= *split_val {
-                                *left_val
-                            } else {
-                                *right_val
-                            }
-                        })
-                    }
-                    crate::learner::LearnerUpdate::Tree {
-                        node: root,
-                        param: _,
-                    } => {
-                        let mut u_hat = ndarray::Array1::zeros(data.response().len());
-                        for i in 0..u_hat.len() {
-                            let mut node_ptr = root;
-                            loop {
-                                match node_ptr {
-                                    crate::learner::TreeNode::Leaf { value, .. } => {
-                                        u_hat[i] = *value;
-                                        break;
-                                    }
-                                    crate::learner::TreeNode::Split {
-                                        feature_idx,
-                                        threshold,
-                                        left,
-                                        right,
-                                    } => {
-                                        if let LearnerFit::Tree(state) = &cached.fit_state {
-                                            let val = state.sorted_features[*feature_idx]
-                                                .iter()
-                                                .find(|(_, idx)| *idx == i)
-                                                .unwrap()
-                                                .0;
-                                            if val <= *threshold {
-                                                node_ptr = left;
-                                            } else {
-                                                node_ptr = right;
-                                            }
-                                        } else {
-                                            unreachable!()
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        u_hat
-                    }
-                };
+                let u_hat = cached.fit_state.predict_update(&update, data);
 
                 let residuals = &gradients - &u_hat;
                 let rss = match data.weights() {
@@ -161,23 +100,10 @@ pub fn fit_cyclical<F: Family + Clone>(
                     param_idx: k,
                     learner_idx: l_idx,
                     risk_reduction,
-                    update: match update {
-                        crate::learner::LearnerUpdate::Linear(coef) => {
-                            crate::learner::LearnerUpdate::Linear(coef * nu)
-                        }
-                        crate::learner::LearnerUpdate::Stump {
-                            split_val,
-                            left_val,
-                            right_val,
-                        } => crate::learner::LearnerUpdate::Stump {
-                            split_val,
-                            left_val: left_val * nu,
-                            right_val: right_val * nu,
-                        },
-                        crate::learner::LearnerUpdate::Tree { mut node, param } => {
-                            node.scale(nu);
-                            crate::learner::LearnerUpdate::Tree { node, param }
-                        }
+                    update: {
+                        let mut u = update.clone();
+                        u.scale(nu);
+                        u
                     },
                 });
             }

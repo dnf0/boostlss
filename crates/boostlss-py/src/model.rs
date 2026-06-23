@@ -19,8 +19,8 @@ enum FittedModel {
     Beta(Fitted<BetaLss>),
     Weibull(Fitted<WeibullLss>),
     LogNormal(Fitted<LogNormalLss>),
-    ZIP(Fitted<ZIPLss>),
-    GEV(Fitted<GEVLss>),
+    Zip(Fitted<ZIPLss>),
+    Gev(Fitted<GEVLss>),
 }
 
 impl FittedModel {
@@ -46,10 +46,10 @@ impl FittedModel {
             Self::LogNormal(fitted) => fitted
                 .predict(dataset, param, scale)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
-            Self::ZIP(fitted) => fitted
+            Self::Zip(fitted) => fitted
                 .predict(dataset, param, scale)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
-            Self::GEV(fitted) => fitted
+            Self::Gev(fitted) => fitted
                 .predict(dataset, param, scale)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
         }
@@ -62,8 +62,8 @@ impl FittedModel {
             Self::Beta(fitted) => fitted.feature_importance(),
             Self::Weibull(fitted) => fitted.feature_importance(),
             Self::LogNormal(fitted) => fitted.feature_importance(),
-            Self::ZIP(fitted) => fitted.feature_importance(),
-            Self::GEV(fitted) => fitted.feature_importance(),
+            Self::Zip(fitted) => fitted.feature_importance(),
+            Self::Gev(fitted) => fitted.feature_importance(),
         }
     }
 
@@ -90,10 +90,10 @@ impl FittedModel {
             Self::LogNormal(fitted) => fitted
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
-            Self::ZIP(fitted) => fitted
+            Self::Zip(fitted) => fitted
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
-            Self::GEV(fitted) => fitted
+            Self::Gev(fitted) => fitted
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
         }
@@ -197,7 +197,7 @@ impl BoostLssModel {
         self.train_data = Some((x_mat, y_vec));
 
         match self.family {
-            PyFamily::GaussianLss => {
+            PyFamily::Gaussian => {
                 let mut model = BoostLss::new(GaussianLss::new())
                     .step_length(self.step_length)
                     .mstop(Mstop::Scalar(self.mstop));
@@ -220,7 +220,7 @@ impl BoostLssModel {
 
                 self.fitted = Some(FittedModel::Gaussian(fitted));
             }
-            PyFamily::BinomialLss => {
+            PyFamily::Binomial => {
                 let mut model = BoostLss::new(BinomialLss::new())
                     .step_length(self.step_length)
                     .mstop(Mstop::Scalar(self.mstop));
@@ -243,7 +243,7 @@ impl BoostLssModel {
 
                 self.fitted = Some(FittedModel::Binomial(fitted));
             }
-            PyFamily::BetaLss => {
+            PyFamily::Beta => {
                 let mut model = BoostLss::new(BetaLss::new())
                     .step_length(self.step_length)
                     .mstop(Mstop::Scalar(self.mstop));
@@ -266,7 +266,7 @@ impl BoostLssModel {
 
                 self.fitted = Some(FittedModel::Beta(fitted));
             }
-            PyFamily::WeibullLss => {
+            PyFamily::Weibull => {
                 let mut model = BoostLss::new(WeibullLss::new())
                     .step_length(self.step_length)
                     .mstop(Mstop::Scalar(self.mstop));
@@ -289,7 +289,7 @@ impl BoostLssModel {
 
                 self.fitted = Some(FittedModel::Weibull(fitted));
             }
-            PyFamily::LogNormalLss => {
+            PyFamily::LogNormal => {
                 let mut model = BoostLss::new(LogNormalLss::new())
                     .step_length(self.step_length)
                     .mstop(Mstop::Scalar(self.mstop));
@@ -312,7 +312,7 @@ impl BoostLssModel {
 
                 self.fitted = Some(FittedModel::LogNormal(fitted));
             }
-            PyFamily::ZIPLss => {
+            PyFamily::Zip => {
                 let mut model = BoostLss::new(ZIPLss::new())
                     .step_length(self.step_length)
                     .mstop(Mstop::Scalar(self.mstop));
@@ -333,9 +333,9 @@ impl BoostLssModel {
                     }
                 };
 
-                self.fitted = Some(FittedModel::ZIP(fitted));
+                self.fitted = Some(FittedModel::Zip(fitted));
             }
-            PyFamily::GEVLss => {
+            PyFamily::Gev => {
                 let mut model = BoostLss::new(GEVLss::new())
                     .step_length(self.step_length)
                     .mstop(Mstop::Scalar(self.mstop));
@@ -356,7 +356,7 @@ impl BoostLssModel {
                     }
                 };
 
-                self.fitted = Some(FittedModel::GEV(fitted));
+                self.fitted = Some(FittedModel::Gev(fitted));
             }
         }
         Ok(())
@@ -397,7 +397,7 @@ impl BoostLssModel {
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
 
             match self.family {
-                PyFamily::GaussianLss => {
+                PyFamily::Gaussian => {
                     let mut model = BoostLss::new(GaussianLss::new())
                         .step_length(self.step_length)
                         .mstop(Mstop::Scalar(self.mstop));
@@ -426,7 +426,7 @@ impl BoostLssModel {
                     dict.set_item("mean_risk", result.mean_risk)?;
                     Ok(dict)
                 }
-                PyFamily::BinomialLss => {
+                PyFamily::Binomial => {
                     let mut model = BoostLss::new(BinomialLss::new())
                         .step_length(self.step_length)
                         .mstop(Mstop::Scalar(self.mstop));
@@ -455,7 +455,7 @@ impl BoostLssModel {
                     dict.set_item("mean_risk", result.mean_risk)?;
                     Ok(dict)
                 }
-                PyFamily::BetaLss => {
+                PyFamily::Beta => {
                     let mut model = BoostLss::new(BetaLss::new())
                         .step_length(self.step_length)
                         .mstop(Mstop::Scalar(self.mstop));
@@ -484,7 +484,7 @@ impl BoostLssModel {
                     dict.set_item("mean_risk", result.mean_risk)?;
                     Ok(dict)
                 }
-                PyFamily::WeibullLss => {
+                PyFamily::Weibull => {
                     let mut model = BoostLss::new(WeibullLss::new())
                         .step_length(self.step_length)
                         .mstop(Mstop::Scalar(self.mstop));
@@ -513,7 +513,7 @@ impl BoostLssModel {
                     dict.set_item("mean_risk", result.mean_risk)?;
                     Ok(dict)
                 }
-                PyFamily::LogNormalLss => {
+                PyFamily::LogNormal => {
                     let mut model = BoostLss::new(LogNormalLss::new())
                         .step_length(self.step_length)
                         .mstop(Mstop::Scalar(self.mstop));
@@ -542,7 +542,7 @@ impl BoostLssModel {
                     dict.set_item("mean_risk", result.mean_risk)?;
                     Ok(dict)
                 }
-                PyFamily::ZIPLss => {
+                PyFamily::Zip => {
                     let mut model = BoostLss::new(ZIPLss::new())
                         .step_length(self.step_length)
                         .mstop(Mstop::Scalar(self.mstop));
@@ -571,7 +571,7 @@ impl BoostLssModel {
                     dict.set_item("mean_risk", result.mean_risk)?;
                     Ok(dict)
                 }
-                PyFamily::GEVLss => {
+                PyFamily::Gev => {
                     let mut model = BoostLss::new(GEVLss::new())
                         .step_length(self.step_length)
                         .mstop(Mstop::Scalar(self.mstop));
@@ -663,13 +663,13 @@ impl BoostLssModel {
         let dict = PyDict::new_bound(py);
 
         let family_str = match self.family {
-            PyFamily::GaussianLss => "GaussianLss",
-            PyFamily::BinomialLss => "BinomialLss",
-            PyFamily::BetaLss => "BetaLss",
-            PyFamily::WeibullLss => "WeibullLss",
-            PyFamily::LogNormalLss => "LogNormalLss",
-            PyFamily::ZIPLss => "ZIPLss",
-            PyFamily::GEVLss => "GEVLss",
+            PyFamily::Gaussian => "GaussianLss",
+            PyFamily::Binomial => "BinomialLss",
+            PyFamily::Beta => "BetaLss",
+            PyFamily::Weibull => "WeibullLss",
+            PyFamily::LogNormal => "LogNormalLss",
+            PyFamily::Zip => "ZIPLss",
+            PyFamily::Gev => "GEVLss",
         };
         dict.set_item("family", family_str)?;
         dict.set_item("mstop", self.mstop)?;
@@ -688,8 +688,8 @@ impl BoostLssModel {
                 FittedModel::Beta(f) => bincode::serialize(f),
                 FittedModel::Weibull(f) => bincode::serialize(f),
                 FittedModel::LogNormal(f) => bincode::serialize(f),
-                FittedModel::ZIP(f) => bincode::serialize(f),
-                FittedModel::GEV(f) => bincode::serialize(f),
+                FittedModel::Zip(f) => bincode::serialize(f),
+                FittedModel::Gev(f) => bincode::serialize(f),
             }
             .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
             dict.set_item("fitted", PyBytes::new_bound(py, &bytes))?;
@@ -709,13 +709,13 @@ impl BoostLssModel {
             .ok_or_else(|| pyo3::exceptions::PyKeyError::new_err("Missing key 'family'"))?
             .extract()?;
         self.family = match family_str.as_str() {
-            "GaussianLss" => PyFamily::GaussianLss,
-            "BinomialLss" => PyFamily::BinomialLss,
-            "BetaLss" => PyFamily::BetaLss,
-            "WeibullLss" => PyFamily::WeibullLss,
-            "LogNormalLss" => PyFamily::LogNormalLss,
-            "ZIPLss" => PyFamily::ZIPLss,
-            "GEVLss" => PyFamily::GEVLss,
+            "GaussianLss" => PyFamily::Gaussian,
+            "BinomialLss" => PyFamily::Binomial,
+            "BetaLss" => PyFamily::Beta,
+            "WeibullLss" => PyFamily::Weibull,
+            "LogNormalLss" => PyFamily::LogNormal,
+            "ZIPLss" => PyFamily::Zip,
+            "GEVLss" => PyFamily::Gev,
             _ => return Err(pyo3::exceptions::PyValueError::new_err("Unknown family")),
         };
         self.mstop = state
@@ -740,31 +740,31 @@ impl BoostLssModel {
         if let Some(bytes_any) = state.get_item("fitted")? {
             let bytes: &[u8] = bytes_any.extract()?;
             self.fitted = Some(match self.family {
-                PyFamily::GaussianLss => FittedModel::Gaussian(
+                PyFamily::Gaussian => FittedModel::Gaussian(
                     bincode::deserialize(bytes)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),
-                PyFamily::BinomialLss => FittedModel::Binomial(
+                PyFamily::Binomial => FittedModel::Binomial(
                     bincode::deserialize(bytes)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),
-                PyFamily::BetaLss => FittedModel::Beta(
+                PyFamily::Beta => FittedModel::Beta(
                     bincode::deserialize(bytes)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),
-                PyFamily::WeibullLss => FittedModel::Weibull(
+                PyFamily::Weibull => FittedModel::Weibull(
                     bincode::deserialize(bytes)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),
-                PyFamily::LogNormalLss => FittedModel::LogNormal(
+                PyFamily::LogNormal => FittedModel::LogNormal(
                     bincode::deserialize(bytes)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),
-                PyFamily::ZIPLss => FittedModel::ZIP(
+                PyFamily::Zip => FittedModel::Zip(
                     bincode::deserialize(bytes)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),
-                PyFamily::GEVLss => FittedModel::GEV(
+                PyFamily::Gev => FittedModel::Gev(
                     bincode::deserialize(bytes)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),

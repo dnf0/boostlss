@@ -56,24 +56,12 @@ impl Family for WeibullLss {
         let sigma_link = &self.params[1].link;
 
         let mut nll = 0.0;
-        let iter = if let Some(w) = data.weights() {
-            y.iter()
-                .zip(eta[0].iter())
-                .zip(eta[1].iter())
-                .zip(w.iter())
-                .map(|(((yi, mui), sigmai), wi)| (*yi, *mui, *sigmai, *wi))
-                .collect::<Vec<_>>()
-        } else {
-            y.iter()
-                .zip(eta[0].iter())
-                .zip(eta[1].iter())
-                .map(|((yi, mui), sigmai)| (*yi, *mui, *sigmai, 1.0))
-                .collect::<Vec<_>>()
-        };
 
-        for (yi, mui, sigmai, wi) in iter {
-            let mu = mu_link.response(mui).max(EPSILON);
-            let sigma = sigma_link.response(sigmai).max(EPSILON);
+        for i in 0..y.len() {
+            let yi = y[i];
+            let mu = mu_link.response(eta[0][i]).max(EPSILON);
+            let sigma = sigma_link.response(eta[1][i]).max(EPSILON);
+            let wi = data.weights().map_or(1.0, |w| w[i]);
 
             // log_pdf = log(sigma) - log(mu) + (sigma - 1)*(log(y) - log(mu)) - (y/mu)^sigma
             let log_pdf =
@@ -117,8 +105,13 @@ impl Family for WeibullLss {
     fn init_offsets(&self, data: &Dataset) -> Result<Vec<f64>, BoostlssError> {
         // Optimize both via 1D line searches iteratively
         let y = data.response();
-        let y_arr = y.clone();
-        let w_arr = data.weights().cloned();
+
+        let dummy_ds = Dataset::new(
+            ndarray::Array2::zeros((y.len(), 0)),
+            y.clone(),
+            data.weights().cloned(),
+        )
+        .unwrap();
 
         let mut mu_val: f64 = 1.0;
         let mut sigma_val: f64 = 1.0;
@@ -128,14 +121,10 @@ impl Family for WeibullLss {
             let log_mu = minimize_1d(
                 |m| {
                     let eta = vec![
-                        Array1::from_elem(y_arr.len(), m),
-                        Array1::from_elem(y_arr.len(), sigma_val.ln()),
+                        Array1::from_elem(y.len(), m),
+                        Array1::from_elem(y.len(), sigma_val.ln()),
                     ];
-                    self.nll(
-                        &Dataset::new(data.design().clone(), y_arr.clone(), w_arr.clone()).unwrap(),
-                        &eta,
-                    )
-                    .unwrap_or(f64::MAX)
+                    self.nll(&dummy_ds, &eta).unwrap_or(f64::MAX)
                 },
                 -10.0,
                 10.0,
@@ -145,14 +134,10 @@ impl Family for WeibullLss {
             let log_sigma = minimize_1d(
                 |s| {
                     let eta = vec![
-                        Array1::from_elem(y_arr.len(), mu_val.ln()),
-                        Array1::from_elem(y_arr.len(), s),
+                        Array1::from_elem(y.len(), mu_val.ln()),
+                        Array1::from_elem(y.len(), s),
                     ];
-                    self.nll(
-                        &Dataset::new(data.design().clone(), y_arr.clone(), w_arr.clone()).unwrap(),
-                        &eta,
-                    )
-                    .unwrap_or(f64::MAX)
+                    self.nll(&dummy_ds, &eta).unwrap_or(f64::MAX)
                 },
                 -5.0,
                 5.0,

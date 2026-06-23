@@ -1,4 +1,4 @@
-<!-- agent-rules@1_10_0 objective=general language=rust strictness=balanced repo_name=boostlss -->
+<!-- agent-rules@1_10_0 objective=general language=python strictness=balanced repo_name=boostlss -->
 
 # boostlss Agent Guidance
 
@@ -30,15 +30,15 @@ superpowers skills take precedence for all planning, implementation, debugging, 
 
 ## Base Rules
 
-- Use Rust with explicit ownership boundaries and narrow, composable modules.
-- Avoid `unwrap`/`expect` in production paths; propagate typed errors with context.
-- Prefer `Result`-centric APIs and domain enums/newtypes over primitive flags.
-- Isolate `unsafe` blocks and document invariants at each unsafe boundary.
-- Use `cargo fmt` to keep formatting consistent.
-- Use `cargo clippy` to catch common mistakes and improve code quality.
-- Manage dependencies and feature flags explicitly in `Cargo.toml`.
-- Use `cargo test` for automated testing.
-- Prefer immutable data flow and explicit lifetimes/borrowing at API boundaries.
+- Use Python 3.12 style with explicit typing, small functions, and reproducible CLI steps.
+- Use `ruff` for formatting/linting and `pyright` for static type checks.
+- Prefer `uv` + virtual environments for reproducible dependency and tooling workflows.
+- Always use `venv` to create isolated Python environments for each project.
+- Write tests using the `pytest` framework.
+- Prefer `Enum` values over ad-hoc numeric/string sentinel constants for domain states.
+- Prefer dataclass/typed structures for boundaries over untyped dict-heavy flows.
+- Prefer dataclasses or Pydantic models over passing many loosely-related function parameters.
+- Keep side effects at the edges and keep core logic deterministic and testable.
 - Prioritize clear, maintainable implementations over clever shortcuts.
 - Version APIs explicitly, preferably in URL paths (for example `/api/v1/...`).
 - Model resources with nouns and rely on HTTP verbs for operations.
@@ -131,7 +131,7 @@ superpowers skills take precedence for all planning, implementation, debugging, 
 
 ## Verification Checklist
 
-- Run `cargo fmt -- --check`.
-- Run `cargo clippy --workspace --all-targets --all-features -- -D warnings`.
-- Run `cargo test --workspace --all-features`.
+- Run `uv run ruff check src tests`.
+- Run `uv run pyright src`.
+- Run `uv run pytest -q`.
 - Run `agent-rules diff --dest <repo> --provider <provider/all>` when regenerating guidance.

@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## v0.8.0 (2026-06-23)
+
+### Documentation
+
+* docs: add implementation plan for bspatial learner ([`dcb3614`](https://github.com/dnf0/boostlss/commit/dcb3614ff536f0a87c10bc7b3215b5c2c00a627e))
+
+* docs: add design spec for bspatial learner ([`4deb822`](https://github.com/dnf0/boostlss/commit/4deb822b640f68c36e031e64ecb515c3c758c7b3))
+
+### Feature
+
+* feat: add python bindings for BivariatePSpline learner ([`13fef9f`](https://github.com/dnf0/boostlss/commit/13fef9f552695a548e47154b3d5330e7068368b8))
+
+* feat: implement and integrate BivariatePSpline into BaseLearner ([`dff312e`](https://github.com/dnf0/boostlss/commit/dff312e1771595ddf2cc681fa51796d0484e1e5a))
+
+* feat: add bspatial struct and kronecker helper ([`66d88f9`](https://github.com/dnf0/boostlss/commit/66d88f90071a4a0171d6cfc270bcfd42389e41ce))
+
+### Fix
+
+* fix: add serde default and use get_or_insert_with ([`9a886b7`](https://github.com/dnf0/boostlss/commit/9a886b7544dc688eb5b166335513ee55d49879e4))
+
+* fix: persist bivariate pspline knots and prevent double evaluation ([`6e0399a`](https://github.com/dnf0/boostlss/commit/6e0399a3d9a0b5a3fcb0ace5ca7002e6e59ac06a))
+
+### Refactor
+
+* refactor: fix code quality issues in bspatial kronecker ([`61447e7`](https://github.com/dnf0/boostlss/commit/61447e76f50f98f6a71b4122bf52ca6dce1455f6))
+
 ## v0.7.1 (2026-06-23)
 
 ### Fix

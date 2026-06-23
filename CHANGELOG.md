@@ -1,5 +1,41 @@
 # CHANGELOG
 
+## v0.5.0 (2026-06-23)
+
+### Ci
+
+* ci: gracefully skip agent rules update if DEPLOY_TOKEN is missing ([`18c91b0`](https://github.com/dnf0/boostlss/commit/18c91b0c36f2a3b7f29f7a3c7d0ac64f5d82c1b4))
+
+### Feature
+
+* feat: expose Binomial, Beta, Weibull, LogNormal, ZIP, and GEV families to Python ([`a972f16`](https://github.com/dnf0/boostlss/commit/a972f162030f27774ed98ac7218710b4bd46ec4c))
+
+* feat: add GEVLss distribution family ([`d0f6c45`](https://github.com/dnf0/boostlss/commit/d0f6c451a03c4c22c3d01d0782d3bdacfda24fa0))
+
+* feat: add ZIPLss distribution family ([`7dc20ff`](https://github.com/dnf0/boostlss/commit/7dc20ff3561087c960ab6bb9a0870bac7470d642))
+
+* feat: add LogNormalLss distribution family ([`8ce0c72`](https://github.com/dnf0/boostlss/commit/8ce0c72977c7f651a8639b85f882ff061269a0d7))
+
+* feat: add BetaLss distribution family ([`f79f735`](https://github.com/dnf0/boostlss/commit/f79f7358ff7b296934f0c92d6291c1651fdaa076))
+
+* feat: add WeibullLss distribution family ([`cc1d29e`](https://github.com/dnf0/boostlss/commit/cc1d29e6a82072108d634403e3bfd2d0f5a0d34d))
+
+### Fix
+
+* fix: remove allocations from GEVLss init_offsets closures ([`b9e473d`](https://github.com/dnf0/boostlss/commit/b9e473d09ac7402600979341b4469f8a7f848272))
+
+* fix: address code review feedback for LogNormalLss ([`e308c76`](https://github.com/dnf0/boostlss/commit/e308c76f6b4231e4571ea61227969fe2970a1104))
+
+* fix: remove O(N) allocations in BetaLss tight loops ([`28463b0`](https://github.com/dnf0/boostlss/commit/28463b029229b2052910c6239929e0f3115ac4d9))
+
+* fix: remove O(N) allocations in WeibullLss tight loops ([`83b2890`](https://github.com/dnf0/boostlss/commit/83b289010c9605a29f2d80beebf6c28e97b835f2))
+
+### Unknown
+
+* Merge pull request #11 from dnf0/feat/additional-families
+
+feat: Add Beta, Weibull, Log-Normal, ZIP, and GEV distribution families ([`44983dc`](https://github.com/dnf0/boostlss/commit/44983dc06f9b7263738f9120e7bf5e94080d6854))
+
 ## v0.4.0 (2026-06-23)
 
 ### Chore

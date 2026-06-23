@@ -41,6 +41,13 @@ impl RandomEffects {
         }
 
         let n_cols = max_idx + 1;
+
+        if n_cols > 100_000 {
+            return Err(BoostlssError::DataError(
+                format!("RandomEffects max_idx {} exceeds safe threshold (100_000) and would cause excessive memory allocation", max_idx)
+            ));
+        }
+
         let mut design = Array2::zeros((n_obs, n_cols));
 
         for (i, &val) in x.iter().enumerate() {
@@ -79,6 +86,18 @@ mod tests {
         let re = RandomEffects::new("group");
         assert!(re.build_design(&array![-1.0, 0.0]).is_err());
         assert!(re.build_design(&array![0.5, 1.0]).is_err());
+    }
+
+    #[test]
+    fn test_random_effects_oom_prevention() {
+        let re = RandomEffects::new("group");
+        let result = re.build_design(&array![1_000_000.0, 0.0]);
+        assert!(result.is_err());
+        if let Err(e) = result {
+            assert!(e.to_string().contains("exceeds safe threshold"));
+        } else {
+            panic!("Expected an error for large index");
+        }
     }
 
     #[test]

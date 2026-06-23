@@ -2,7 +2,8 @@ use crate::family::PyFamily;
 use boostlss::cv::{CvRisk, Resampling};
 use boostlss::data::Dataset;
 use boostlss::engine::cyclical::fit_cyclical;
-use boostlss::engine::Mstop;
+use boostlss::engine::noncyclical::fit_noncyclical;
+use boostlss::engine::{Algorithm, Mstop};
 use boostlss::family::{
     BetaLss, BinomialLss, GEVLss, GaussianLss, LogNormalLss, WeibullLss, ZIPLss,
 };
@@ -123,6 +124,7 @@ pub struct BoostLssModel {
     family: PyFamily,
     mstop: usize,
     step_length: f64,
+    algorithm: Algorithm,
     learners: Vec<(String, BaseLearner)>,
     fitted: Option<FittedModel>,
     train_data: Option<(ndarray::Array2<f64>, ndarray::Array1<f64>)>,
@@ -131,16 +133,27 @@ pub struct BoostLssModel {
 #[pymethods]
 impl BoostLssModel {
     #[new]
-    #[pyo3(signature = (family, mstop=100, step_length=0.1))]
-    fn new(family: PyFamily, mstop: usize, step_length: f64) -> Self {
-        Self {
+    #[pyo3(signature = (family, mstop=100, step_length=0.1, algorithm="cyclic"))]
+    fn new(family: PyFamily, mstop: usize, step_length: f64, algorithm: &str) -> PyResult<Self> {
+        let algorithm_enum = match algorithm {
+            "cyclic" => Algorithm::Cyclic,
+            "noncyclic" => Algorithm::NonCyclic,
+            _ => {
+                return Err(pyo3::exceptions::PyValueError::new_err(
+                    "algorithm must be 'cyclic' or 'noncyclic'",
+                ))
+            }
+        };
+
+        Ok(Self {
             family,
             mstop,
             step_length,
+            algorithm: algorithm_enum,
             learners: Vec::new(),
             fitted: None,
             train_data: None,
-        }
+        })
     }
 
     fn add_learner(&mut self, param: String, learner: &Bound<'_, PyAny>) -> PyResult<()> {
@@ -195,8 +208,15 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
-                let fitted = fit_cyclical(model, &dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+                let fitted = match self.algorithm {
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
 
                 self.fitted = Some(FittedModel::Gaussian(fitted));
             }
@@ -211,8 +231,15 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
-                let fitted = fit_cyclical(model, &dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+                let fitted = match self.algorithm {
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
 
                 self.fitted = Some(FittedModel::Binomial(fitted));
             }
@@ -227,8 +254,15 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
-                let fitted = fit_cyclical(model, &dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+                let fitted = match self.algorithm {
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
 
                 self.fitted = Some(FittedModel::Beta(fitted));
             }
@@ -243,8 +277,15 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
-                let fitted = fit_cyclical(model, &dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+                let fitted = match self.algorithm {
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
 
                 self.fitted = Some(FittedModel::Weibull(fitted));
             }
@@ -259,8 +300,15 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
-                let fitted = fit_cyclical(model, &dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+                let fitted = match self.algorithm {
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
 
                 self.fitted = Some(FittedModel::LogNormal(fitted));
             }
@@ -275,8 +323,15 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
-                let fitted = fit_cyclical(model, &dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+                let fitted = match self.algorithm {
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
 
                 self.fitted = Some(FittedModel::ZIP(fitted));
             }
@@ -291,8 +346,15 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
 
-                let fitted = fit_cyclical(model, &dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+                let fitted = match self.algorithm {
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
 
                 self.fitted = Some(FittedModel::GEV(fitted));
             }
@@ -346,6 +408,11 @@ impl BoostLssModel {
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
 
+                    let model = match self.algorithm {
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
+
                     let cv = CvRisk::new(model, Resampling::KFold { k: folds });
                     let result = cv
                         .run(&dataset)
@@ -369,6 +436,11 @@ impl BoostLssModel {
                             .on(param.as_str(), |p| p.add(learner.clone()))
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
+
+                    let model = match self.algorithm {
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
 
                     let cv = CvRisk::new(model, Resampling::KFold { k: folds });
                     let result = cv
@@ -394,6 +466,11 @@ impl BoostLssModel {
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
 
+                    let model = match self.algorithm {
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
+
                     let cv = CvRisk::new(model, Resampling::KFold { k: folds });
                     let result = cv
                         .run(&dataset)
@@ -417,6 +494,11 @@ impl BoostLssModel {
                             .on(param.as_str(), |p| p.add(learner.clone()))
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
+
+                    let model = match self.algorithm {
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
 
                     let cv = CvRisk::new(model, Resampling::KFold { k: folds });
                     let result = cv
@@ -442,6 +524,11 @@ impl BoostLssModel {
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
 
+                    let model = match self.algorithm {
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
+
                     let cv = CvRisk::new(model, Resampling::KFold { k: folds });
                     let result = cv
                         .run(&dataset)
@@ -466,6 +553,11 @@ impl BoostLssModel {
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
 
+                    let model = match self.algorithm {
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
+
                     let cv = CvRisk::new(model, Resampling::KFold { k: folds });
                     let result = cv
                         .run(&dataset)
@@ -489,6 +581,11 @@ impl BoostLssModel {
                             .on(param.as_str(), |p| p.add(learner.clone()))
                             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                     }
+
+                    let model = match self.algorithm {
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
 
                     let cv = CvRisk::new(model, Resampling::KFold { k: folds });
                     let result = cv
@@ -553,8 +650,13 @@ impl BoostLssModel {
         }
     }
 
-    fn __getnewargs__(&self) -> (PyFamily, usize, f64) {
-        (self.family.clone(), self.mstop, self.step_length)
+    fn __getnewargs__(&self) -> (PyFamily, usize, f64, String) {
+        let algo_str = match self.algorithm {
+            Algorithm::Cyclic => "cyclic",
+            Algorithm::NonCyclic => "noncyclic",
+        }
+        .to_string();
+        (self.family.clone(), self.mstop, self.step_length, algo_str)
     }
 
     fn __getstate__<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
@@ -572,6 +674,11 @@ impl BoostLssModel {
         dict.set_item("family", family_str)?;
         dict.set_item("mstop", self.mstop)?;
         dict.set_item("step_length", self.step_length)?;
+        let algo_str = match self.algorithm {
+            Algorithm::Cyclic => "cyclic",
+            Algorithm::NonCyclic => "noncyclic",
+        };
+        dict.set_item("algorithm", algo_str)?;
         // Skip train_data entirely!
 
         if let Some(fitted) = &self.fitted {
@@ -619,6 +726,16 @@ impl BoostLssModel {
             .get_item("step_length")?
             .ok_or_else(|| pyo3::exceptions::PyKeyError::new_err("Missing key 'step_length'"))?
             .extract()?;
+        self.algorithm = if let Some(algo_any) = state.get_item("algorithm")? {
+            let algo_str: String = algo_any.extract()?;
+            match algo_str.as_str() {
+                "cyclic" => Algorithm::Cyclic,
+                "noncyclic" => Algorithm::NonCyclic,
+                _ => return Err(pyo3::exceptions::PyValueError::new_err("Unknown algorithm")),
+            }
+        } else {
+            Algorithm::Cyclic
+        };
 
         if let Some(bytes_any) = state.get_item("fitted")? {
             let bytes: &[u8] = bytes_any.extract()?;

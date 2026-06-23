@@ -20,8 +20,14 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Update agent rules
+        env:
+          GH_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
         run: |
-          uvx --from "git+https://github.com/climate-x-org/agent-rules" agent-rules install --dest . --provider all --clean --force || {
+          if [ -z "$GH_TOKEN" ]; then
+            echo "DEPLOY_TOKEN secret is not set. Skipping agent rules update."
+            exit 0
+          fi
+          uvx --from "git+https://x-access-token:${GH_TOKEN}@github.com/climate-x-org/agent-rules" agent-rules install --dest . --provider all --clean --force || {
             echo "Failed to install agent-rules. Clearing uv git cache..."
             rm -rf ~/.cache/uv/git-v0/
             exit 1

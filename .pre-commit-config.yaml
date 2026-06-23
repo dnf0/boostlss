@@ -25,7 +25,7 @@ repos:
       # Python Specific local hooks
       - id: mypy
         name: mypy
-        entry: uvx mypy
+        entry: uvx --with numpy --with pytest mypy --ignore-missing-imports
         language: system
         types: [python]
         require_serial: true

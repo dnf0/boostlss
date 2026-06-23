@@ -1,7 +1,7 @@
 use boostlss::learner::{BaseLearner, Linear, Stump, Tree};
 use pyo3::prelude::*;
 
-#[pyclass]
+#[pyclass(module = "boostlss_py")]
 #[derive(Clone)]
 pub struct PyLinearLearner {
     pub name: String,
@@ -23,7 +23,7 @@ impl From<PyLinearLearner> for BaseLearner {
     }
 }
 
-#[pyclass]
+#[pyclass(module = "boostlss_py")]
 #[derive(Clone)]
 pub struct PyStumpLearner {
     pub name: String,
@@ -43,7 +43,7 @@ impl From<PyStumpLearner> for BaseLearner {
     }
 }
 
-#[pyclass]
+#[pyclass(module = "boostlss_py")]
 #[derive(Clone)]
 pub struct PyTreeLearner {
     pub feature_indices: Vec<usize>,
@@ -73,7 +73,7 @@ impl From<PyTreeLearner> for BaseLearner {
     }
 }
 
-#[pyclass(name = "PSplineLearner")]
+#[pyclass(module = "boostlss_py")]
 #[derive(Clone)]
 pub struct PyPSplineLearner {
     pub feature: String,

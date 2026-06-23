@@ -2,7 +2,7 @@ use crate::family::PyFamily;
 use boostlss::cv::{CvRisk, Resampling};
 use boostlss::data::Dataset;
 use boostlss::engine::cyclical::fit_cyclical;
-use boostlss::engine::Mstop;
+use boostlss::engine::{Algorithm, Mstop};
 use boostlss::family::{
     BetaLss, BinomialLss, GEVLss, GaussianLss, LogNormalLss, WeibullLss, ZIPLss,
 };
@@ -123,7 +123,7 @@ pub struct BoostLssModel {
     family: PyFamily,
     mstop: usize,
     step_length: f64,
-    algorithm: String,
+    algorithm: Algorithm,
     learners: Vec<(String, BaseLearner)>,
     fitted: Option<FittedModel>,
     train_data: Option<(ndarray::Array2<f64>, ndarray::Array1<f64>)>,
@@ -134,17 +134,21 @@ impl BoostLssModel {
     #[new]
     #[pyo3(signature = (family, mstop=100, step_length=0.1, algorithm="cyclic"))]
     fn new(family: PyFamily, mstop: usize, step_length: f64, algorithm: &str) -> PyResult<Self> {
-        if algorithm != "cyclic" && algorithm != "noncyclic" {
-            return Err(pyo3::exceptions::PyValueError::new_err(
-                "algorithm must be 'cyclic' or 'noncyclic'",
-            ));
-        }
+        let algorithm_enum = match algorithm {
+            "cyclic" => Algorithm::Cyclic,
+            "noncyclic" => Algorithm::NonCyclic,
+            _ => {
+                return Err(pyo3::exceptions::PyValueError::new_err(
+                    "algorithm must be 'cyclic' or 'noncyclic'",
+                ))
+            }
+        };
 
         Ok(Self {
             family,
             mstop,
             step_length,
-            algorithm: algorithm.to_string(),
+            algorithm: algorithm_enum,
             learners: Vec::new(),
             fitted: None,
             train_data: None,
@@ -562,7 +566,12 @@ impl BoostLssModel {
     }
 
     fn __getnewargs__(&self) -> (PyFamily, usize, f64, String) {
-        (self.family.clone(), self.mstop, self.step_length, self.algorithm.clone())
+        let algo_str = match self.algorithm {
+            Algorithm::Cyclic => "cyclic",
+            Algorithm::NonCyclic => "noncyclic",
+        }
+        .to_string();
+        (self.family.clone(), self.mstop, self.step_length, algo_str)
     }
 
     fn __getstate__<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
@@ -580,7 +589,11 @@ impl BoostLssModel {
         dict.set_item("family", family_str)?;
         dict.set_item("mstop", self.mstop)?;
         dict.set_item("step_length", self.step_length)?;
-        dict.set_item("algorithm", self.algorithm.clone())?;
+        let algo_str = match self.algorithm {
+            Algorithm::Cyclic => "cyclic",
+            Algorithm::NonCyclic => "noncyclic",
+        };
+        dict.set_item("algorithm", algo_str)?;
         // Skip train_data entirely!
 
         if let Some(fitted) = &self.fitted {
@@ -629,9 +642,14 @@ impl BoostLssModel {
             .ok_or_else(|| pyo3::exceptions::PyKeyError::new_err("Missing key 'step_length'"))?
             .extract()?;
         self.algorithm = if let Some(algo_any) = state.get_item("algorithm")? {
-            algo_any.extract()?
+            let algo_str: String = algo_any.extract()?;
+            match algo_str.as_str() {
+                "cyclic" => Algorithm::Cyclic,
+                "noncyclic" => Algorithm::NonCyclic,
+                _ => return Err(pyo3::exceptions::PyValueError::new_err("Unknown algorithm")),
+            }
         } else {
-            "cyclic".to_string()
+            Algorithm::Cyclic
         };
 
         if let Some(bytes_any) = state.get_item("fitted")? {

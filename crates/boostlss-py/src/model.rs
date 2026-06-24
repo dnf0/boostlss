@@ -187,35 +187,9 @@ impl BoostLssModel {
         let y_view = y.as_array();
         let y_vec =
             ndarray::Array1::from_shape_vec((y_view.len(),), y_view.to_owned().into_raw_vec())
-                .unwrap();
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
 
-        let is_sparse = x.hasattr("format")?;
-
-        let dataset = if is_sparse {
-            let format: String = x.getattr("format")?.extract()?;
-            let sparse_mat = crate::data::extract_sparse(py, x)?;
-            match format.as_str() {
-                "csr" => Dataset::new_csr(sparse_mat, y_vec.clone(), None)
-                    .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?,
-                "csc" => Dataset::new_csc(sparse_mat, y_vec.clone(), None)
-                    .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?,
-                _ => {
-                    return Err(pyo3::exceptions::PyTypeError::new_err(
-                        "Only CSR and CSC formats are supported",
-                    ))
-                }
-            }
-        } else {
-            let x_dense: numpy::PyReadonlyArray2<f64> = x.extract()?;
-            let x_view = x_dense.as_array();
-            let x_mat = ndarray::Array2::from_shape_vec(
-                (x_view.nrows(), x_view.ncols()),
-                x_view.to_owned().into_raw_vec(),
-            )
-            .unwrap();
-            Dataset::new(x_mat.clone(), y_vec.clone(), None)
-                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?
-        };
+        let dataset = crate::data::extract_dataset(py, x, Some(y_vec))?;
 
         self.train_data = Some(dataset.clone());
 
@@ -392,36 +366,7 @@ impl BoostLssModel {
         x: &Bound<'py, PyAny>,
         param: &str,
     ) -> PyResult<Bound<'py, PyArray1<f64>>> {
-        let is_sparse = x.hasattr("format")?;
-
-        let dataset = if is_sparse {
-            let format: String = x.getattr("format")?.extract()?;
-            let sparse_mat = crate::data::extract_sparse(py, x)?;
-            let n_obs = sparse_mat.shape.0;
-            let y_dummy = ndarray::Array1::zeros(n_obs);
-            match format.as_str() {
-                "csr" => Dataset::new_csr(sparse_mat, y_dummy, None)
-                    .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?,
-                "csc" => Dataset::new_csc(sparse_mat, y_dummy, None)
-                    .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?,
-                _ => {
-                    return Err(pyo3::exceptions::PyTypeError::new_err(
-                        "Only CSR and CSC formats are supported",
-                    ))
-                }
-            }
-        } else {
-            let x_dense: numpy::PyReadonlyArray2<f64> = x.extract()?;
-            let x_view = x_dense.as_array();
-            let x_mat = ndarray::Array2::from_shape_vec(
-                (x_view.nrows(), x_view.ncols()),
-                x_view.to_owned().into_raw_vec(),
-            )
-            .unwrap();
-            let y_dummy = ndarray::Array1::zeros(x_mat.nrows());
-            Dataset::new(x_mat, y_dummy, None)
-                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?
-        };
+        let dataset = crate::data::extract_dataset(py, x, None)?;
 
         if let Some(fitted) = &mut self.fitted {
             let pred = fitted.predict(&dataset, param, Scale::Response)?;

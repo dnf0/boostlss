@@ -209,7 +209,7 @@ pub fn run_stabsel<F: crate::family::Family + Clone + Send + Sync>(
 
             let mut global_active_count = 0;
 
-            'outer: for m in 1..=max_mstop {
+            'outer: for _m in 1..=max_mstop {
                 for k in 0..params.len() {
                     let mut gradients = family.ngradient(&run_data, &current_predictions, k)?;
 

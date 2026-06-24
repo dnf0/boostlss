@@ -1,6 +1,7 @@
 mod family;
 mod learner;
 mod model;
+pub mod stabsel;
 
 use family::PyFamily;
 use learner::{
@@ -21,6 +22,7 @@ fn boostlss_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyConstrainedPSplineLearner>()?;
     m.add_class::<BoostLssModel>()?;
     m.add_class::<model::PyRandomEffectsLearner>()?;
+    m.add_class::<stabsel::PyStabselResult>()?;
     m.add_function(wrap_pyfunction!(learner::constrained_pspline, m)?)?;
     Ok(())
 }

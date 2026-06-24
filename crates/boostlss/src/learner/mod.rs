@@ -6,6 +6,8 @@ pub use linear::Linear;
 
 pub mod penalty;
 
+pub mod spline_utils;
+
 pub mod pspline;
 pub use pspline::PSpline;
 

@@ -1,6 +1,86 @@
 use crate::error::BoostlssError;
 use ndarray::{Array1, Array2};
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct SparseMatrix {
+    pub data: Array1<f64>,
+    pub indices: Array1<usize>,
+    pub indptr: Array1<usize>,
+    pub shape: (usize, usize),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum DesignMatrix {
+    Dense(Array2<f64>),
+    Csr(SparseMatrix),
+    Csc(SparseMatrix),
+}
+
+impl DesignMatrix {
+    pub fn get_column(&self, col_idx: usize) -> Result<Array1<f64>, BoostlssError> {
+        match self {
+            Self::Dense(mat) => {
+                if col_idx >= mat.ncols() {
+                    return Err(BoostlssError::DataError(
+                        "Column index out of bounds".to_string(),
+                    ));
+                }
+                Ok(mat.column(col_idx).to_owned())
+            }
+            Self::Csc(sparse) => {
+                if col_idx >= sparse.shape.1 {
+                    return Err(BoostlssError::DataError(
+                        "Column index out of bounds".to_string(),
+                    ));
+                }
+                let mut col = Array1::zeros(sparse.shape.0);
+                let start = sparse.indptr[col_idx];
+                let end = sparse.indptr[col_idx + 1];
+                for i in start..end {
+                    let row_idx = sparse.indices[i];
+                    col[row_idx] = sparse.data[i];
+                }
+                Ok(col)
+            }
+            Self::Csr(sparse) => {
+                if col_idx >= sparse.shape.1 {
+                    return Err(BoostlssError::DataError(
+                        "Column index out of bounds".to_string(),
+                    ));
+                }
+                let mut col = Array1::zeros(sparse.shape.0);
+                for row_idx in 0..sparse.shape.0 {
+                    let start = sparse.indptr[row_idx];
+                    let end = sparse.indptr[row_idx + 1];
+                    for i in start..end {
+                        if sparse.indices[i] == col_idx {
+                            col[row_idx] = sparse.data[i];
+                            break;
+                        }
+                    }
+                }
+                Ok(col)
+            }
+        }
+    }
+
+    pub fn nrows(&self) -> usize {
+        match self {
+            Self::Dense(mat) => mat.nrows(),
+            Self::Csr(sparse) => sparse.shape.0,
+            Self::Csc(sparse) => sparse.shape.0,
+        }
+    }
+
+    pub fn ncols(&self) -> usize {
+        match self {
+            Self::Dense(mat) => mat.ncols(),
+            Self::Csr(sparse) => sparse.shape.1,
+            Self::Csc(sparse) => sparse.shape.1,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Dataset {
     design: Array2<f64>,
@@ -158,5 +238,55 @@ mod tests {
         let w = array![1.0, 1.0];
         let ds = Dataset::new(x, y, Some(w)).unwrap();
         assert_eq!(ds.n_obs(), 2);
+    }
+
+    #[test]
+    fn test_design_matrix_dense() {
+        let dense = Array2::from_elem((3, 2), 1.0);
+        let dm = DesignMatrix::Dense(dense);
+        let col = dm.get_column(1).unwrap();
+        assert_eq!(col, ndarray::Array1::from_elem(3, 1.0));
+    }
+
+    #[test]
+    fn test_design_matrix_csc() {
+        // [[1.0, 0.0], [0.0, 2.0], [3.0, 4.0]]
+        let data = array![1.0, 3.0, 2.0, 4.0];
+        let indices = array![0, 2, 1, 2];
+        let indptr = array![0, 2, 4];
+        let sparse = SparseMatrix {
+            data,
+            indices,
+            indptr,
+            shape: (3, 2),
+        };
+        let dm = DesignMatrix::Csc(sparse);
+
+        let col0 = dm.get_column(0).unwrap();
+        assert_eq!(col0, array![1.0, 0.0, 3.0]);
+
+        let col1 = dm.get_column(1).unwrap();
+        assert_eq!(col1, array![0.0, 2.0, 4.0]);
+    }
+
+    #[test]
+    fn test_design_matrix_csr() {
+        // [[1.0, 0.0], [0.0, 2.0], [3.0, 4.0]]
+        let data = array![1.0, 2.0, 3.0, 4.0];
+        let indices = array![0, 1, 0, 1];
+        let indptr = array![0, 1, 2, 4];
+        let sparse = SparseMatrix {
+            data,
+            indices,
+            indptr,
+            shape: (3, 2),
+        };
+        let dm = DesignMatrix::Csr(sparse);
+
+        let col0 = dm.get_column(0).unwrap();
+        assert_eq!(col0, array![1.0, 0.0, 3.0]);
+
+        let col1 = dm.get_column(1).unwrap();
+        assert_eq!(col1, array![0.0, 2.0, 4.0]);
     }
 }

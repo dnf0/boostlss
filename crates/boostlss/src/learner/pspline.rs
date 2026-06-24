@@ -58,13 +58,9 @@ impl PSpline {
         &mut self,
         data: &crate::data::Dataset,
     ) -> Result<Array2<f64>, BoostlssError> {
-        let x = data.design().column(self.feature_idx);
-        let b = build_bspline_design(
-            &x.to_owned(),
-            self.knots,
-            self.degree,
-            &mut self.spline_data,
-        )?;
+        let col = data.design().get_column(self.feature_idx)?;
+        // use col instead of data.design().column(self.feature_idx)
+        let b = build_bspline_design(&col, self.knots, self.degree, &mut self.spline_data)?;
 
         if self.is_cyclic {
             let p = self.knots + self.degree + 1;

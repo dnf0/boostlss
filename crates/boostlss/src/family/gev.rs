@@ -162,7 +162,15 @@ impl Family for GEVLss {
         let mut sigma_val = 1.0;
         let mut nu_val = 0.1;
 
-        let ds = Dataset::new(data.design().clone(), y_arr.clone(), w_arr.clone()).unwrap();
+        let dense_design = match data.design() {
+            crate::data::DesignMatrix::Dense(mat) => mat.clone(),
+            _ => {
+                return Err(BoostlssError::DataError(
+                    "gev requires dense matrix".to_string(),
+                ))
+            }
+        };
+        let ds = Dataset::new(dense_design, y_arr.clone(), w_arr.clone()).unwrap();
 
         let mut eta = vec![
             Array1::from_elem(y_arr.len(), self.params[0].link.link(mu_val)),

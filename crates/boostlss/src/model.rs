@@ -186,9 +186,12 @@ impl<F: Family> Fitted<F> {
             match &update.update {
                 LearnerUpdate::Linear(coef) => {
                     if let BaseLearner::RandomEffects(re) = learner {
-                        let x_col = data.design().column(re.feature_idx).to_owned();
-                        let mut u_hat = ndarray::Array1::zeros(x_col.len());
-                        for (i, &val) in x_col.iter().enumerate() {
+                        let col = data
+                            .design()
+                            .get_column(re.feature_idx)
+                            .unwrap_or_else(|_| Array1::zeros(data.n_obs()));
+                        let mut u_hat = ndarray::Array1::zeros(col.len());
+                        for (i, &val) in col.iter().enumerate() {
                             if val >= 0.0 && val.fract() == 0.0 {
                                 let idx = val as usize;
                                 if idx < coef.len() {
@@ -212,19 +215,14 @@ impl<F: Family> Fitted<F> {
                     left_val,
                     right_val,
                 } => {
-                    let feature_idx = if let BaseLearner::Stump(st) = learner {
-                        st.feature_idx
+                    let st = if let BaseLearner::Stump(st) = learner {
+                        st
                     } else {
-                        0
+                        unreachable!()
                     };
-                    let x_col = data.design().column(feature_idx).to_owned();
-                    let u_hat = x_col.mapv(|val| {
-                        if val <= *split_val {
-                            *left_val
-                        } else {
-                            *right_val
-                        }
-                    });
+                    let u_hat = st
+                        .predict(*split_val, *left_val, *right_val, data)
+                        .unwrap_or_else(|_| Array1::zeros(data.n_obs()));
                     pred = pred + u_hat;
                 }
                 LearnerUpdate::Tree {
@@ -232,31 +230,10 @@ impl<F: Family> Fitted<F> {
                     param: _,
                 } => {
                     if let BaseLearner::Tree(tree_learner) = learner {
-                        for i in 0..pred.len() {
-                            let mut node_ptr = root;
-                            loop {
-                                match node_ptr {
-                                    crate::learner::TreeNode::Leaf { value, .. } => {
-                                        pred[i] += *value;
-                                        break;
-                                    }
-                                    crate::learner::TreeNode::Split {
-                                        feature_idx,
-                                        threshold,
-                                        left,
-                                        right,
-                                    } => {
-                                        let col_idx = tree_learner.feature_indices[*feature_idx];
-                                        let val = data.design().column(col_idx)[i];
-                                        if val <= *threshold {
-                                            node_ptr = left;
-                                        } else {
-                                            node_ptr = right;
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        let u_hat = tree_learner
+                            .predict(root, data)
+                            .unwrap_or_else(|_| Array1::zeros(data.n_obs()));
+                        pred = pred + u_hat;
                     }
                 }
             }
@@ -295,8 +272,17 @@ impl<F: Family> Fitted<F> {
             )));
         }
 
+        let mut base_design = match data.design() {
+            crate::data::DesignMatrix::Dense(mat) => mat.clone(),
+            _ => {
+                return Err(BoostlssError::DataError(
+                    "partial_dependence requires dense design matrix".to_string(),
+                ))
+            }
+        };
+
         for &val in grid {
-            let mut modified_design = data.design().clone();
+            let mut modified_design = base_design.clone();
             modified_design.column_mut(feature_idx).fill(val);
 
             let modified_data = Dataset::new(

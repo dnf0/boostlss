@@ -74,13 +74,9 @@ impl ConstrainedPSpline {
         &mut self,
         data: &crate::data::Dataset,
     ) -> Result<Array2<f64>, BoostlssError> {
-        let x = data.design().column(self.feature_idx);
-        build_bspline_design(
-            &x.to_owned(),
-            self.knots,
-            self.degree,
-            &mut self.spline_data,
-        )
+        let col = data.design().get_column(self.feature_idx)?;
+        // use col instead of data.design().column(self.feature_idx)
+        build_bspline_design(&col, self.knots, self.degree, &mut self.spline_data)
     }
 
     pub fn penalty_matrix(&self, n_cols: usize) -> Array2<f64> {

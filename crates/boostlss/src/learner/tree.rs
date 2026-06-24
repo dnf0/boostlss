@@ -53,6 +53,79 @@ impl Tree {
         self.min_samples_leaf = min_samples;
         self
     }
+
+    pub fn build_fit_state(
+        &self,
+        data: &crate::data::Dataset,
+    ) -> Result<TreeFitState, crate::error::BoostlssError> {
+        // Inside tree.rs build_design or fit
+        let n_cols = data.n_features();
+        let mut dense_mat = ndarray::Array2::zeros((data.n_obs(), n_cols));
+        for i in 0..n_cols {
+            let col = data.design().get_column(i)?;
+            dense_mat.column_mut(i).assign(&col);
+        }
+
+        let mut sorted_features = Vec::with_capacity(self.feature_indices.len());
+        for &col_idx in &self.feature_indices {
+            let col = dense_mat.column(col_idx);
+            let mut sorted: Vec<(f64, usize)> = col
+                .iter()
+                .copied()
+                .enumerate()
+                .map(|(i, val)| (val, i))
+                .collect();
+            sorted.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+            sorted_features.push(sorted);
+        }
+        Ok(TreeFitState {
+            max_depth: self.max_depth,
+            min_samples_leaf: self.min_samples_leaf,
+            feature_indices: self.feature_indices.clone(),
+            sorted_features,
+        })
+    }
+
+    pub fn predict(
+        &self,
+        root: &TreeNode,
+        data: &crate::data::Dataset,
+    ) -> Result<ndarray::Array1<f64>, crate::error::BoostlssError> {
+        let n_cols = data.n_features();
+        let mut dense_mat = ndarray::Array2::zeros((data.n_obs(), n_cols));
+        for i in 0..n_cols {
+            let col = data.design().get_column(i)?;
+            dense_mat.column_mut(i).assign(&col);
+        }
+
+        let mut u_hat = ndarray::Array1::zeros(data.n_obs());
+        for i in 0..u_hat.len() {
+            let mut node_ptr = root;
+            loop {
+                match node_ptr {
+                    TreeNode::Leaf { value, .. } => {
+                        u_hat[i] = *value;
+                        break;
+                    }
+                    TreeNode::Split {
+                        feature_idx,
+                        threshold,
+                        left,
+                        right,
+                    } => {
+                        let col_idx = self.feature_indices[*feature_idx];
+                        let val = dense_mat.column(col_idx)[i];
+                        if val <= *threshold {
+                            node_ptr = left;
+                        } else {
+                            node_ptr = right;
+                        }
+                    }
+                }
+            }
+        }
+        Ok(u_hat)
+    }
 }
 
 use crate::learner::LearnerUpdate;

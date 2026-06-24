@@ -30,14 +30,14 @@ impl RandomEffects {
     }
 
     pub fn build_design(&self, data: &crate::data::Dataset) -> Result<Array2<f64>, BoostlssError> {
-        let x = data.design().column(self.feature_idx);
-        let n_obs = x.len();
+        let col = data.design().get_column(self.feature_idx)?;
+        let n_obs = col.len();
         if n_obs == 0 {
             return Ok(Array2::zeros((0, 0)));
         }
 
         let mut max_idx = 0;
-        for &val in x.iter() {
+        for &val in col.iter() {
             if val.fract() != 0.0 || val < 0.0 {
                 return Err(BoostlssError::DataError(
                     "RandomEffects requires non-negative integer indices".to_string(),
@@ -69,7 +69,7 @@ impl RandomEffects {
 
         let mut design = Array2::zeros((n_obs, n_cols));
 
-        for (i, &val) in x.iter().enumerate() {
+        for (i, &val) in col.iter().enumerate() {
             let idx = val as usize;
             design[[i, idx]] = 1.0;
         }

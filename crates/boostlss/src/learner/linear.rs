@@ -22,17 +22,17 @@ impl Linear {
     }
 
     pub fn build_design(&self, data: &crate::data::Dataset) -> Result<Array2<f64>, BoostlssError> {
-        let x = data.design().column(self.feature_idx);
-        let n = x.len();
+        let n_obs = data.n_obs();
+        let n_cols = if self.intercept { 2 } else { 1 };
+        let mut design = Array2::zeros((n_obs, n_cols));
+        let col = data.design().get_column(self.feature_idx)?;
+        let mut offset = 0;
         if self.intercept {
-            let mut xt = Array2::ones((n, 2));
-            xt.column_mut(1).assign(&x);
-            Ok(xt)
-        } else {
-            Ok(x.to_owned()
-                .into_shape_with_order((n, 1))
-                .expect("Shape is guaranteed to match"))
+            design.column_mut(0).fill(1.0);
+            offset = 1;
         }
+        design.column_mut(offset).assign(&col);
+        Ok(design)
     }
 
     pub fn penalty_matrix(&self, n_cols: usize) -> Array2<f64> {

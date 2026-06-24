@@ -140,39 +140,11 @@ impl BaseLearner {
         data: &crate::data::Dataset,
     ) -> Result<LearnerFit, crate::error::BoostlssError> {
         if let Self::Tree(tree_learner) = self {
-            let mut sorted_features = Vec::with_capacity(tree_learner.feature_indices.len());
-            for &col_idx in &tree_learner.feature_indices {
-                let col = data.design().column(col_idx);
-                let mut sorted: Vec<(f64, usize)> = col
-                    .iter()
-                    .copied()
-                    .enumerate()
-                    .map(|(i, val)| (val, i))
-                    .collect();
-                sorted.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-                sorted_features.push(sorted);
-            }
-            return Ok(LearnerFit::Tree(tree::TreeFitState {
-                max_depth: tree_learner.max_depth,
-                min_samples_leaf: tree_learner.min_samples_leaf,
-                feature_indices: tree_learner.feature_indices.clone(),
-                sorted_features,
-            }));
+            return Ok(LearnerFit::Tree(tree_learner.build_fit_state(data)?));
         }
 
         if let Self::Stump(stump_learner) = self {
-            let x = data.design().column(stump_learner.feature_idx);
-            let mut sorted_x: Vec<(f64, usize)> = x
-                .iter()
-                .copied()
-                .enumerate()
-                .map(|(i, val)| (val, i))
-                .collect();
-            sorted_x.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-            return Ok(LearnerFit::Stump(stump::StumpFitState {
-                sorted_x,
-                feature_idx: stump_learner.feature_idx,
-            }));
+            return Ok(LearnerFit::Stump(stump_learner.build_fit_state(data)?));
         }
 
         let (design, penalty) = match self {
@@ -335,45 +307,16 @@ impl LearnerFit {
                     right_val,
                 },
             ) => {
-                let x_col = data.design().column(state.feature_idx);
-                x_col
-                    .mapv(|val| {
-                        if val <= *split_val {
-                            *left_val
-                        } else {
-                            *right_val
-                        }
-                    })
-                    .to_owned()
+                let stump_learner = Stump::new(state.feature_idx);
+                stump_learner
+                    .predict(*split_val, *left_val, *right_val, data)
+                    .unwrap_or_else(|_| ndarray::Array1::zeros(data.n_obs()))
             }
             (Self::Tree(state), LearnerUpdate::Tree { node: root, .. }) => {
-                let mut u_hat = ndarray::Array1::zeros(data.n_obs());
-                for i in 0..u_hat.len() {
-                    let mut node_ptr = root;
-                    loop {
-                        match node_ptr {
-                            TreeNode::Leaf { value, .. } => {
-                                u_hat[i] = *value;
-                                break;
-                            }
-                            TreeNode::Split {
-                                feature_idx,
-                                threshold,
-                                left,
-                                right,
-                            } => {
-                                let col_idx = state.feature_indices[*feature_idx];
-                                let val = data.design().column(col_idx)[i];
-                                if val <= *threshold {
-                                    node_ptr = left;
-                                } else {
-                                    node_ptr = right;
-                                }
-                            }
-                        }
-                    }
-                }
-                u_hat
+                let tree_learner = Tree::new(state.feature_indices.clone());
+                tree_learner
+                    .predict(root, data)
+                    .unwrap_or_else(|_| ndarray::Array1::zeros(data.n_obs()))
             }
             _ => unreachable!("LearnerFit and LearnerUpdate types must match"),
         }

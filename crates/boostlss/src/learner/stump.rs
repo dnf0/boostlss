@@ -11,6 +11,43 @@ impl Stump {
     pub fn new(feature_idx: usize) -> Self {
         Self { feature_idx }
     }
+
+    pub fn build_fit_state(
+        &self,
+        data: &crate::data::Dataset,
+    ) -> Result<StumpFitState, crate::error::BoostlssError> {
+        let col = data.design().get_column(self.feature_idx)?;
+        // use col instead of data.design().column(self.feature_idx)
+        let mut sorted_x: Vec<(f64, usize)> = col
+            .iter()
+            .copied()
+            .enumerate()
+            .map(|(i, val)| (val, i))
+            .collect();
+        sorted_x.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        Ok(StumpFitState {
+            sorted_x,
+            feature_idx: self.feature_idx,
+        })
+    }
+
+    pub fn predict(
+        &self,
+        split_val: f64,
+        left_val: f64,
+        right_val: f64,
+        data: &crate::data::Dataset,
+    ) -> Result<ndarray::Array1<f64>, crate::error::BoostlssError> {
+        let col = data.design().get_column(self.feature_idx)?;
+        // use col instead of data.design().column(self.feature_idx)
+        Ok(col.mapv(|val| {
+            if val <= split_val {
+                left_val
+            } else {
+                right_val
+            }
+        }))
+    }
 }
 
 #[derive(Debug, Clone)]

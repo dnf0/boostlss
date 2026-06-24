@@ -53,6 +53,8 @@ impl BivariatePSpline {
         &mut self,
         data: &crate::data::Dataset,
     ) -> Result<Array2<f64>, BoostlssError> {
+        let col1 = data.design().get_column(self.feature1_idx)?;
+        let col2 = data.design().get_column(self.feature2_idx)?;
         let p1 = self.p1.get_or_insert_with(|| {
             PSpline::new(self.feature1_idx)
                 .with_knots(self.knots)

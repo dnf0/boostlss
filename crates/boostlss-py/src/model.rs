@@ -138,7 +138,7 @@ impl BoostLssModel {
             "noncyclic_outer" => Algorithm::NonCyclicOuter,
             _ => {
                 return Err(pyo3::exceptions::PyValueError::new_err(
-                    "algorithm must be 'cyclic' or 'noncyclic'",
+                    "algorithm must be 'cyclic', 'noncyclic', or 'noncyclic_outer'",
                 ))
             }
         };

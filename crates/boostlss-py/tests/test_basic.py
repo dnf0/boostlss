@@ -151,7 +151,10 @@ def test_algorithm_param():
     assert model_noncyclic is not None
 
     # invalid option
-    with pytest.raises(ValueError, match="algorithm must be 'cyclic' or 'noncyclic'"):
+    with pytest.raises(
+        ValueError,
+        match="algorithm must be 'cyclic', 'noncyclic', or 'noncyclic_outer'",
+    ):
         BoostLssModel(family, mstop=10, step_length=0.1, algorithm="invalid_algo")
 
 

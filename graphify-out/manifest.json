@@ -595,13 +595,13 @@
     "semantic_hash": ""
   },
   "crates/boostlss-py/src/lib.rs": {
-    "mtime": 1782309423.9834764,
-    "ast_hash": "e54844d0aac2c5cc908054f8db67b64f",
+    "mtime": 1782318592.44758,
+    "ast_hash": "b5c11f48a430d1b471bf73d26a01572f",
     "semantic_hash": ""
   },
   "crates/boostlss-py/src/model.rs": {
-    "mtime": 1782309658.9662733,
-    "ast_hash": "4b341e8474baa4b78f78ae04bbbfaf0e",
+    "mtime": 1782320222.050976,
+    "ast_hash": "d7a95239185bca9565a2327c80d0505e",
     "semantic_hash": ""
   },
   "crates/boostlss-py/tests/test_basic.py": {
@@ -615,8 +615,8 @@
     "semantic_hash": ""
   },
   "crates/boostlss/src/data.rs": {
-    "mtime": 1782308784.5827823,
-    "ast_hash": "c3489da6059540af7b3043d4521cfd61",
+    "mtime": 1782317816.1227002,
+    "ast_hash": "f25fc3659fbb3685e17d188c1ba9927c",
     "semantic_hash": ""
   },
   "crates/boostlss/src/engine/cyclical.rs": {
@@ -665,13 +665,13 @@
     "semantic_hash": ""
   },
   "crates/boostlss/src/learner/linear.rs": {
-    "mtime": 1782307764.4536505,
-    "ast_hash": "b4d5bcc2e55179d359ded8fb0020c6de",
+    "mtime": 1782317986.6186337,
+    "ast_hash": "163846bd49713d4a9aa275e789bc6b14",
     "semantic_hash": ""
   },
   "crates/boostlss/src/learner/mod.rs": {
-    "mtime": 1782308823.8626673,
-    "ast_hash": "d3eb7740ff63a6d487bd0aecd9ff2c62",
+    "mtime": 1782318126.0456488,
+    "ast_hash": "b1826cca7c32f00127fba819deebe86e",
     "semantic_hash": ""
   },
   "crates/boostlss/src/learner/penalty.rs": {
@@ -680,8 +680,8 @@
     "semantic_hash": ""
   },
   "crates/boostlss/src/learner/pspline.rs": {
-    "mtime": 1782305976.914895,
-    "ast_hash": "d439b2b042b4d1d36bc9682b40d59a2b",
+    "mtime": 1782318126.0468798,
+    "ast_hash": "09712eb2a2cc86fea8365cc7a48872f1",
     "semantic_hash": ""
   },
   "crates/boostlss/src/lib.rs": {
@@ -690,8 +690,8 @@
     "semantic_hash": ""
   },
   "crates/boostlss/src/model.rs": {
-    "mtime": 1782308823.878638,
-    "ast_hash": "3e2a4a8e67bc243a9fcd7acdba5f364e",
+    "mtime": 1782318458.6108215,
+    "ast_hash": "f028275cf17d25cbc6e55b44a47502f2",
     "semantic_hash": ""
   },
   "crates/boostlss/src/param.rs": {
@@ -745,13 +745,13 @@
     "semantic_hash": ""
   },
   "crates/boostlss/src/learner/stump.rs": {
-    "mtime": 1782294380.3700576,
-    "ast_hash": "90c68ceb69b222ba3c1732077626acd2",
+    "mtime": 1782318126.0484633,
+    "ast_hash": "1f28a1d29aa2d7260e455d97b949e9ec",
     "semantic_hash": ""
   },
   "crates/boostlss/src/learner/tree.rs": {
-    "mtime": 1782226213.3671763,
-    "ast_hash": "d6c593ce17f267ee3ba1385afdc4a3fc",
+    "mtime": 1782318474.879736,
+    "ast_hash": "f37ce55b6d6e8c81552097dcef77a5ed",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
@@ -820,8 +820,8 @@
     "semantic_hash": ""
   },
   "crates/boostlss/src/family/gev.rs": {
-    "mtime": 1782197484.4955168,
-    "ast_hash": "6dd02b1daa2f894c72e42dc7afda5ace",
+    "mtime": 1782318126.0285275,
+    "ast_hash": "8318cb8ca7fc155dddce2798139d8700",
     "semantic_hash": ""
   },
   "crates/boostlss/src/family/log_normal.rs": {
@@ -840,8 +840,8 @@
     "semantic_hash": ""
   },
   "crates/boostlss/src/learner/random_effects.rs": {
-    "mtime": 1782305976.9151206,
-    "ast_hash": "aa9fa0a42f860ddeaf2d77ca7ff369ac",
+    "mtime": 1782318097.550007,
+    "ast_hash": "8eca22ee322eb73e3503d01c55a9d588",
     "semantic_hash": ""
   },
   "test_conv.rs": {
@@ -920,13 +920,13 @@
     "semantic_hash": ""
   },
   "crates/boostlss/src/learner/bspatial.rs": {
-    "mtime": 1782305976.9135096,
-    "ast_hash": "0e03051f991e9a953c2bfd4e6d886601",
+    "mtime": 1782318020.2962542,
+    "ast_hash": "395b7888d2bc362299fe1a83e5f31e16",
     "semantic_hash": ""
   },
   "crates/boostlss/src/learner/constrained_pspline.rs": {
-    "mtime": 1782305976.9137878,
-    "ast_hash": "26522604d201c9c6ab791f4c8c8253f9",
+    "mtime": 1782318126.0341861,
+    "ast_hash": "0b774c581abd6064cc1da225308cc9ef",
     "semantic_hash": ""
   },
   "crates/boostlss/src/learner/spline_utils.rs": {
@@ -945,8 +945,8 @@
     "semantic_hash": ""
   },
   "tests/test_stabsel.py": {
-    "mtime": 1782309656.0178459,
-    "ast_hash": "4cfc21dcedc44089e8db243a87f4c5f0",
+    "mtime": 1782310160.7038352,
+    "ast_hash": "bffa5f4b95618bc330496586aea8f553",
     "semantic_hash": ""
   },
   "docs/design/2026-06-23-noncyclic-algorithm-design.md": {
@@ -957,6 +957,16 @@
   "docs/plans/2026-06-23-noncyclic-algorithm-plan.md": {
     "mtime": 1782224670.8187814,
     "ast_hash": "39c6653d05e7cf7baf75045801857f9b",
+    "semantic_hash": ""
+  },
+  "crates/boostlss-py/src/data.rs": {
+    "mtime": 1782320222.0503995,
+    "ast_hash": "ba078cbf235c3f1b35efc3c27318cd15",
+    "semantic_hash": ""
+  },
+  "crates/boostlss-py/tests/test_model.py": {
+    "mtime": 1782320336.7274282,
+    "ast_hash": "a070aaf275a7417dbeb89ab22858c1db",
     "semantic_hash": ""
   }
 }

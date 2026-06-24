@@ -112,7 +112,7 @@ impl DesignMatrix {
 
 #[derive(Debug, Clone)]
 pub struct Dataset {
-    design: Array2<f64>,
+    design: DesignMatrix,
     response: Array1<f64>,
     weights: Option<Array1<f64>>,
 }
@@ -146,18 +146,54 @@ impl Dataset {
             }
         }
         Ok(Self {
-            design,
+            design: DesignMatrix::Dense(design),
             response,
             weights,
         })
+    }
+
+    pub fn new_csr(
+        sparse: SparseMatrix,
+        response: Array1<f64>,
+        weights: Option<Array1<f64>>,
+    ) -> Result<Self, BoostlssError> {
+        let n = sparse.shape.0;
+        if response.len() != n {
+            return Err(BoostlssError::DataError("Row mismatch".into()));
+        }
+        Ok(Self {
+            design: DesignMatrix::Csr(sparse),
+            response,
+            weights,
+        })
+    }
+
+    pub fn new_csc(
+        sparse: SparseMatrix,
+        response: Array1<f64>,
+        weights: Option<Array1<f64>>,
+    ) -> Result<Self, BoostlssError> {
+        let n = sparse.shape.0;
+        if response.len() != n {
+            return Err(BoostlssError::DataError("Row mismatch".into()));
+        }
+        Ok(Self {
+            design: DesignMatrix::Csc(sparse),
+            response,
+            weights,
+        })
+    }
+
+    pub fn design(&self) -> &DesignMatrix {
+        &self.design
     }
 
     pub fn n_obs(&self) -> usize {
         self.design.nrows()
     }
 
-    pub fn design(&self) -> &Array2<f64> {
-        &self.design
+    pub fn n_features(&self) -> usize {
+        self.design.ncols()
     }
 
     pub fn response(&self) -> &Array1<f64> {
@@ -214,16 +250,19 @@ impl Dataset {
     }
 
     pub fn subset(&self, indices: &[usize]) -> Result<Self, BoostlssError> {
+        let DesignMatrix::Dense(mat) = &self.design else {
+            return Err(BoostlssError::DataError("Subset only supported for dense matrices".to_string()));
+        };
         let n = indices.len();
-        let mut new_design = ndarray::Array2::zeros((n, self.design.ncols()));
+        let mut new_design = ndarray::Array2::zeros((n, mat.ncols()));
         let mut new_response = ndarray::Array1::zeros(n);
         let mut new_weights = self.weights.as_ref().map(|_| ndarray::Array1::zeros(n));
 
         for (i, &idx) in indices.iter().enumerate() {
-            if idx >= self.design.nrows() {
+            if idx >= mat.nrows() {
                 return Err(BoostlssError::DataError("Index out of bounds".to_string()));
             }
-            new_design.row_mut(i).assign(&self.design.row(idx));
+            new_design.row_mut(i).assign(&mat.row(idx));
             new_response[i] = self.response[idx];
             if let Some(ref mut w) = new_weights {
                 w[i] = self.weights.as_ref().unwrap()[idx];
@@ -231,7 +270,7 @@ impl Dataset {
         }
 
         Ok(Self {
-            design: new_design,
+            design: DesignMatrix::Dense(new_design),
             response: new_response,
             weights: new_weights,
         })

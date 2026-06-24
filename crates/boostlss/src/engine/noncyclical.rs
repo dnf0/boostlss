@@ -173,4 +173,12 @@ mod tests {
         // The single update should target param_idx 0 (mu).
         assert_eq!(fitted.updates[0].param_idx, 0);
     }
+
+    #[test]
+    fn test_algorithm_variants_exist() {
+        use crate::engine::Algorithm;
+        let _a1 = Algorithm::Cyclic;
+        let _a2 = Algorithm::NonCyclic;
+        let _a3 = Algorithm::NonCyclicOuter;
+    }
 }

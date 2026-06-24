@@ -123,6 +123,9 @@ impl<F: Family + Clone> BoostLss<F> {
                 }
                 crate::engine::noncyclical::fit_noncyclical(self, data)
             }
+            Algorithm::NonCyclicOuter => {
+                unimplemented!("NonCyclicOuter algorithm is not yet implemented")
+            }
         }
     }
 }

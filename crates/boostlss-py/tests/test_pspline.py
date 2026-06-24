@@ -9,8 +9,8 @@ def test_cyclic_pspline():
 
     # Model with cyclic spline
     model = BoostLssModel(PyFamily("GaussianLSS"), 100, 0.1)
-    model.add_learner("mu", PyPSplineLearner("x0", cyclic=True))
-    model.add_learner("sigma", PyPSplineLearner("x0", cyclic=True))
+    model.add_learner("mu", PyPSplineLearner(0, cyclic=True))
+    model.add_learner("sigma", PyPSplineLearner(0, cyclic=True))
     model.fit(X, y)
 
     # Test boundary continuity: predict at 0 and 2*pi

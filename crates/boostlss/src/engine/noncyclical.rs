@@ -25,11 +25,10 @@ pub fn fit_noncyclical<F: Family + Clone>(
     }
 
     let mut cached_learners = Vec::new();
-    let x_col = data.design().column(0).to_owned();
 
     let (family, config, mut learners) = model.into_parts();
     for (idx, (param_idx, learner)) in learners.iter_mut().enumerate() {
-        let fit_state = learner.initialize(&x_col, data)?;
+        let fit_state = learner.initialize(data)?;
         cached_learners.push(CachedLearner {
             param_idx: *param_idx,
             learner_idx: idx,
@@ -158,9 +157,9 @@ mod tests {
         let data = Dataset::new(x, y, None).unwrap();
 
         let model = BoostLss::new(GaussianLss::new())
-            .on("mu", |p| p.add(Linear::new("x")))
+            .on("mu", |p| p.add(Linear::new(0)))
             .unwrap()
-            .on("sigma", |p| p.add(Linear::new("x")))
+            .on("sigma", |p| p.add(Linear::new(0)))
             .unwrap()
             .algorithm(Algorithm::NonCyclic)
             .mstop(Mstop::Scalar(1));

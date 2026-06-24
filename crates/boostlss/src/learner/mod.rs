@@ -68,12 +68,12 @@ impl From<bspatial::BivariatePSpline> for BaseLearner {
 impl BaseLearner {
     pub fn build_design(
         &mut self,
-        x: &Array1<f64>,
+        data: &crate::data::Dataset,
     ) -> Result<Array2<f64>, crate::error::BoostlssError> {
         match self {
-            Self::Linear(l) => l.build_design(x),
-            Self::PSpline(p) => p.build_design(x),
-            Self::RandomEffects(r) => r.build_design(x),
+            Self::Linear(l) => l.build_design(data),
+            Self::PSpline(p) => p.build_design(data),
+            Self::RandomEffects(r) => r.build_design(data),
             Self::Stump(_) => Err(crate::error::BoostlssError::DataError(
                 "Stump does not use build_design".into(),
             )),
@@ -109,7 +109,6 @@ impl BaseLearner {
     }
     pub fn initialize(
         &mut self,
-        x: &Array1<f64>,
         data: &crate::data::Dataset,
     ) -> Result<LearnerFit, crate::error::BoostlssError> {
         if let Self::Tree(tree_learner) = self {
@@ -133,7 +132,8 @@ impl BaseLearner {
             }));
         }
 
-        if let Self::Stump(_) = self {
+        if let Self::Stump(stump_learner) = self {
+            let x = data.design().column(0); // Temporarily hardcoded for stump
             let mut sorted_x: Vec<(f64, usize)> = x
                 .iter()
                 .copied()
@@ -149,16 +149,12 @@ impl BaseLearner {
 
         let (design, penalty) = match self {
             Self::BivariatePSpline(bp) => {
-                let col1 = data.design().column(bp.feature1_idx).to_owned();
-                let col2 = data.design().column(bp.feature2_idx).to_owned();
-                let design = bp.build_design(&col1, &col2)?;
-                let p_cols1 = bp.knots + bp.degree + 1;
-                let p_cols2 = bp.knots + bp.degree + 1;
-                let penalty = bp.penalty_matrix(p_cols1, p_cols2);
+                let design = bp.build_design(data)?;
+                let penalty = bp.penalty_matrix(bp.knots + bp.degree + 1, bp.knots + bp.degree + 1);
                 (design, penalty)
             }
             _ => {
-                let d = self.build_design(x)?;
+                let d = self.build_design(data)?;
                 let p = self.penalty_matrix(d.ncols());
                 (d, p)
             }
@@ -358,15 +354,15 @@ mod tests {
 
     #[test]
     fn test_from_impls() {
-        let l = Linear::new("x");
+        let l = Linear::new(0);
         let bl: BaseLearner = l.into();
         assert!(matches!(bl, BaseLearner::Linear(_)));
 
-        let p = PSpline::new("x");
+        let p = PSpline::new(0);
         let bl: BaseLearner = p.into();
         assert!(matches!(bl, BaseLearner::PSpline(_)));
 
-        let s = Stump::new("x");
+        let s = Stump::new(0);
         let bl: BaseLearner = s.into();
         assert!(matches!(bl, BaseLearner::Stump(_)));
 
@@ -377,7 +373,7 @@ mod tests {
 
     #[test]
     fn test_from_impls_random_effects() {
-        let r = RandomEffects::new("x");
+        let r = RandomEffects::new(0);
         let bl: BaseLearner = r.into();
         assert!(matches!(bl, BaseLearner::RandomEffects(_)));
     }

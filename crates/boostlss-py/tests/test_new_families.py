@@ -11,8 +11,8 @@ def test_lognormal_fit_predict():
     family = PyFamily("LogNormalLSS")
     model = BoostLssModel(family, mstop=10, step_length=0.1)
 
-    model.add_learner("mu", PyLinearLearner("x", intercept=True))
-    model.add_learner("sigma", PyLinearLearner("x", intercept=True))
+    model.add_learner("mu", PyLinearLearner(0, intercept=True))
+    model.add_learner("sigma", PyLinearLearner(0, intercept=True))
 
     model.fit(X, y)
 

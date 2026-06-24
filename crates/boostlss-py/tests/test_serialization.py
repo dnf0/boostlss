@@ -10,7 +10,7 @@ def test_pickle_roundtrip():
     y = 2.0 * X[:, 0] + np.random.randn(100) * 0.1
 
     model = BoostLssModel(Family.Gaussian, mstop=10, step_length=0.1)
-    model.add_learner("mu", Linear("x1"))
+    model.add_learner("mu", Linear(1))
     model.fit(X, y)
 
     preds_before = model.predict(X, "mu")
@@ -31,7 +31,7 @@ def test_save_load(tmp_path):
     y = 2.0 * X[:, 0] + np.random.randn(100) * 0.1
 
     model = BoostLssModel(Family.Gaussian, mstop=10, step_length=0.1)
-    model.add_learner("mu", Linear("x1"))
+    model.add_learner("mu", Linear(1))
     model.fit(X, y)
 
     preds_before = model.predict(X, "mu")

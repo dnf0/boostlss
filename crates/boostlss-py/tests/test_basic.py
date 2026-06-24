@@ -16,8 +16,8 @@ def test_gaussian_fit_predict():
     model = BoostLssModel(family, mstop=10, step_length=0.1)
 
     # 3. Add learners
-    model.add_learner("mu", PyLinearLearner("x", intercept=True))
-    model.add_learner("sigma", PyLinearLearner("x", intercept=True))
+    model.add_learner("mu", PyLinearLearner(0, intercept=True))
+    model.add_learner("sigma", PyLinearLearner(0, intercept=True))
 
     # 4. Fit
     model.fit(X, y)
@@ -41,8 +41,8 @@ def test_cvrisk():
 
     family = PyFamily("GaussianLSS")
     model = BoostLssModel(family, mstop=10, step_length=0.1)
-    model.add_learner("mu", PyLinearLearner("x", intercept=True))
-    model.add_learner("sigma", PyLinearLearner("x", intercept=True))
+    model.add_learner("mu", PyLinearLearner(0, intercept=True))
+    model.add_learner("sigma", PyLinearLearner(0, intercept=True))
 
     model.fit(X, y)
 
@@ -62,8 +62,8 @@ def test_stump_learner():
     family = PyFamily("GaussianLSS")
     model = BoostLssModel(family, mstop=10, step_length=0.1)
     # Add a stump instead of linear learner
-    model.add_learner("mu", PyStumpLearner("x"))
-    model.add_learner("sigma", PyStumpLearner("x"))
+    model.add_learner("mu", PyStumpLearner(0))
+    model.add_learner("sigma", PyStumpLearner(0))
 
     model.fit(X, y)
 
@@ -103,8 +103,8 @@ def fitted_model_and_data():
 
     # We add two learners: one for the signal, one for the noise
     # Both are assigned to 'mu'
-    model.add_learner("mu", PyLinearLearner("x0", intercept=True))
-    model.add_learner("mu", PyLinearLearner("x1", intercept=True))
+    model.add_learner("mu", PyLinearLearner(0, intercept=True))
+    model.add_learner("mu", PyLinearLearner(1, intercept=True))
 
     model.fit(X, y)
     return model, X, y
@@ -167,8 +167,8 @@ def test_noncyclic_fit():
 
     family = PyFamily("GaussianLSS")
     model = BoostLssModel(family, mstop=10, step_length=0.1, algorithm="noncyclic")
-    model.add_learner("mu", PyLinearLearner("x", intercept=True))
-    model.add_learner("sigma", PyLinearLearner("x", intercept=True))
+    model.add_learner("mu", PyLinearLearner(0, intercept=True))
+    model.add_learner("sigma", PyLinearLearner(0, intercept=True))
 
     # This should not raise an error
     model.fit(X, y)
@@ -191,8 +191,8 @@ def test_cvrisk_noncyclic():
 
     family = PyFamily("GaussianLSS")
     model = BoostLssModel(family, mstop=10, step_length=0.1, algorithm="noncyclic")
-    model.add_learner("mu", PyLinearLearner("x", intercept=True))
-    model.add_learner("sigma", PyLinearLearner("x", intercept=True))
+    model.add_learner("mu", PyLinearLearner(0, intercept=True))
+    model.add_learner("sigma", PyLinearLearner(0, intercept=True))
 
     model.fit(X, y)
 

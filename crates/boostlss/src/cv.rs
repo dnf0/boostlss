@@ -302,9 +302,9 @@ mod tests {
         let data = Dataset::new(x, y, None).unwrap();
 
         let model = BoostLss::new(GaussianLss::new())
-            .on("mu", |p| p.add(Linear::new("x").intercept(true)))
+            .on("mu", |p| p.add(Linear::new(0).intercept(true)))
             .unwrap()
-            .on("sigma", |p| p.add(Linear::new("x").intercept(true)))
+            .on("sigma", |p| p.add(Linear::new(0).intercept(true)))
             .unwrap()
             .mstop(Mstop::Scalar(10));
 

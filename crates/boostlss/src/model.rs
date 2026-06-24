@@ -79,7 +79,7 @@ impl<F: Family + Clone> BoostLss<F> {
     /// # use boostlss::family::GaussianLss;
     /// # use boostlss::learner::{Linear, PSpline};
     /// let model = BoostLss::new(GaussianLss::new())
-    ///     .on("mu", |p| p.add(Linear::new("x1")).add(PSpline::new("x2")));
+    ///     .on("mu", |p| p.add(Linear::new(0)).add(PSpline::new(1)));
     /// ```
     pub fn on(
         mut self,
@@ -168,7 +168,6 @@ impl<F: Family> Fitted<F> {
             .ok_or_else(|| BoostlssError::InvalidConfig(format!("Unknown parameter {}", param)))?;
 
         let mut pred = Array1::from_elem(data.n_obs(), self.offsets[k]);
-        let x_col = data.design().column(0).to_owned();
 
         for update in &self.updates {
             if update.param_idx != k {
@@ -178,7 +177,8 @@ impl<F: Family> Fitted<F> {
             let learner = &mut self.learners[update.learner_idx].1;
             match &update.update {
                 LearnerUpdate::Linear(coef) => {
-                    if let BaseLearner::RandomEffects(_) = learner {
+                    if let BaseLearner::RandomEffects(re) = learner {
+                        let x_col = data.design().column(re.feature_idx).to_owned();
                         let mut u_hat = ndarray::Array1::zeros(x_col.len());
                         for (i, &val) in x_col.iter().enumerate() {
                             if val >= 0.0 && val.fract() == 0.0 {
@@ -190,13 +190,11 @@ impl<F: Family> Fitted<F> {
                         }
                         pred = pred + u_hat;
                     } else if let BaseLearner::BivariatePSpline(bp) = learner {
-                        let col1 = data.design().column(bp.feature1_idx).to_owned();
-                        let col2 = data.design().column(bp.feature2_idx).to_owned();
-                        let design = bp.build_design(&col1, &col2)?;
+                        let design = bp.build_design(data)?;
                         let u_hat = design.dot(coef);
                         pred = pred + u_hat;
                     } else {
-                        let design = learner.build_design(&x_col)?;
+                        let design = learner.build_design(data)?;
                         let u_hat = design.dot(coef);
                         pred = pred + u_hat;
                     }
@@ -206,6 +204,12 @@ impl<F: Family> Fitted<F> {
                     left_val,
                     right_val,
                 } => {
+                    let feature_idx = if let BaseLearner::Stump(st) = learner {
+                        st.feature_idx
+                    } else {
+                        0
+                    };
+                    let x_col = data.design().column(feature_idx).to_owned();
                     let u_hat = x_col.mapv(|val| {
                         if val <= *split_val {
                             *left_val
@@ -337,7 +341,7 @@ mod tests {
     #[test]
     fn test_boostlss_on_valid_param() {
         let model = BoostLss::new(GaussianLss::new())
-            .on("mu", |p| p.add(Linear::new("x")))
+            .on("mu", |p| p.add(Linear::new(0)))
             .unwrap();
 
         assert_eq!(model.learners().len(), 1);
@@ -347,7 +351,7 @@ mod tests {
     #[test]
     fn test_boostlss_on_invalid_param() {
         let result =
-            BoostLss::new(GaussianLss::new()).on("invalid_param", |p| p.add(Linear::new("x")));
+            BoostLss::new(GaussianLss::new()).on("invalid_param", |p| p.add(Linear::new(0)));
 
         assert!(matches!(result, Err(BoostlssError::InvalidConfig(_))));
     }
@@ -356,8 +360,7 @@ mod tests {
     fn test_boostlss_on_multiple_learners() {
         let model = BoostLss::new(GaussianLss::new())
             .on("mu", |p| {
-                p.add(Linear::new("x"))
-                    .add(crate::learner::PSpline::new("y"))
+                p.add(Linear::new(0)).add(crate::learner::PSpline::new(1))
             })
             .unwrap();
 
@@ -394,8 +397,8 @@ mod tests {
     fn test_feature_importance() {
         let family = GaussianLss::new();
         let learners = vec![
-            (0, BaseLearner::Linear(Linear::new("x"))),
-            (0, BaseLearner::Linear(Linear::new("x2"))),
+            (0, BaseLearner::Linear(Linear::new(0))),
+            (0, BaseLearner::Linear(Linear::new(1))),
         ];
         let mut fitted = Fitted::new(family, vec![0.0, 0.0], learners);
 
@@ -428,7 +431,7 @@ mod tests {
     fn test_partial_dependence() {
         use ndarray::{array, Array1, Array2};
         let family = GaussianLss::new();
-        let learners = vec![(0, BaseLearner::Linear(Linear::new("x")))];
+        let learners = vec![(0, BaseLearner::Linear(Linear::new(0)))];
         let mut fitted = Fitted::new(family, vec![0.0, 0.0], learners);
 
         // Mock an update where predicted mu = 2.0 * x
@@ -471,7 +474,7 @@ mod tests {
         use crate::engine::Mstop;
         use crate::learner::RandomEffects;
         let model = BoostLss::new(GaussianLss::new())
-            .on("mu", |p| p.add(RandomEffects::new("x")))
+            .on("mu", |p| p.add(RandomEffects::new(0)))
             .unwrap()
             .step_length(0.1)
             .mstop(Mstop::Scalar(1));
@@ -521,7 +524,7 @@ mod tests {
         let data = Dataset::new(x, y, None).unwrap();
 
         let model = BoostLss::new(GaussianLss::new())
-            .on("mu", |p| p.add(Linear::new("x")))
+            .on("mu", |p| p.add(Linear::new(0)))
             .unwrap()
             .algorithm(crate::engine::Algorithm::NonCyclic)
             .mstop(Mstop::PerParam(vec![10, 10])); // Invalid for NonCyclic

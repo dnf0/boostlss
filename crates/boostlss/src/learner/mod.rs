@@ -133,7 +133,7 @@ impl BaseLearner {
         }
 
         if let Self::Stump(stump_learner) = self {
-            let x = data.design().column(0); // Temporarily hardcoded for stump
+            let x = data.design().column(stump_learner.feature_idx);
             let mut sorted_x: Vec<(f64, usize)> = x
                 .iter()
                 .copied()
@@ -143,7 +143,7 @@ impl BaseLearner {
             sorted_x.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
             return Ok(LearnerFit::Stump(stump::StumpFitState {
                 sorted_x,
-                feature_idx: 0,
+                feature_idx: stump_learner.feature_idx,
             }));
         }
 

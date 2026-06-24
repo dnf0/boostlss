@@ -184,3 +184,54 @@ impl From<PyBivariatePSplineLearner> for BaseLearner {
         )
     }
 }
+
+#[pyclass(module = "boostlss_py")]
+#[derive(Clone)]
+pub struct PyConstrainedPSplineLearner {
+    pub inner: boostlss::learner::constrained_pspline::ConstrainedPSpline,
+}
+
+impl From<PyConstrainedPSplineLearner> for BaseLearner {
+    fn from(val: PyConstrainedPSplineLearner) -> Self {
+        BaseLearner::ConstrainedPSpline(val.inner)
+    }
+}
+
+#[pyfunction]
+#[pyo3(signature = (feature_idx, constraint, knots=20, degree=3, differences=2, df=4.0, max_iter=10, tolerance=1e-6))]
+pub fn constrained_pspline(
+    feature_idx: usize,
+    constraint: &str,
+    knots: usize,
+    degree: usize,
+    differences: usize,
+    df: f64,
+    max_iter: usize,
+    tolerance: f64,
+) -> PyResult<PyConstrainedPSplineLearner> {
+    let c = match constraint.to_lowercase().as_str() {
+        "monotonic_increasing" => {
+            boostlss::learner::constrained_pspline::Constraint::MonotonicIncreasing
+        }
+        "monotonic_decreasing" => {
+            boostlss::learner::constrained_pspline::Constraint::MonotonicDecreasing
+        }
+        "convex" => boostlss::learner::constrained_pspline::Constraint::Convex,
+        "concave" => boostlss::learner::constrained_pspline::Constraint::Concave,
+        _ => {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "Invalid constraint",
+            ))
+        }
+    };
+
+    let mut b = boostlss::learner::constrained_pspline::ConstrainedPSpline::new(feature_idx, c);
+    b.knots = knots;
+    b.degree = degree;
+    b.differences = differences;
+    b.df = df;
+    b.max_iter = max_iter;
+    b.tolerance = tolerance;
+
+    Ok(PyConstrainedPSplineLearner { inner: b })
+}

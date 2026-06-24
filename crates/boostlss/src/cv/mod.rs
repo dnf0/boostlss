@@ -1,3 +1,5 @@
+pub mod stabsel;
+
 use crate::data::Dataset;
 use crate::engine::Mstop;
 use crate::error::BoostlssError;

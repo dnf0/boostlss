@@ -16,6 +16,9 @@ pub enum BoostlssError {
 
     #[error("Serialization error: {0}")]
     SerializationError(String),
+
+    #[error("Invalid stability selection config: {0}")]
+    InvalidStabselConfig(String),
 }
 
 #[cfg(test)]
@@ -32,5 +35,8 @@ mod tests {
 
         let err3 = BoostlssError::NotConverged("max iter reached".to_string());
         assert_eq!(err3.to_string(), "Model not converged: max iter reached");
+
+        let err4 = BoostlssError::InvalidStabselConfig("bad".to_string());
+        assert_eq!(err4.to_string(), "Invalid stability selection config: bad");
     }
 }

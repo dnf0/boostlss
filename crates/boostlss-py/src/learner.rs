@@ -199,6 +199,7 @@ impl From<PyConstrainedPSplineLearner> for BaseLearner {
 
 #[pyfunction]
 #[pyo3(signature = (feature_idx, constraint, knots=20, degree=3, differences=2, df=4.0, max_iter=10, tolerance=1e-6))]
+#[allow(clippy::too_many_arguments)]
 pub fn constrained_pspline(
     feature_idx: usize,
     constraint: &str,

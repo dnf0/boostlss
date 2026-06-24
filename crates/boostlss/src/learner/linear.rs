@@ -81,7 +81,7 @@ mod tests {
 mod tests_new {
     use super::*;
     use crate::data::Dataset;
-    use ndarray::{array, Array1, Array2};
+    use ndarray::array;
 
     #[test]
     fn test_linear_extracts_correct_column() {
@@ -91,7 +91,7 @@ mod tests_new {
         let data = Dataset::new(x, y, None).unwrap();
 
         // Linear learner on feature_idx = 1
-        let mut linear = Linear::new(1).intercept(false);
+        let linear = Linear::new(1).intercept(false);
 
         let design = linear.build_design(&data).unwrap();
         assert_eq!(design, array![[10.0], [20.0], [30.0]]);

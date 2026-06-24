@@ -1,7 +1,7 @@
 use crate::error::BoostlssError;
 use crate::learner::penalty::penalty_matrix;
 use crate::learner::spline_utils::{build_bspline_design, SplineData};
-use ndarray::{Array1, Array2};
+use ndarray::Array2;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -59,7 +59,7 @@ impl PSpline {
         data: &crate::data::Dataset,
     ) -> Result<Array2<f64>, BoostlssError> {
         let x = data.design().column(self.feature_idx);
-        let mut b = build_bspline_design(
+        let b = build_bspline_design(
             &x.to_owned(),
             self.knots,
             self.degree,

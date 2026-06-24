@@ -53,9 +53,9 @@ pub fn build_bspline_design(
         }
 
         n_basis.fill(0.0);
-        for j in 0..num_knots - 1 {
+        for (j, item) in n_basis.iter_mut().enumerate().take(num_knots - 1) {
             if data.t[j] <= xi && xi < data.t[j + 1] {
-                n_basis[j] = 1.0;
+                *item = 1.0;
             }
         }
         if xi == data.t[num_knots - 1] {

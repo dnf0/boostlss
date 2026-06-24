@@ -173,24 +173,6 @@ impl BaseLearner {
                 (d, p)
             }
         };
-        let lambda = match self.target_df() {
-            Some(df) => {
-                let mut xtx = design.t().dot(&design);
-                if let Some(w) = data.weights() {
-                    let mut weighted_design = design.clone();
-                    for i in 0..design.nrows() {
-                        let wi = w[i];
-                        for j in 0..design.ncols() {
-                            weighted_design[[i, j]] *= wi;
-                        }
-                    }
-                    xtx = design.t().dot(&weighted_design);
-                }
-                crate::learner::penalty::df_to_lambda(&xtx, &penalty, df)
-            }
-            None => 0.0,
-        };
-
         let mut xtx = design.t().dot(&design);
         if let Some(w) = data.weights() {
             let mut weighted_design = design.clone();
@@ -202,6 +184,11 @@ impl BaseLearner {
             }
             xtx = design.t().dot(&weighted_design);
         }
+
+        let lambda = match self.target_df() {
+            Some(df) => crate::learner::penalty::df_to_lambda(&xtx, &penalty, df),
+            None => 0.0,
+        };
 
         if let Self::ConstrainedPSpline(cp) = self {
             let p = design.ncols();

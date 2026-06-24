@@ -1,5 +1,5 @@
 use crate::error::BoostlssError;
-use ndarray::{Array1, Array2};
+use ndarray::Array2;
 use serde::{Deserialize, Serialize};
 
 const MAX_SAFE_COLS: usize = 100_000;

@@ -1,6 +1,6 @@
 // crates/boostlss/src/learner/constrained_pspline.rs
 use crate::error::BoostlssError;
-use crate::learner::penalty::{difference_matrix, penalty_matrix};
+use crate::learner::penalty::penalty_matrix;
 use crate::learner::spline_utils::{build_bspline_design, SplineData};
 use crate::learner::LearnerUpdate;
 use faer::linalg::solvers::Llt;
@@ -119,7 +119,7 @@ impl ConstrainedFitState {
             None => self.design.t().dot(&u),
         };
 
-        let mut xtu = Mat::from_fn(p, 1, |j, _| xtu_nd[j]);
+        let xtu = Mat::from_fn(p, 1, |j, _| xtu_nd[j]);
         let mut a = Mat::from_fn(p, p, |j, k| {
             self.xtx[[j, k]] + self.lambda_smooth * self.smooth_penalty[[j, k]]
         });
@@ -230,7 +230,7 @@ mod tests {
         let x = array![[0.0], [0.5], [1.0]];
         let y = array![0.0, 0.0, 0.0];
         let data = crate::data::Dataset::new(x, y, None).unwrap();
-        let design = ps.build_design(&data).unwrap(); // Should fail
+        let design = ps.build_design(&data).unwrap();
         let p = ps.knots + ps.degree + 1;
         assert_eq!(design.shape(), &[3, p]);
     }

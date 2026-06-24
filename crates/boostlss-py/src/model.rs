@@ -679,6 +679,9 @@ impl BoostLssModel {
             }
         };
 
+        // We track unique (parameter, base_learner) pairs in run_stabsel.
+        // Therefore, the total number of available features `p` MUST be the
+        // total number of parameter-learner pairs.
         let p = self.learners.len();
 
         let config = boostlss::cv::stabsel::StabselConfig::new(b, pfer, pi_thr, q, stabsel_mode, p)

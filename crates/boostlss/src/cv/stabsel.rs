@@ -219,11 +219,6 @@ pub fn run_stabsel<F: crate::family::Family + Clone + Send + Sync>(
                         run_data.weights(),
                     );
 
-                    let base_rss = match run_data.weights() {
-                        Some(w) => (&gradients * &gradients * w).sum(),
-                        None => (&gradients * &gradients).sum(),
-                    };
-
                     let mut best_rss = f64::INFINITY;
                     let mut best_update: Option<crate::learner::LearnerUpdate> = None;
                     let mut best_u_hat: Option<Array1<f64>> = None;

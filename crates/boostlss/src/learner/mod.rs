@@ -98,6 +98,20 @@ impl BaseLearner {
         }
     }
 
+    pub fn name(&self) -> String {
+        match self {
+            Self::Linear(l) => format!("Linear_{}", l.feature_idx),
+            Self::PSpline(p) => format!("PSpline_{}", p.feature_idx),
+            Self::ConstrainedPSpline(c) => format!("ConstrainedPSpline_{}", c.feature_idx),
+            Self::RandomEffects(r) => format!("RandomEffects_{}", r.feature_idx),
+            Self::Stump(s) => format!("Stump_{}", s.feature_idx),
+            Self::Tree(_) => "Tree".to_string(),
+            Self::BivariatePSpline(bp) => {
+                format!("BivariatePSpline_{}_{}", bp.feature1_idx, bp.feature2_idx)
+            }
+        }
+    }
+
     pub fn penalty_matrix(&self, n_cols: usize) -> Array2<f64> {
         match self {
             Self::Linear(l) => l.penalty_matrix(n_cols),

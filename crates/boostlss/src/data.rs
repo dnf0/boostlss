@@ -59,6 +59,23 @@ impl Dataset {
         self.weights.as_ref()
     }
 
+    pub fn set_weights(&mut self, weights: Array1<f64>) -> Result<(), BoostlssError> {
+        if weights.len() != self.n_obs() {
+            return Err(BoostlssError::DataError(format!(
+                "Design has {} rows, but weights have length {}",
+                self.n_obs(),
+                weights.len()
+            )));
+        }
+        if weights.iter().any(|&wi| wi < 0.0) {
+            return Err(BoostlssError::DataError(
+                "Weights cannot be negative".into(),
+            ));
+        }
+        self.weights = Some(weights);
+        Ok(())
+    }
+
     pub fn with_weights(&self, new_weights: Array1<f64>) -> Result<Self, BoostlssError> {
         let n = self.n_obs();
         if new_weights.len() != n {

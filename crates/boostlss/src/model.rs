@@ -71,6 +71,14 @@ impl<F: Family + Clone> BoostLss<F> {
         &self.learners
     }
 
+    pub fn param_names(&self) -> Vec<String> {
+        self.family
+            .params()
+            .iter()
+            .map(|p| p.name.clone())
+            .collect()
+    }
+
     /// Registers base learners for a specific parameter using a builder closure.
     ///
     /// Example:

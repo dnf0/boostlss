@@ -268,7 +268,7 @@ impl<F: Family> Fitted<F> {
             )));
         }
 
-        let mut base_design = match data.design() {
+        let base_design = match data.design() {
             crate::data::DesignMatrix::Dense(mat) => mat.clone(),
             _ => {
                 return Err(BoostlssError::DataError(

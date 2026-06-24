@@ -100,8 +100,10 @@ pub fn fit_noncyclical<F: Family + Clone>(
             // Apply step length nu
             let step = &u_hat * nu;
 
+            let original_predictions_k = current_predictions[k].clone();
+
             // Temporarily apply update
-            current_predictions[k] = &current_predictions[k] + &step;
+            current_predictions[k] = &original_predictions_k + &step;
 
             let nll = family.nll(data, &current_predictions)?;
 
@@ -110,8 +112,8 @@ pub fn fit_noncyclical<F: Family + Clone>(
                 selected_candidate = Some((k, l_idx, update, step));
             }
 
-            // Revert update
-            current_predictions[k] = &current_predictions[k] - &(&u_hat * nu);
+            // Restore original predictions
+            current_predictions[k] = original_predictions_k;
         }
 
         if let Some((k, l_idx, update, step)) = selected_candidate {
@@ -183,6 +185,8 @@ pub fn fit_noncyclical_outer<F: Family + Clone>(
             let mut gradients = family.ngradient(data, &current_predictions, k)?;
             stabilize(&mut gradients, config.stabilization, data.weights());
 
+            let original_predictions_k = current_predictions[k].clone();
+
             for cached in cached_learners.iter().filter(|c| c.param_idx == k) {
                 let update = cached
                     .fit_state
@@ -191,17 +195,17 @@ pub fn fit_noncyclical_outer<F: Family + Clone>(
                 let step = &u_hat * nu;
 
                 // Temporarily apply update
-                current_predictions[k] = &current_predictions[k] + &step;
+                current_predictions[k] = &original_predictions_k + &step;
                 let nll = family.nll(data, &current_predictions)?;
 
                 if nll < best_nll {
                     best_nll = nll;
                     best_candidate = Some((k, cached.learner_idx, update.clone(), step.clone()));
                 }
-
-                // Revert update
-                current_predictions[k] = &current_predictions[k] - &step;
             }
+
+            // Restore original predictions
+            current_predictions[k] = original_predictions_k;
         }
 
         if let Some((k, l_idx, mut update, step)) = best_candidate {
@@ -282,5 +286,6 @@ mod tests {
         // fit_noncyclical_outer should only generate 1 update and it should reduce NLL
         let fitted = fit_noncyclical_outer(model, &data).unwrap();
         assert_eq!(fitted.updates.len(), 1);
+        assert!(fitted.updates[0].risk_reduction > 0.0);
     }
 }

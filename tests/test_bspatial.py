@@ -24,7 +24,7 @@ def test_bspatial_fit_predict():
         0, 0.1, size=10000
     )
 
-    model = BoostLssModel(PyFamily.GaussianLss, mstop=5, step_length=0.1)
+    model = BoostLssModel(PyFamily("GaussianLSS"), mstop=5, step_length=0.1)
     learner = PyBivariatePSplineLearner(0, 1, knots=10)
     model.add_learner("mu", learner)
 

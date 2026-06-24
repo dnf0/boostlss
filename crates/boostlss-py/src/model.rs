@@ -164,6 +164,8 @@ impl BoostLssModel {
             p.into()
         } else if let Ok(b) = learner.extract::<crate::learner::PyBivariatePSplineLearner>() {
             b.into()
+        } else if let Ok(c) = learner.extract::<crate::learner::PyConstrainedPSplineLearner>() {
+            c.into()
         } else if let Ok(r) = learner.extract::<PyRandomEffectsLearner>() {
             BaseLearner::RandomEffects(RandomEffects::new(r.feature_idx).df(r.df))
         } else {

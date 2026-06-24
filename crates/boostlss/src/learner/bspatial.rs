@@ -1,6 +1,6 @@
 use crate::error::BoostlssError;
 use crate::learner::PSpline;
-use ndarray::{s, Array1, Array2};
+use ndarray::{s, Array2};
 
 use serde::{Deserialize, Serialize};
 

@@ -1,6 +1,7 @@
 use crate::error::BoostlssError;
 use crate::learner::penalty::penalty_matrix;
-use ndarray::{Array1, Array2};
+use crate::learner::spline_utils::{build_bspline_design, SplineData};
+use ndarray::Array2;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -11,9 +12,7 @@ pub struct PSpline {
     pub differences: usize,
     pub is_cyclic: bool,
     pub df: f64,
-    pub min_val: Option<f64>,
-    pub max_val: Option<f64>,
-    pub t: Option<Vec<f64>>,
+    pub spline_data: Option<SplineData>,
 }
 
 impl PSpline {
@@ -25,9 +24,7 @@ impl PSpline {
             differences: 2,
             is_cyclic: false,
             df: 4.0,
-            min_val: None,
-            max_val: None,
-            t: None,
+            spline_data: None,
         }
     }
 
@@ -62,91 +59,30 @@ impl PSpline {
         data: &crate::data::Dataset,
     ) -> Result<Array2<f64>, BoostlssError> {
         let x = data.design().column(self.feature_idx);
+        let b = build_bspline_design(
+            &x.to_owned(),
+            self.knots,
+            self.degree,
+            &mut self.spline_data,
+        )?;
 
-        if self.min_val.is_none() || self.max_val.is_none() || self.t.is_none() {
-            let min_val = x.iter().fold(f64::INFINITY, |a, &b| a.min(b));
-            let max_val = x.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
+        if self.is_cyclic {
+            let p = self.knots + self.degree + 1;
+            let c = self.knots + 1;
+            let mut b_cyclic = Array2::zeros((b.nrows(), c));
 
-            let num_knots = self.knots + 2 * self.degree + 2;
-            let mut t = vec![0.0; num_knots];
-            let step = (max_val - min_val) / (self.knots as f64 - 1.0 + 1e-9);
-
-            for (i, t_val) in t.iter_mut().enumerate() {
-                *t_val = min_val + (i as f64 - self.degree as f64) * step;
+            for i in 0..b.nrows() {
+                for j in 0..c {
+                    b_cyclic[[i, j]] = b[[i, j]];
+                }
+                for j in c..p {
+                    b_cyclic[[i, j - c]] += b[[i, j]];
+                }
             }
-
-            self.min_val = Some(min_val);
-            self.max_val = Some(max_val);
-            self.t = Some(t);
+            return Ok(b_cyclic);
         }
 
-        let min_val = self.min_val.unwrap();
-        let max_val = self.max_val.unwrap();
-        let t = self.t.as_ref().unwrap();
-        let num_knots = t.len();
-
-        let n = x.len();
-        let p = self.knots + self.degree + 1;
-        let mut b = Array2::zeros((n, p));
-
-        let mut n_basis = vec![0.0; num_knots - 1];
-        let mut next_n = vec![0.0; num_knots - 1];
-
-        for i in 0..n {
-            let xi = x[i];
-            if xi < min_val || xi > max_val {
-                return Err(BoostlssError::OutOfRange(format!(
-                    "Value {} out of training range",
-                    xi
-                )));
-            }
-
-            // degree 0
-            n_basis.fill(0.0);
-            for j in 0..(num_knots - 1) {
-                if xi >= t[j] && xi < t[j + 1] {
-                    n_basis[j] = 1.0;
-                }
-            }
-
-            // degree 1..degree
-            for d in 1..=self.degree {
-                next_n.fill(0.0);
-                for j in 0..(num_knots - 1 - d) {
-                    let mut val = 0.0;
-                    if t[j + d] - t[j] > 0.0 {
-                        val += (xi - t[j]) / (t[j + d] - t[j]) * n_basis[j];
-                    }
-                    if t[j + d + 1] - t[j + 1] > 0.0 {
-                        val += (t[j + d + 1] - xi) / (t[j + d + 1] - t[j + 1]) * n_basis[j + 1];
-                    }
-                    next_n[j] = val;
-                }
-                n_basis.copy_from_slice(&next_n);
-            }
-
-            for j in 0..p {
-                b[[i, j]] = n_basis[j];
-            }
-        }
-
-        let final_b = if self.is_cyclic {
-            // For cyclic, wrap the rightmost degree columns into the first degree columns
-            let out_cols = self.knots + 1;
-            let mut cyclic_b = Array2::zeros((n, out_cols));
-
-            for i in 0..n {
-                for j in 0..p {
-                    let wrapped_j = j % out_cols;
-                    cyclic_b[[i, wrapped_j]] += b[[i, j]];
-                }
-            }
-            cyclic_b
-        } else {
-            b
-        };
-
-        Ok(final_b)
+        Ok(b)
     }
 
     pub fn penalty_matrix(&self, n_cols: usize) -> Array2<f64> {

@@ -58,17 +58,9 @@ impl Tree {
         &self,
         data: &crate::data::Dataset,
     ) -> Result<TreeFitState, crate::error::BoostlssError> {
-        // Inside tree.rs build_design or fit
-        let n_cols = data.n_features();
-        let mut dense_mat = ndarray::Array2::zeros((data.n_obs(), n_cols));
-        for i in 0..n_cols {
-            let col = data.design().get_column(i)?;
-            dense_mat.column_mut(i).assign(&col);
-        }
-
         let mut sorted_features = Vec::with_capacity(self.feature_indices.len());
         for &col_idx in &self.feature_indices {
-            let col = dense_mat.column(col_idx);
+            let col = data.design().get_column(col_idx)?;
             let mut sorted: Vec<(f64, usize)> = col
                 .iter()
                 .copied()
@@ -91,11 +83,9 @@ impl Tree {
         root: &TreeNode,
         data: &crate::data::Dataset,
     ) -> Result<ndarray::Array1<f64>, crate::error::BoostlssError> {
-        let n_cols = data.n_features();
-        let mut dense_mat = ndarray::Array2::zeros((data.n_obs(), n_cols));
-        for i in 0..n_cols {
-            let col = data.design().get_column(i)?;
-            dense_mat.column_mut(i).assign(&col);
+        let mut features_data = Vec::with_capacity(self.feature_indices.len());
+        for &col_idx in &self.feature_indices {
+            features_data.push(data.design().get_column(col_idx)?);
         }
 
         let mut u_hat = ndarray::Array1::zeros(data.n_obs());
@@ -113,8 +103,7 @@ impl Tree {
                         left,
                         right,
                     } => {
-                        let col_idx = self.feature_indices[*feature_idx];
-                        let val = dense_mat.column(col_idx)[i];
+                        let val = features_data[*feature_idx][i];
                         if val <= *threshold {
                             node_ptr = left;
                         } else {

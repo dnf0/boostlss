@@ -186,10 +186,7 @@ impl<F: Family> Fitted<F> {
             match &update.update {
                 LearnerUpdate::Linear(coef) => {
                     if let BaseLearner::RandomEffects(re) = learner {
-                        let col = data
-                            .design()
-                            .get_column(re.feature_idx)
-                            .unwrap_or_else(|_| Array1::zeros(data.n_obs()));
+                        let col = data.design().get_column(re.feature_idx)?;
                         let mut u_hat = ndarray::Array1::zeros(col.len());
                         for (i, &val) in col.iter().enumerate() {
                             if val >= 0.0 && val.fract() == 0.0 {
@@ -220,9 +217,7 @@ impl<F: Family> Fitted<F> {
                     } else {
                         unreachable!()
                     };
-                    let u_hat = st
-                        .predict(*split_val, *left_val, *right_val, data)
-                        .unwrap_or_else(|_| Array1::zeros(data.n_obs()));
+                    let u_hat = st.predict(*split_val, *left_val, *right_val, data)?;
                     pred = pred + u_hat;
                 }
                 LearnerUpdate::Tree {
@@ -230,9 +225,7 @@ impl<F: Family> Fitted<F> {
                     param: _,
                 } => {
                     if let BaseLearner::Tree(tree_learner) = learner {
-                        let u_hat = tree_learner
-                            .predict(root, data)
-                            .unwrap_or_else(|_| Array1::zeros(data.n_obs()));
+                        let u_hat = tree_learner.predict(root, data)?;
                         pred = pred + u_hat;
                     }
                 }

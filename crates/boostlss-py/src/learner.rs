@@ -4,42 +4,45 @@ use pyo3::prelude::*;
 #[pyclass(module = "boostlss_py")]
 #[derive(Clone)]
 pub struct PyLinearLearner {
-    pub name: String,
+    pub feature_idx: usize,
     pub intercept: bool,
 }
 
 #[pymethods]
 impl PyLinearLearner {
     #[new]
-    #[pyo3(signature = (name, intercept=true))]
-    fn new(name: String, intercept: bool) -> Self {
-        Self { name, intercept }
+    #[pyo3(signature = (feature_idx, intercept=true))]
+    fn new(feature_idx: usize, intercept: bool) -> Self {
+        Self {
+            feature_idx,
+            intercept,
+        }
     }
 }
 
 impl From<PyLinearLearner> for BaseLearner {
     fn from(val: PyLinearLearner) -> Self {
-        BaseLearner::Linear(Linear::new(&val.name).intercept(val.intercept))
+        BaseLearner::Linear(Linear::new(val.feature_idx).intercept(val.intercept))
     }
 }
 
 #[pyclass(module = "boostlss_py")]
 #[derive(Clone)]
 pub struct PyStumpLearner {
-    pub name: String,
+    pub feature_idx: usize,
 }
 
 #[pymethods]
 impl PyStumpLearner {
     #[new]
-    fn new(name: String) -> Self {
-        Self { name }
+    fn new(feature_idx: usize) -> Self {
+        Self { feature_idx }
     }
 }
 
 impl From<PyStumpLearner> for BaseLearner {
     fn from(val: PyStumpLearner) -> Self {
-        BaseLearner::Stump(Stump::new(&val.name))
+        BaseLearner::Stump(Stump::new(val.feature_idx))
     }
 }
 
@@ -76,7 +79,7 @@ impl From<PyTreeLearner> for BaseLearner {
 #[pyclass(module = "boostlss_py")]
 #[derive(Clone)]
 pub struct PyPSplineLearner {
-    pub feature: String,
+    pub feature_idx: usize,
     pub degree: usize,
     pub knots: usize,
     pub differences: usize,
@@ -87,9 +90,9 @@ pub struct PyPSplineLearner {
 #[pymethods]
 impl PyPSplineLearner {
     #[new]
-    #[pyo3(signature = (feature, degree=3, knots=20, differences=2, df=4.0, cyclic=false))]
+    #[pyo3(signature = (feature_idx, degree=3, knots=20, differences=2, df=4.0, cyclic=false))]
     fn new(
-        feature: String,
+        feature_idx: usize,
         degree: usize,
         knots: usize,
         differences: usize,
@@ -97,7 +100,7 @@ impl PyPSplineLearner {
         cyclic: bool,
     ) -> Self {
         Self {
-            feature,
+            feature_idx,
             degree,
             knots,
             differences,
@@ -120,7 +123,7 @@ impl PyPSplineLearner {
 impl From<PyPSplineLearner> for BaseLearner {
     fn from(p: PyPSplineLearner) -> Self {
         BaseLearner::PSpline(
-            boostlss::learner::PSpline::new(&p.feature)
+            boostlss::learner::PSpline::new(p.feature_idx)
                 .with_degree(p.degree)
                 .with_knots(p.knots)
                 .with_differences(p.differences)

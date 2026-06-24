@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PSpline {
-    pub col_name: String,
+    pub feature_idx: usize,
     pub knots: usize,
     pub degree: usize,
     pub differences: usize,
@@ -17,9 +17,9 @@ pub struct PSpline {
 }
 
 impl PSpline {
-    pub fn new(col_name: &str) -> Self {
+    pub fn new(feature_idx: usize) -> Self {
         Self {
-            col_name: col_name.to_string(),
+            feature_idx,
             knots: 20,
             degree: 3,
             differences: 2,
@@ -57,7 +57,12 @@ impl PSpline {
     }
 
     /// Cox-de Boor recursion for evaluating B-spline basis functions.
-    pub fn build_design(&mut self, x: &Array1<f64>) -> Result<Array2<f64>, BoostlssError> {
+    pub fn build_design(
+        &mut self,
+        data: &crate::data::Dataset,
+    ) -> Result<Array2<f64>, BoostlssError> {
+        let x = data.design().column(self.feature_idx);
+
         if self.min_val.is_none() || self.max_val.is_none() || self.t.is_none() {
             let min_val = x.iter().fold(f64::INFINITY, |a, &b| a.min(b));
             let max_val = x.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
@@ -156,23 +161,25 @@ mod tests {
 
     #[test]
     fn test_pspline_new() {
-        let ps = PSpline::new("x1");
-        assert_eq!(ps.col_name, "x1");
+        let ps = PSpline::new(0);
+        assert_eq!(ps.feature_idx, 0);
         assert_eq!(ps.knots, 20);
         assert_eq!(ps.degree, 3);
     }
 
     #[test]
     fn test_pspline_cyclic_builder() {
-        let ps = PSpline::new("x1").cyclic(true);
+        let ps = PSpline::new(0).cyclic(true);
         assert!(ps.is_cyclic);
     }
 
     #[test]
     fn test_pspline_build_design() {
-        let mut ps = PSpline::new("x1");
-        let x = array![0.0, 0.5, 1.0];
-        let design = ps.build_design(&x).unwrap();
+        let mut ps = PSpline::new(0);
+        let x = array![[0.0], [0.5], [1.0]];
+        let y = array![0.0, 0.0, 0.0];
+        let data = crate::data::Dataset::new(x, y, None).unwrap();
+        let design = ps.build_design(&data).unwrap();
 
         let p = ps.knots + ps.degree + 1;
         assert_eq!(design.shape(), &[3, p]);
@@ -180,9 +187,11 @@ mod tests {
 
     #[test]
     fn test_pspline_build_design_cyclic() {
-        let mut ps = PSpline::new("x1").with_knots(5).with_degree(3).cyclic(true);
-        let x = array![0.0, 0.5, 1.0];
-        let design = ps.build_design(&x).unwrap();
+        let mut ps = PSpline::new(0).with_knots(5).with_degree(3).cyclic(true);
+        let x = array![[0.0], [0.5], [1.0]];
+        let y = array![0.0, 0.0, 0.0];
+        let data = crate::data::Dataset::new(x, y, None).unwrap();
+        let design = ps.build_design(&data).unwrap();
 
         // Standard dimension is knots + degree + 1 (5 + 3 + 1 = 9)
         // Cyclic dimension drops the rightmost degree columns: knots + 1 = 6

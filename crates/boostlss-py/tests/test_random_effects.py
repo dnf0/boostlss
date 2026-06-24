@@ -17,7 +17,7 @@ def test_random_effects():
     model = BoostLssModel(family, mstop=1000, step_length=1.0)
 
     # Pass df=3 for minimal penalization to quickly fit means
-    model.add_learner("mu", PyRandomEffectsLearner("x0", df=3.0))
+    model.add_learner("mu", PyRandomEffectsLearner(0, df=3.0))
     model.fit(X, y)
 
     preds = model.predict(X, "mu")
@@ -39,7 +39,7 @@ def test_random_effects_invalid_index():
     y = np.array([10.0, 20.0])
 
     model = BoostLssModel(PyFamily("GaussianLSS"), mstop=1)
-    model.add_learner("mu", PyRandomEffectsLearner("x0"))
+    model.add_learner("mu", PyRandomEffectsLearner(0))
 
     with pytest.raises(RuntimeError, match="non-negative integer"):
         model.fit(X, y)

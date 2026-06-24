@@ -4,14 +4,12 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Stump {
-    pub feature_name: String,
+    pub feature_idx: usize,
 }
 
 impl Stump {
-    pub fn new(feature_name: &str) -> Self {
-        Self {
-            feature_name: feature_name.to_string(),
-        }
+    pub fn new(feature_idx: usize) -> Self {
+        Self { feature_idx }
     }
 }
 

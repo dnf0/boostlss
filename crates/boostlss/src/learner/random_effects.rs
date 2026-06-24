@@ -12,14 +12,14 @@ const MAX_SAFE_ELEMENTS: usize = 100_000_000;
 /// considered for a future refactor.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RandomEffects {
-    pub feature: String,
+    pub feature_idx: usize,
     pub df: f64,
 }
 
 impl RandomEffects {
-    pub fn new(feature: &str) -> Self {
+    pub fn new(feature_idx: usize) -> Self {
         Self {
-            feature: feature.to_string(),
+            feature_idx,
             df: 4.0,
         }
     }
@@ -29,7 +29,8 @@ impl RandomEffects {
         self
     }
 
-    pub fn build_design(&self, x: &Array1<f64>) -> Result<Array2<f64>, BoostlssError> {
+    pub fn build_design(&self, data: &crate::data::Dataset) -> Result<Array2<f64>, BoostlssError> {
+        let x = data.design().column(self.feature_idx);
         let n_obs = x.len();
         if n_obs == 0 {
             return Ok(Array2::zeros((0, 0)));
@@ -88,9 +89,11 @@ mod tests {
 
     #[test]
     fn test_random_effects_design() {
-        let re = RandomEffects::new("group");
-        let x = array![0.0, 2.0, 1.0, 0.0];
-        let design = re.build_design(&x).unwrap();
+        let re = RandomEffects::new(0);
+        let x = array![[0.0], [2.0], [1.0], [0.0]];
+        let y = array![0.0, 0.0, 0.0, 0.0];
+        let data = crate::data::Dataset::new(x, y, None).unwrap();
+        let design = re.build_design(&data).unwrap();
 
         assert_eq!(design.shape(), &[4, 3]);
         assert_eq!(design.row(0), array![1.0, 0.0, 0.0].view());
@@ -101,15 +104,26 @@ mod tests {
 
     #[test]
     fn test_random_effects_invalid_data() {
-        let re = RandomEffects::new("group");
-        assert!(re.build_design(&array![-1.0, 0.0]).is_err());
-        assert!(re.build_design(&array![0.5, 1.0]).is_err());
+        let re = RandomEffects::new(0);
+        let x1 = array![[-1.0], [0.0]];
+        let y1 = array![0.0, 0.0];
+        let data1 = crate::data::Dataset::new(x1, y1, None).unwrap();
+        assert!(re.build_design(&data1).is_err());
+
+        let x2 = array![[0.5], [1.0]];
+        let y2 = array![0.0, 0.0];
+        let data2 = crate::data::Dataset::new(x2, y2, None).unwrap();
+        assert!(re.build_design(&data2).is_err());
     }
 
     #[test]
     fn test_random_effects_oom_prevention() {
-        let re = RandomEffects::new("group");
-        let result = re.build_design(&array![1_000_000.0, 0.0]);
+        let re = RandomEffects::new(0);
+
+        let x1 = array![[1_000_000.0], [0.0]];
+        let y1 = array![0.0, 0.0];
+        let data1 = crate::data::Dataset::new(x1, y1, None).unwrap();
+        let result = re.build_design(&data1);
         assert!(result.is_err());
         if let Err(e) = result {
             assert!(e.to_string().contains("exceeds safe threshold"));
@@ -117,8 +131,10 @@ mod tests {
             panic!("Expected an error for large index");
         }
 
-        let x = ndarray::Array1::from_elem(2000, 59_999.0);
-        let result2 = re.build_design(&x);
+        let x2 = ndarray::Array2::from_elem((2000, 1), 59_999.0);
+        let y2 = ndarray::Array1::zeros(2000);
+        let data2 = crate::data::Dataset::new(x2, y2, None).unwrap();
+        let result2 = re.build_design(&data2);
         assert!(result2.is_err());
         if let Err(e) = result2 {
             assert!(e.to_string().contains("total elements"));
@@ -129,7 +145,7 @@ mod tests {
 
     #[test]
     fn test_random_effects_penalty() {
-        let re = RandomEffects::new("group");
+        let re = RandomEffects::new(0);
         let pen = re.penalty_matrix(3);
         assert_eq!(pen.shape(), &[3, 3]);
         assert_eq!(pen.diag(), array![1.0, 1.0, 1.0].view());

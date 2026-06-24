@@ -26,11 +26,10 @@ pub fn fit_cyclical<F: Family + Clone>(
     }
 
     let mut cached_learners = Vec::new();
-    let x_col = data.design().column(0).to_owned();
 
     let (family, config, mut learners) = model.into_parts();
     for (idx, (param_idx, learner)) in learners.iter_mut().enumerate() {
-        let fit_state = learner.initialize(&x_col, data)?;
+        let fit_state = learner.initialize(data)?;
         cached_learners.push(CachedLearner {
             param_idx: *param_idx,
             learner_idx: idx,
@@ -131,9 +130,9 @@ mod tests {
         let data = Dataset::new(x, y.clone(), None).unwrap();
 
         let model = BoostLss::new(GaussianLss::new())
-            .on("mu", |p| p.add(Linear::new("x").intercept(true)))
+            .on("mu", |p| p.add(Linear::new(0).intercept(true)))
             .unwrap()
-            .on("sigma", |p| p.add(Linear::new("x").intercept(true)))
+            .on("sigma", |p| p.add(Linear::new(0).intercept(true)))
             .unwrap()
             .algorithm(crate::engine::Algorithm::Cyclic)
             .mstop(Mstop::PerParam(vec![2, 2]));
@@ -152,7 +151,7 @@ mod tests {
         let data = Dataset::new(x, y, None).unwrap();
 
         let model = BoostLss::new(GaussianLss::new())
-            .on("mu", |p| p.add(Linear::new("x")))
+            .on("mu", |p| p.add(Linear::new(0)))
             .unwrap()
             .algorithm(crate::engine::Algorithm::Cyclic)
             .mstop(Mstop::Scalar(1));

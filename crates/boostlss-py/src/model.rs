@@ -103,19 +103,16 @@ impl FittedModel {
 #[pyclass(module = "boostlss_py")]
 #[derive(Clone)]
 pub struct PyRandomEffectsLearner {
-    feature: String,
+    feature_idx: usize,
     df: f64,
 }
 
 #[pymethods]
 impl PyRandomEffectsLearner {
     #[new]
-    #[pyo3(signature = (feature, df=4.0))]
-    fn new(feature: &str, df: f64) -> Self {
-        Self {
-            feature: feature.to_string(),
-            df,
-        }
+    #[pyo3(signature = (feature_idx, df=4.0))]
+    fn new(feature_idx: usize, df: f64) -> Self {
+        Self { feature_idx, df }
     }
 }
 
@@ -168,7 +165,7 @@ impl BoostLssModel {
         } else if let Ok(b) = learner.extract::<crate::learner::PyBivariatePSplineLearner>() {
             b.into()
         } else if let Ok(r) = learner.extract::<PyRandomEffectsLearner>() {
-            BaseLearner::RandomEffects(RandomEffects::new(&r.feature).df(r.df))
+            BaseLearner::RandomEffects(RandomEffects::new(r.feature_idx).df(r.df))
         } else {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "Invalid learner type",

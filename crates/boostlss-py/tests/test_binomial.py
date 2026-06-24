@@ -14,7 +14,7 @@ def test_binomial_fit_predict():
     # bump mstop to 50
     model = BoostLssModel(family, mstop=50, step_length=0.1)
 
-    model.add_learner("mu", PyLinearLearner("x", intercept=True))
+    model.add_learner("mu", PyLinearLearner(0, intercept=True))
 
     model.fit(X, y)
 
@@ -39,7 +39,7 @@ def test_binomial_feature_importance():
 
     family = PyFamily("BinomialLSS")
     model = BoostLssModel(family, mstop=10, step_length=0.1)
-    model.add_learner("mu", PyLinearLearner("x", intercept=True))
+    model.add_learner("mu", PyLinearLearner(0, intercept=True))
     model.fit(X, y)
 
     fi = model.feature_importance()
@@ -54,7 +54,7 @@ def test_binomial_partial_dependence():
 
     family = PyFamily("BinomialLSS")
     model = BoostLssModel(family, mstop=10, step_length=0.1)
-    model.add_learner("mu", PyLinearLearner("x", intercept=True))
+    model.add_learner("mu", PyLinearLearner(0, intercept=True))
     model.fit(X, y)
 
     grid = np.linspace(-3, 3, 10).tolist()
@@ -69,7 +69,7 @@ def test_binomial_cvrisk():
 
     family = PyFamily("BinomialLSS")
     model = BoostLssModel(family, mstop=10, step_length=0.1)
-    model.add_learner("mu", PyLinearLearner("x", intercept=True))
+    model.add_learner("mu", PyLinearLearner(0, intercept=True))
     model.fit(X, y)
 
     cv_result = model.cvrisk(folds=2)

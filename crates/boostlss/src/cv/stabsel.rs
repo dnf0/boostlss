@@ -25,10 +25,21 @@ impl StabselConfig {
         mode: StabselMode,
         p: usize,
     ) -> Result<Self, BoostlssError> {
-        let provided = vec![pfer.is_some(), pi_thr.is_some(), q.is_some()]
-            .into_iter()
-            .filter(|&x| x)
-            .count();
+        if p == 0 {
+            return Err(BoostlssError::InvalidStabselConfig(
+                "p must be greater than 0".to_string(),
+            ));
+        }
+
+        if let Some(q_val) = q {
+            if q_val == 0 || q_val > p {
+                return Err(BoostlssError::InvalidStabselConfig(
+                    "q must be in 1..=p".to_string(),
+                ));
+            }
+        }
+
+        let provided = pfer.is_some() as u8 + pi_thr.is_some() as u8 + q.is_some() as u8;
 
         if provided != 2 {
             return Err(BoostlssError::InvalidStabselConfig(
@@ -46,50 +57,59 @@ impl StabselConfig {
         };
 
         config.resolve_bounds()?;
+
+        if let Some(q_val) = config.q {
+            if q_val == 0 || q_val > p {
+                return Err(BoostlssError::InvalidStabselConfig(
+                    "Derived q must be in 1..=p".to_string(),
+                ));
+            }
+        }
+
         Ok(config)
     }
 
-    #[allow(clippy::unnecessary_unwrap)]
     fn resolve_bounds(&mut self) -> Result<(), BoostlssError> {
         // Shah & Samworth (2013) bounds: PFER <= q^2 / ((2 * pi_thr - 1) * p)
-        if self.pfer.is_none() {
-            let q = self.q.unwrap() as f64;
-            let pi_thr = self.pi_thr.unwrap();
-            if pi_thr <= 0.5 || pi_thr >= 1.0 {
-                return Err(BoostlssError::InvalidStabselConfig(
-                    "pi_thr must be in (0.5, 1.0)".to_string(),
-                ));
+        match (self.pfer, self.pi_thr, self.q) {
+            (None, Some(pi_thr), Some(q)) => {
+                if pi_thr <= 0.5 || pi_thr >= 1.0 {
+                    return Err(BoostlssError::InvalidStabselConfig(
+                        "pi_thr must be in (0.5, 1.0)".to_string(),
+                    ));
+                }
+                self.pfer = Some((q as f64 * q as f64) / ((2.0 * pi_thr - 1.0) * self.p as f64));
             }
-            self.pfer = Some((q * q) / ((2.0 * pi_thr - 1.0) * self.p as f64));
-        } else if self.pi_thr.is_none() {
-            let q = self.q.unwrap() as f64;
-            let pfer = self.pfer.unwrap();
-            if pfer <= 0.0 {
-                return Err(BoostlssError::InvalidStabselConfig(
-                    "pfer must be > 0.0".to_string(),
-                ));
+            (Some(pfer), None, Some(q)) => {
+                if pfer <= 0.0 {
+                    return Err(BoostlssError::InvalidStabselConfig(
+                        "pfer must be > 0.0".to_string(),
+                    ));
+                }
+                let pi_thr = ((q as f64 * q as f64) / (pfer * self.p as f64) + 1.0) / 2.0;
+                if pi_thr <= 0.5 || pi_thr >= 1.0 {
+                    return Err(BoostlssError::InvalidStabselConfig(
+                        "Derived pi_thr must be in (0.5, 1.0). Adjust q or pfer.".to_string(),
+                    ));
+                }
+                self.pi_thr = Some(pi_thr);
             }
-            self.pi_thr = Some(((q * q) / (pfer * self.p as f64) + 1.0) / 2.0);
-            if self.pi_thr.unwrap() <= 0.5 || self.pi_thr.unwrap() >= 1.0 {
-                return Err(BoostlssError::InvalidStabselConfig(
-                    "Derived pi_thr must be in (0.5, 1.0). Adjust q or pfer.".to_string(),
-                ));
+            (Some(pfer), Some(pi_thr), None) => {
+                if pi_thr <= 0.5 || pi_thr >= 1.0 || pfer <= 0.0 {
+                    return Err(BoostlssError::InvalidStabselConfig(
+                        "Invalid pi_thr or pfer".to_string(),
+                    ));
+                }
+                let q_f64 = (pfer * (2.0 * pi_thr - 1.0) * self.p as f64).sqrt();
+                let q_val = q_f64.floor() as usize;
+                if q_val == 0 {
+                    return Err(BoostlssError::InvalidStabselConfig(
+                        "Derived q is 0. Adjust pi_thr or pfer.".to_string(),
+                    ));
+                }
+                self.q = Some(q_val);
             }
-        } else if self.q.is_none() {
-            let pfer = self.pfer.unwrap();
-            let pi_thr = self.pi_thr.unwrap();
-            if pi_thr <= 0.5 || pi_thr >= 1.0 || pfer <= 0.0 {
-                return Err(BoostlssError::InvalidStabselConfig(
-                    "Invalid pi_thr or pfer".to_string(),
-                ));
-            }
-            let q_f64 = (pfer * (2.0 * pi_thr - 1.0) * self.p as f64).sqrt();
-            self.q = Some(q_f64.floor() as usize);
-            if self.q.unwrap() == 0 {
-                return Err(BoostlssError::InvalidStabselConfig(
-                    "Derived q is 0. Adjust pi_thr or pfer.".to_string(),
-                ));
-            }
+            _ => unreachable!("Config validated to have exactly 2 of 3 parameters"),
         }
         Ok(())
     }
@@ -145,6 +165,54 @@ mod tests {
         match err {
             BoostlssError::InvalidStabselConfig(msg) => {
                 assert_eq!(msg, "pi_thr must be in (0.5, 1.0)");
+            }
+            _ => panic!("Expected InvalidStabselConfig"),
+        }
+    }
+
+    #[test]
+    fn test_invalid_config_p_zero() {
+        let err =
+            StabselConfig::new(100, None, Some(0.6), Some(10), StabselMode::Joint, 0).unwrap_err();
+        match err {
+            BoostlssError::InvalidStabselConfig(msg) => {
+                assert_eq!(msg, "p must be greater than 0");
+            }
+            _ => panic!("Expected InvalidStabselConfig"),
+        }
+    }
+
+    #[test]
+    fn test_invalid_config_q_zero() {
+        let err =
+            StabselConfig::new(100, None, Some(0.6), Some(0), StabselMode::Joint, 100).unwrap_err();
+        match err {
+            BoostlssError::InvalidStabselConfig(msg) => {
+                assert_eq!(msg, "q must be in 1..=p");
+            }
+            _ => panic!("Expected InvalidStabselConfig"),
+        }
+    }
+
+    #[test]
+    fn test_invalid_config_q_greater_than_p() {
+        let err = StabselConfig::new(100, None, Some(0.6), Some(110), StabselMode::Joint, 100)
+            .unwrap_err();
+        match err {
+            BoostlssError::InvalidStabselConfig(msg) => {
+                assert_eq!(msg, "q must be in 1..=p");
+            }
+            _ => panic!("Expected InvalidStabselConfig"),
+        }
+    }
+
+    #[test]
+    fn test_invalid_config_derived_q_greater_than_p() {
+        let err = StabselConfig::new(100, Some(61.0), Some(0.6), None, StabselMode::Joint, 10)
+            .unwrap_err();
+        match err {
+            BoostlssError::InvalidStabselConfig(msg) => {
+                assert_eq!(msg, "Derived q must be in 1..=p");
             }
             _ => panic!("Expected InvalidStabselConfig"),
         }

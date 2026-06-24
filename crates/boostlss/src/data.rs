@@ -118,8 +118,8 @@ pub struct Dataset {
 }
 
 impl Dataset {
-    pub fn new(
-        design: Array2<f64>,
+    fn validate_and_create(
+        design: DesignMatrix,
         response: Array1<f64>,
         weights: Option<Array1<f64>>,
     ) -> Result<Self, BoostlssError> {
@@ -146,10 +146,18 @@ impl Dataset {
             }
         }
         Ok(Self {
-            design: DesignMatrix::Dense(design),
+            design,
             response,
             weights,
         })
+    }
+
+    pub fn new(
+        design: Array2<f64>,
+        response: Array1<f64>,
+        weights: Option<Array1<f64>>,
+    ) -> Result<Self, BoostlssError> {
+        Self::validate_and_create(DesignMatrix::Dense(design), response, weights)
     }
 
     pub fn new_csr(
@@ -157,15 +165,7 @@ impl Dataset {
         response: Array1<f64>,
         weights: Option<Array1<f64>>,
     ) -> Result<Self, BoostlssError> {
-        let n = sparse.shape.0;
-        if response.len() != n {
-            return Err(BoostlssError::DataError("Row mismatch".into()));
-        }
-        Ok(Self {
-            design: DesignMatrix::Csr(sparse),
-            response,
-            weights,
-        })
+        Self::validate_and_create(DesignMatrix::Csr(sparse), response, weights)
     }
 
     pub fn new_csc(
@@ -173,15 +173,7 @@ impl Dataset {
         response: Array1<f64>,
         weights: Option<Array1<f64>>,
     ) -> Result<Self, BoostlssError> {
-        let n = sparse.shape.0;
-        if response.len() != n {
-            return Err(BoostlssError::DataError("Row mismatch".into()));
-        }
-        Ok(Self {
-            design: DesignMatrix::Csc(sparse),
-            response,
-            weights,
-        })
+        Self::validate_and_create(DesignMatrix::Csc(sparse), response, weights)
     }
 
     pub fn design(&self) -> &DesignMatrix {
@@ -251,7 +243,9 @@ impl Dataset {
 
     pub fn subset(&self, indices: &[usize]) -> Result<Self, BoostlssError> {
         let DesignMatrix::Dense(mat) = &self.design else {
-            return Err(BoostlssError::DataError("Subset only supported for dense matrices".to_string()));
+            return Err(BoostlssError::DataError(
+                "Subset only supported for dense matrices".to_string(),
+            ));
         };
         let n = indices.len();
         let mut new_design = ndarray::Array2::zeros((n, mat.ncols()));
@@ -264,8 +258,8 @@ impl Dataset {
             }
             new_design.row_mut(i).assign(&mat.row(idx));
             new_response[i] = self.response[idx];
-            if let Some(ref mut w) = new_weights {
-                w[i] = self.weights.as_ref().unwrap()[idx];
+            if let (Some(ref mut w), Some(ref old_w)) = (&mut new_weights, &self.weights) {
+                w[i] = old_w[idx];
             }
         }
 

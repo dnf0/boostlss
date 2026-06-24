@@ -9,6 +9,46 @@ pub struct SparseMatrix {
     pub shape: (usize, usize),
 }
 
+impl SparseMatrix {
+    pub fn new(
+        data: Array1<f64>,
+        indices: Array1<usize>,
+        indptr: Array1<usize>,
+        shape: (usize, usize),
+    ) -> Result<Self, BoostlssError> {
+        if data.len() != indices.len() {
+            return Err(BoostlssError::DataError(
+                "Data and indices must have the same length".to_string(),
+            ));
+        }
+        if indptr.is_empty() {
+            return Err(BoostlssError::DataError(
+                "indptr must not be empty".to_string(),
+            ));
+        }
+
+        let expected_csr = shape.0 + 1;
+        let expected_csc = shape.1 + 1;
+        if indptr.len() != expected_csr && indptr.len() != expected_csc {
+            return Err(BoostlssError::DataError(
+                "indptr length does not match expected length for CSR or CSC format".to_string(),
+            ));
+        }
+
+        if indptr[indptr.len() - 1] != data.len() {
+            return Err(BoostlssError::DataError(
+                "Last element of indptr must equal the number of non-zero elements".to_string(),
+            ));
+        }
+
+        Ok(Self {
+            data,
+            indices,
+            indptr,
+            shape,
+        })
+    }
+}
 #[derive(Clone, Debug, PartialEq)]
 pub enum DesignMatrix {
     Dense(Array2<f64>),
@@ -18,21 +58,15 @@ pub enum DesignMatrix {
 
 impl DesignMatrix {
     pub fn get_column(&self, col_idx: usize) -> Result<Array1<f64>, BoostlssError> {
+        if col_idx >= self.ncols() {
+            return Err(BoostlssError::DataError(
+                "Column index out of bounds".to_string(),
+            ));
+        }
+
         match self {
-            Self::Dense(mat) => {
-                if col_idx >= mat.ncols() {
-                    return Err(BoostlssError::DataError(
-                        "Column index out of bounds".to_string(),
-                    ));
-                }
-                Ok(mat.column(col_idx).to_owned())
-            }
+            Self::Dense(mat) => Ok(mat.column(col_idx).to_owned()),
             Self::Csc(sparse) => {
-                if col_idx >= sparse.shape.1 {
-                    return Err(BoostlssError::DataError(
-                        "Column index out of bounds".to_string(),
-                    ));
-                }
                 let mut col = Array1::zeros(sparse.shape.0);
                 let start = sparse.indptr[col_idx];
                 let end = sparse.indptr[col_idx + 1];
@@ -43,11 +77,6 @@ impl DesignMatrix {
                 Ok(col)
             }
             Self::Csr(sparse) => {
-                if col_idx >= sparse.shape.1 {
-                    return Err(BoostlssError::DataError(
-                        "Column index out of bounds".to_string(),
-                    ));
-                }
                 let mut col = Array1::zeros(sparse.shape.0);
                 for row_idx in 0..sparse.shape.0 {
                     let start = sparse.indptr[row_idx];
@@ -254,12 +283,7 @@ mod tests {
         let data = array![1.0, 3.0, 2.0, 4.0];
         let indices = array![0, 2, 1, 2];
         let indptr = array![0, 2, 4];
-        let sparse = SparseMatrix {
-            data,
-            indices,
-            indptr,
-            shape: (3, 2),
-        };
+        let sparse = SparseMatrix::new(data, indices, indptr, (3, 2)).unwrap();
         let dm = DesignMatrix::Csc(sparse);
 
         let col0 = dm.get_column(0).unwrap();
@@ -275,12 +299,7 @@ mod tests {
         let data = array![1.0, 2.0, 3.0, 4.0];
         let indices = array![0, 1, 0, 1];
         let indptr = array![0, 1, 2, 4];
-        let sparse = SparseMatrix {
-            data,
-            indices,
-            indptr,
-            shape: (3, 2),
-        };
+        let sparse = SparseMatrix::new(data, indices, indptr, (3, 2)).unwrap();
         let dm = DesignMatrix::Csr(sparse);
 
         let col0 = dm.get_column(0).unwrap();

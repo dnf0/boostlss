@@ -11,6 +11,8 @@ pub mod spline_utils;
 pub mod pspline;
 pub use pspline::PSpline;
 
+pub mod constrained_pspline;
+
 pub mod stump;
 pub use stump::Stump;
 
@@ -25,6 +27,7 @@ pub use random_effects::RandomEffects;
 pub enum BaseLearner {
     Linear(Linear),
     PSpline(PSpline),
+    ConstrainedPSpline(constrained_pspline::ConstrainedPSpline),
     Stump(Stump),
     Tree(Tree),
     RandomEffects(RandomEffects),
@@ -40,6 +43,12 @@ impl From<Linear> for BaseLearner {
 impl From<PSpline> for BaseLearner {
     fn from(p: PSpline) -> Self {
         Self::PSpline(p)
+    }
+}
+
+impl From<constrained_pspline::ConstrainedPSpline> for BaseLearner {
+    fn from(c: constrained_pspline::ConstrainedPSpline) -> Self {
+        Self::ConstrainedPSpline(c)
     }
 }
 
@@ -75,6 +84,7 @@ impl BaseLearner {
         match self {
             Self::Linear(l) => l.build_design(data),
             Self::PSpline(p) => p.build_design(data),
+            Self::ConstrainedPSpline(c) => c.build_design(data),
             Self::RandomEffects(r) => r.build_design(data),
             Self::Stump(_) => Err(crate::error::BoostlssError::DataError(
                 "Stump does not use build_design".into(),
@@ -92,6 +102,7 @@ impl BaseLearner {
         match self {
             Self::Linear(l) => l.penalty_matrix(n_cols),
             Self::PSpline(p) => p.penalty_matrix(n_cols),
+            Self::ConstrainedPSpline(c) => c.penalty_matrix(n_cols),
             Self::RandomEffects(r) => r.penalty_matrix(n_cols),
             Self::Stump(_) => Array2::zeros((0, 0)),
             Self::Tree(_) => Array2::zeros((0, 0)),
@@ -103,6 +114,7 @@ impl BaseLearner {
         match self {
             Self::Linear(_) => None,
             Self::PSpline(p) => Some(p.df),
+            Self::ConstrainedPSpline(c) => Some(c.df),
             Self::RandomEffects(r) => Some(r.df),
             Self::Stump(_) => None,
             Self::Tree(_) => None,
@@ -163,14 +175,58 @@ impl BaseLearner {
         };
         let lambda = match self.target_df() {
             Some(df) => {
-                let xtx = design.t().dot(&design);
+                let mut xtx = design.t().dot(&design);
+                if let Some(w) = data.weights() {
+                    let mut weighted_design = design.clone();
+                    for i in 0..design.nrows() {
+                        let wi = w[i];
+                        for j in 0..design.ncols() {
+                            weighted_design[[i, j]] *= wi;
+                        }
+                    }
+                    xtx = design.t().dot(&weighted_design);
+                }
                 crate::learner::penalty::df_to_lambda(&xtx, &penalty, df)
             }
             None => 0.0,
         };
 
+        let mut xtx = design.t().dot(&design);
+        if let Some(w) = data.weights() {
+            let mut weighted_design = design.clone();
+            for i in 0..design.nrows() {
+                let wi = w[i];
+                for j in 0..design.ncols() {
+                    weighted_design[[i, j]] *= wi;
+                }
+            }
+            xtx = design.t().dot(&weighted_design);
+        }
+
+        if let Self::ConstrainedPSpline(cp) = self {
+            let p = design.ncols();
+            let order = match cp.constraint {
+                constrained_pspline::Constraint::MonotonicIncreasing
+                | constrained_pspline::Constraint::MonotonicDecreasing => 1,
+                constrained_pspline::Constraint::Convex
+                | constrained_pspline::Constraint::Concave => 2,
+            };
+            let constraint_diff = penalty::difference_matrix(p, order, false);
+            return Ok(LearnerFit::ConstrainedPSpline(
+                constrained_pspline::ConstrainedFitState {
+                    xtx,
+                    design,
+                    smooth_penalty: penalty,
+                    lambda_smooth: lambda,
+                    constraint_diff,
+                    constraint: cp.constraint.clone(),
+                    max_iter: cp.max_iter,
+                    tolerance: cp.tolerance,
+                },
+            ));
+        }
+
         let p = design.ncols();
-        let xtx = design.t().dot(&design);
         let a = faer::Mat::from_fn(p, p, |j, k| xtx[[j, k]] + lambda * penalty[[j, k]]);
         let llt = faer::linalg::solvers::Llt::new(a.as_ref(), faer::Side::Lower).map_err(|_| {
             crate::error::BoostlssError::DataError(
@@ -235,6 +291,7 @@ pub struct LinearFitState {
 #[derive(Debug, Clone)]
 pub enum LearnerFit {
     Linear(LinearFitState),
+    ConstrainedPSpline(constrained_pspline::ConstrainedFitState),
     Stump(stump::StumpFitState),
     Tree(tree::TreeFitState),
 }
@@ -246,6 +303,7 @@ impl LearnerFit {
         weights: Option<ArrayView1<f64>>,
     ) -> LearnerUpdate {
         match self {
+            Self::ConstrainedPSpline(state) => state.fit_update(u, weights),
             Self::Linear(state) => {
                 let p = state.design.ncols();
                 let xtu_nd = state.design.t().dot(&u);
@@ -265,6 +323,9 @@ impl LearnerFit {
     ) -> Array1<f64> {
         match (self, update) {
             (Self::Linear(state), LearnerUpdate::Linear(coef)) => state.design.dot(coef),
+            (Self::ConstrainedPSpline(state), LearnerUpdate::Linear(coef)) => {
+                state.design.dot(coef)
+            }
             (
                 Self::Stump(state),
                 LearnerUpdate::Stump {
@@ -363,6 +424,13 @@ mod tests {
         let p = PSpline::new(0);
         let bl: BaseLearner = p.into();
         assert!(matches!(bl, BaseLearner::PSpline(_)));
+
+        let cp = constrained_pspline::ConstrainedPSpline::new(
+            0,
+            constrained_pspline::Constraint::MonotonicIncreasing,
+        );
+        let bl: BaseLearner = cp.into();
+        assert!(matches!(bl, BaseLearner::ConstrainedPSpline(_)));
 
         let s = Stump::new(0);
         let bl: BaseLearner = s.into();

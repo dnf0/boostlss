@@ -1,3 +1,4 @@
+mod data;
 mod family;
 mod learner;
 mod model;

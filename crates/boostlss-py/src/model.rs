@@ -124,7 +124,7 @@ pub struct BoostLssModel {
     algorithm: Algorithm,
     learners: Vec<(String, BaseLearner)>,
     fitted: Option<FittedModel>,
-    train_data: Option<(ndarray::Array2<f64>, ndarray::Array1<f64>)>,
+    train_data: Option<Dataset>,
 }
 
 #[pymethods]
@@ -177,23 +177,47 @@ impl BoostLssModel {
         Ok(())
     }
 
-    fn fit(&mut self, x: PyReadonlyArray2<f64>, y: PyReadonlyArray1<f64>) -> PyResult<()> {
-        let x_view = x.as_array();
+    #[pyo3(signature = (x, y))]
+    fn fit<'py>(
+        &mut self,
+        py: Python<'py>,
+        x: &Bound<'py, PyAny>,
+        y: PyReadonlyArray1<'py, f64>,
+    ) -> PyResult<()> {
         let y_view = y.as_array();
-        let x_mat = ndarray::Array2::from_shape_vec(
-            (x_view.nrows(), x_view.ncols()),
-            x_view.to_owned().into_raw_vec(),
-        )
-        .unwrap();
-
         let y_vec =
             ndarray::Array1::from_shape_vec((y_view.len(),), y_view.to_owned().into_raw_vec())
                 .unwrap();
 
-        let dataset = Dataset::new(x_mat.clone(), y_vec.clone(), None)
-            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+        let is_sparse = x.hasattr("format")?;
 
-        self.train_data = Some((x_mat, y_vec));
+        let dataset = if is_sparse {
+            let format: String = x.getattr("format")?.extract()?;
+            let sparse_mat = crate::data::extract_sparse(py, x)?;
+            match format.as_str() {
+                "csr" => Dataset::new_csr(sparse_mat, y_vec.clone(), None)
+                    .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?,
+                "csc" => Dataset::new_csc(sparse_mat, y_vec.clone(), None)
+                    .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?,
+                _ => {
+                    return Err(pyo3::exceptions::PyTypeError::new_err(
+                        "Only CSR and CSC formats are supported",
+                    ))
+                }
+            }
+        } else {
+            let x_dense: numpy::PyReadonlyArray2<f64> = x.extract()?;
+            let x_view = x_dense.as_array();
+            let x_mat = ndarray::Array2::from_shape_vec(
+                (x_view.nrows(), x_view.ncols()),
+                x_view.to_owned().into_raw_vec(),
+            )
+            .unwrap();
+            Dataset::new(x_mat.clone(), y_vec.clone(), None)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?
+        };
+
+        self.train_data = Some(dataset.clone());
 
         match self.family {
             PyFamily::Gaussian => {
@@ -361,22 +385,43 @@ impl BoostLssModel {
         Ok(())
     }
 
+    #[pyo3(signature = (x, param))]
     fn predict<'py>(
         &mut self,
         py: Python<'py>,
-        x: PyReadonlyArray2<f64>,
+        x: &Bound<'py, PyAny>,
         param: &str,
     ) -> PyResult<Bound<'py, PyArray1<f64>>> {
-        let x_view = x.as_array();
-        let x_mat = ndarray::Array2::from_shape_vec(
-            (x_view.nrows(), x_view.ncols()),
-            x_view.to_owned().into_raw_vec(),
-        )
-        .unwrap();
-        // create dummy y for Dataset constructor requirements
-        let y_dummy = ndarray::Array1::zeros(x_mat.nrows());
-        let dataset = Dataset::new(x_mat, y_dummy, None)
-            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+        let is_sparse = x.hasattr("format")?;
+
+        let dataset = if is_sparse {
+            let format: String = x.getattr("format")?.extract()?;
+            let sparse_mat = crate::data::extract_sparse(py, x)?;
+            let n_obs = sparse_mat.shape.0;
+            let y_dummy = ndarray::Array1::zeros(n_obs);
+            match format.as_str() {
+                "csr" => Dataset::new_csr(sparse_mat, y_dummy, None)
+                    .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?,
+                "csc" => Dataset::new_csc(sparse_mat, y_dummy, None)
+                    .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?,
+                _ => {
+                    return Err(pyo3::exceptions::PyTypeError::new_err(
+                        "Only CSR and CSC formats are supported",
+                    ))
+                }
+            }
+        } else {
+            let x_dense: numpy::PyReadonlyArray2<f64> = x.extract()?;
+            let x_view = x_dense.as_array();
+            let x_mat = ndarray::Array2::from_shape_vec(
+                (x_view.nrows(), x_view.ncols()),
+                x_view.to_owned().into_raw_vec(),
+            )
+            .unwrap();
+            let y_dummy = ndarray::Array1::zeros(x_mat.nrows());
+            Dataset::new(x_mat, y_dummy, None)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?
+        };
 
         if let Some(fitted) = &mut self.fitted {
             let pred = fitted.predict(&dataset, param, Scale::Response)?;
@@ -391,9 +436,8 @@ impl BoostLssModel {
 
     #[pyo3(signature = (folds=10))]
     fn cvrisk<'py>(&mut self, py: Python<'py>, folds: usize) -> PyResult<Bound<'py, PyDict>> {
-        if let Some((x_mat, y_vec)) = &self.train_data {
-            let dataset = Dataset::new(x_mat.clone(), y_vec.clone(), None)
-                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+        if let Some(dataset) = &self.train_data {
+            let dataset = dataset.clone();
 
             match self.family {
                 PyFamily::Gaussian => {
@@ -664,10 +708,7 @@ impl BoostLssModel {
             )
         })?;
 
-        let x = train_data.0.clone();
-        let y = train_data.1.clone();
-        let dataset = boostlss::data::Dataset::new(x, y, None)
-            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+        let dataset = train_data.clone();
 
         let stabsel_mode = match mode.to_lowercase().as_str() {
             "joint" => boostlss::cv::stabsel::StabselMode::Joint,

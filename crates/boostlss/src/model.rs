@@ -124,7 +124,12 @@ impl<F: Family + Clone> BoostLss<F> {
                 crate::engine::noncyclical::fit_noncyclical(self, data)
             }
             Algorithm::NonCyclicOuter => {
-                unimplemented!("NonCyclicOuter algorithm is not yet implemented")
+                if matches!(self.config.mstop, Mstop::PerParam(_)) {
+                    return Err(BoostlssError::InvalidConfig(
+                        "NonCyclic algorithm requires a Scalar Mstop".into(),
+                    ));
+                }
+                crate::engine::noncyclical::fit_noncyclical_outer(self, data)
             }
         }
     }

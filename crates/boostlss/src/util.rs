@@ -13,6 +13,33 @@ pub fn weighted_mean(y: &Array1<f64>, w: Option<&Array1<f64>>) -> f64 {
     }
 }
 
+/// Weighted median of `y`. With `w = None`, the ordinary (approximate) median.
+pub fn weighted_median(y: &Array1<f64>, w: Option<&Array1<f64>>) -> f64 {
+    if y.is_empty() {
+        return 0.0;
+    }
+    let mut pairs: Vec<(f64, f64)> = match w {
+        None => y.iter().map(|&yi| (yi, 1.0)).collect(),
+        Some(weights) => y
+            .iter()
+            .zip(weights.iter())
+            .map(|(&yi, &wi)| (yi, wi))
+            .collect(),
+    };
+    pairs.sort_by(|a, b| a.0.total_cmp(&b.0));
+    let total_w: f64 = pairs.iter().map(|(_, wi)| wi).sum();
+    let half_w = total_w / 2.0;
+
+    let mut cum_w = 0.0;
+    for (yi, wi) in pairs {
+        cum_w += wi;
+        if cum_w >= half_w {
+            return yi;
+        }
+    }
+    y.last().copied().unwrap_or(0.0)
+}
+
 /// Weighted sample standard deviation (denominator = effective n - 1).
 /// With `w = None` this is the ordinary sample standard deviation.
 pub fn weighted_sd(y: &Array1<f64>, w: Option<&Array1<f64>>) -> f64 {
@@ -79,6 +106,19 @@ mod tests {
         let y = array![1.0, 3.0];
         let w = array![3.0, 1.0];
         assert_relative_eq!(weighted_mean(&y, Some(&w)), 1.5, epsilon = 1e-12);
+    }
+
+    #[test]
+    fn weighted_median_unweighted() {
+        let y = array![1.0, 3.0, 2.0];
+        assert_relative_eq!(weighted_median(&y, None), 2.0, epsilon = 1e-12);
+    }
+
+    #[test]
+    fn weighted_median_respects_weights() {
+        let y = array![1.0, 2.0, 3.0];
+        let w = array![1.0, 1.0, 10.0];
+        assert_relative_eq!(weighted_median(&y, Some(&w)), 3.0, epsilon = 1e-12);
     }
 
     #[test]

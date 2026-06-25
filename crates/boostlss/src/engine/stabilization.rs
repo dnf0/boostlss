@@ -1,4 +1,4 @@
-use crate::util::weighted_mean;
+use crate::util::{weighted_mean, weighted_median};
 use ndarray::Array1;
 
 pub fn stabilize(u: &mut Array1<f64>, method: super::Stabilization, w: Option<&Array1<f64>>) {
@@ -9,13 +9,9 @@ pub fn stabilize(u: &mut Array1<f64>, method: super::Stabilization, w: Option<&A
     match method {
         super::Stabilization::None => {}
         super::Stabilization::Mad => {
-            // Simplified MAD without weights for now, just to stub
-            // Needs robust weighted median in later PR.
-            // TODO: Using `mean` here as a temporary substitute for the `median`.
-            let mean = weighted_mean(u, w);
-            let mut diffs: Vec<f64> = u.iter().map(|&x| (x - mean).abs()).collect();
-            diffs.sort_by(|a, b| a.total_cmp(b));
-            let mad = diffs[diffs.len() / 2].max(1e-4);
+            let median = weighted_median(u, w);
+            let diffs = u.mapv(|x| (x - median).abs());
+            let mad = weighted_median(&diffs, w).max(1e-4);
             *u /= mad;
         }
         super::Stabilization::L2 => {
@@ -63,7 +59,7 @@ mod tests {
         stabilize(&mut u2, crate::engine::Stabilization::Mad, None);
         assert_eq!(
             u2,
-            array![1.0 / 1.6, 1.0 / 1.6, 1.0 / 1.6, 5.0 / 1.6, 5.0 / 1.6]
+            array![1.0 / 1e-4, 1.0 / 1e-4, 1.0 / 1e-4, 5.0 / 1e-4, 5.0 / 1e-4]
         );
     }
 

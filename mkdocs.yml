@@ -58,3 +58,4 @@ nav:
     - Algorithms: theory/algorithms.md
     - Base Learners: theory/base_learners.md
     - Distribution Families: theory/families.md
+    - Performance Benchmarks: theory/benchmarks.md

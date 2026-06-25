@@ -70,6 +70,8 @@ print("Done.")
 
 To visualize what the model learned, we'll generate a dense grid over the $[-3, 3]$ space, predict the $\mu$ parameter, and compare it to the true surface.
 
+![Spatial Surface](../assets/spatial_bivariate.png)
+
 ```python
 # 1. Create a dense grid for plotting
 grid_x1, grid_x2 = np.meshgrid(

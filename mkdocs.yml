@@ -44,6 +44,9 @@ nav:
   - Home: index.md
   - Quickstart: quickstart.md
   - Examples: examples.md
+  - End-to-End Tutorials:
+    - Spatial Bivariate Splines: examples/spatial_bivariate.md
+    - Robust Student-T Regression: examples/robust_student_t.md
   - API Reference: api.md
   - Theory & Deep Dives:
     - Algorithms: theory/algorithms.md

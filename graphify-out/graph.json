@@ -581,7 +581,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "option",
-      "community": 148,
+      "community": 128,
       "norm_label": "option"
     },
     {
@@ -671,7 +671,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "src_learner_pylinearlearner_new",
-      "community": 156,
+      "community": 73,
       "norm_label": ".new()"
     },
     {
@@ -691,7 +691,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "from",
-      "community": 2,
+      "community": 73,
       "norm_label": "from"
     },
     {
@@ -701,7 +701,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "src_learner_baselearner_from",
-      "community": 73,
+      "community": 156,
       "norm_label": ".from()"
     },
     {
@@ -751,7 +751,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "src_learner_pytreelearner_new",
-      "community": 156,
+      "community": 73,
       "norm_label": ".new()"
     },
     {
@@ -978,7 +978,7 @@
       "label": ".add_learner()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L156",
+      "source_location": "L157",
       "_origin": "ast",
       "id": "src_model_boostlssmodel_add_learner",
       "community": 104,
@@ -988,7 +988,7 @@
       "label": ".fit()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L181",
+      "source_location": "L182",
       "_origin": "ast",
       "id": "src_model_boostlssmodel_fit",
       "community": 104,
@@ -1008,7 +1008,7 @@
       "label": ".predict()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L363",
+      "source_location": "L399",
       "_origin": "ast",
       "id": "src_model_boostlssmodel_predict",
       "community": 104,
@@ -1028,7 +1028,7 @@
       "label": ".cvrisk()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L383",
+      "source_location": "L419",
       "_origin": "ast",
       "id": "src_model_boostlssmodel_cvrisk",
       "community": 104,
@@ -1048,7 +1048,7 @@
       "label": ".feature_importance()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L600",
+      "source_location": "L643",
       "_origin": "ast",
       "id": "src_model_boostlssmodel_feature_importance",
       "community": 104,
@@ -1058,7 +1058,7 @@
       "label": ".partial_dependence()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L611",
+      "source_location": "L654",
       "_origin": "ast",
       "id": "src_model_boostlssmodel_partial_dependence",
       "community": 104,
@@ -1078,7 +1078,7 @@
       "label": ".stabsel()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L642",
+      "source_location": "L685",
       "_origin": "ast",
       "id": "src_model_boostlssmodel_stabsel",
       "community": 104,
@@ -1088,7 +1088,7 @@
       "label": ".__getnewargs__()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L859",
+      "source_location": "L909",
       "_origin": "ast",
       "id": "src_model_boostlssmodel_getnewargs",
       "community": 104,
@@ -1098,7 +1098,7 @@
       "label": ".__getstate__()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L868",
+      "source_location": "L919",
       "_origin": "ast",
       "id": "src_model_boostlssmodel_getstate",
       "community": 104,
@@ -1108,7 +1108,7 @@
       "label": ".__setstate__()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L912",
+      "source_location": "L964",
       "_origin": "ast",
       "id": "src_model_boostlssmodel_setstate",
       "community": 104,
@@ -1118,7 +1118,7 @@
       "label": ".save()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L1005",
+      "source_location": "L1058",
       "_origin": "ast",
       "id": "src_model_boostlssmodel_save",
       "community": 104,
@@ -1128,7 +1128,7 @@
       "label": ".load()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L1016",
+      "source_location": "L1069",
       "_origin": "ast",
       "id": "src_model_boostlssmodel_load",
       "community": 104,
@@ -1268,7 +1268,7 @@
       "label": "test_noncyclic_fit()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/tests/test_basic.py",
-      "source_location": "L158",
+      "source_location": "L161",
       "_origin": "ast",
       "id": "tests_test_basic_test_noncyclic_fit",
       "community": 131,
@@ -1278,7 +1278,7 @@
       "label": "test_cvrisk_noncyclic()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/tests/test_basic.py",
-      "source_location": "L184",
+      "source_location": "L187",
       "_origin": "ast",
       "id": "tests_test_basic_test_cvrisk_noncyclic",
       "community": 131,
@@ -1348,7 +1348,7 @@
       "label": "test_sparse_matrix_support()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/tests/test_model.py",
-      "source_location": "L6",
+      "source_location": "L8",
       "_origin": "ast",
       "id": "tests_test_model_test_sparse_matrix_support",
       "community": 185,
@@ -1373,6 +1373,26 @@
       "id": "tests_test_new_families_test_lognormal_fit_predict",
       "community": 186,
       "norm_label": "test_lognormal_fit_predict()"
+    },
+    {
+      "label": "test_noncyclic_outer.py",
+      "file_type": "code",
+      "source_file": "crates/boostlss-py/tests/test_noncyclic_outer.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "tests_test_noncyclic_outer",
+      "community": 193,
+      "norm_label": "test_noncyclic_outer.py"
+    },
+    {
+      "label": "test_noncyclic_outer()",
+      "file_type": "code",
+      "source_file": "crates/boostlss-py/tests/test_noncyclic_outer.py",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "tests_test_noncyclic_outer_test_noncyclic_outer",
+      "community": 193,
+      "norm_label": "test_noncyclic_outer()"
     },
     {
       "label": "test_pspline.py",
@@ -1481,7 +1501,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "cv_mod",
-      "community": 93,
+      "community": 1,
       "norm_label": "mod.rs"
     },
     {
@@ -1491,7 +1511,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "cv_mod_resampling",
-      "community": 93,
+      "community": 1,
       "norm_label": "resampling"
     },
     {
@@ -1501,7 +1521,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "cv_mod_resampling_generate_weights",
-      "community": 93,
+      "community": 1,
       "norm_label": ".generate_weights()"
     },
     {
@@ -1511,7 +1531,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "rng",
-      "community": 93,
+      "community": 1,
       "norm_label": "rng"
     },
     {
@@ -1521,7 +1541,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "cv_mod_make_grid",
-      "community": 93,
+      "community": 1,
       "norm_label": "make_grid()"
     },
     {
@@ -1531,7 +1551,7 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "cv_mod_cvriskresult",
-      "community": 0,
+      "community": 1,
       "norm_label": "cvriskresult"
     },
     {
@@ -1591,7 +1611,7 @@
       "source_location": "L152",
       "_origin": "ast",
       "id": "cv_mod_cvrisk",
-      "community": 93,
+      "community": 1,
       "norm_label": "cvrisk"
     },
     {
@@ -1601,7 +1621,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "boostlss",
-      "community": 93,
+      "community": 1,
       "norm_label": "boostlss"
     },
     {
@@ -1621,7 +1641,7 @@
       "source_location": "L159",
       "_origin": "ast",
       "id": "cv_mod_cvrisk_f",
-      "community": 93,
+      "community": 1,
       "norm_label": "cvrisk<f>"
     },
     {
@@ -1631,7 +1651,7 @@
       "source_location": "L160",
       "_origin": "ast",
       "id": "cv_mod_cvrisk_f_new",
-      "community": 93,
+      "community": 1,
       "norm_label": ".new()"
     },
     {
@@ -1641,7 +1661,7 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "cv_mod_cvrisk_f_grid_resolution",
-      "community": 93,
+      "community": 1,
       "norm_label": ".grid_resolution()"
     },
     {
@@ -1651,7 +1671,7 @@
       "source_location": "L178",
       "_origin": "ast",
       "id": "cv_mod_cvrisk_f_mstop_max",
-      "community": 93,
+      "community": 1,
       "norm_label": ".mstop_max()"
     },
     {
@@ -1661,7 +1681,7 @@
       "source_location": "L183",
       "_origin": "ast",
       "id": "cv_mod_cvrisk_f_run",
-      "community": 0,
+      "community": 1,
       "norm_label": ".run()"
     },
     {
@@ -1681,7 +1701,7 @@
       "source_location": "L278",
       "_origin": "ast",
       "id": "cv_mod_test_kfold_weights",
-      "community": 93,
+      "community": 1,
       "norm_label": "test_kfold_weights()"
     },
     {
@@ -1691,7 +1711,7 @@
       "source_location": "L288",
       "_origin": "ast",
       "id": "cv_mod_test_make_grid",
-      "community": 93,
+      "community": 1,
       "norm_label": "test_make_grid()"
     },
     {
@@ -1701,7 +1721,7 @@
       "source_location": "L301",
       "_origin": "ast",
       "id": "cv_mod_test_cv_risk_run",
-      "community": 93,
+      "community": 1,
       "norm_label": "test_cv_risk_run()"
     },
     {
@@ -1771,7 +1791,7 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "cv_stabsel_cachedlearner",
-      "community": 1,
+      "community": 2,
       "norm_label": "cachedlearner"
     },
     {
@@ -1911,7 +1931,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "src_data_designmatrix",
-      "community": 0,
+      "community": 148,
       "norm_label": "designmatrix"
     },
     {
@@ -1931,7 +1951,7 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "src_data_designmatrix_nrows",
-      "community": 0,
+      "community": 148,
       "norm_label": ".nrows()"
     },
     {
@@ -1941,7 +1961,7 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "src_data_designmatrix_ncols",
-      "community": 0,
+      "community": 148,
       "norm_label": ".ncols()"
     },
     {
@@ -1951,7 +1971,7 @@
       "source_location": "L114",
       "_origin": "ast",
       "id": "src_data_dataset",
-      "community": 0,
+      "community": 134,
       "norm_label": "dataset"
     },
     {
@@ -2011,7 +2031,7 @@
       "source_location": "L179",
       "_origin": "ast",
       "id": "src_data_dataset_design",
-      "community": 0,
+      "community": 102,
       "norm_label": ".design()"
     },
     {
@@ -2021,7 +2041,7 @@
       "source_location": "L183",
       "_origin": "ast",
       "id": "src_data_dataset_n_obs",
-      "community": 0,
+      "community": 134,
       "norm_label": ".n_obs()"
     },
     {
@@ -2031,7 +2051,7 @@
       "source_location": "L187",
       "_origin": "ast",
       "id": "src_data_dataset_n_features",
-      "community": 0,
+      "community": 148,
       "norm_label": ".n_features()"
     },
     {
@@ -2061,7 +2081,7 @@
       "source_location": "L199",
       "_origin": "ast",
       "id": "src_data_dataset_set_weights",
-      "community": 0,
+      "community": 134,
       "norm_label": ".set_weights()"
     },
     {
@@ -2071,7 +2091,7 @@
       "source_location": "L216",
       "_origin": "ast",
       "id": "src_data_dataset_with_weights",
-      "community": 0,
+      "community": 134,
       "norm_label": ".with_weights()"
     },
     {
@@ -2081,7 +2101,7 @@
       "source_location": "L244",
       "_origin": "ast",
       "id": "src_data_dataset_subset",
-      "community": 0,
+      "community": 148,
       "norm_label": ".subset()"
     },
     {
@@ -2161,7 +2181,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "engine_cyclical_cachedlearner",
-      "community": 1,
+      "community": 2,
       "norm_label": "cachedlearner"
     },
     {
@@ -2171,7 +2191,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "engine_cyclical_fit_cyclical",
-      "community": 0,
+      "community": 102,
       "norm_label": "fit_cyclical()"
     },
     {
@@ -2218,7 +2238,7 @@
       "label": "Stabilization",
       "file_type": "code",
       "source_file": "crates/boostlss/src/engine/mod.rs",
-      "source_location": "L14",
+      "source_location": "L15",
       "_origin": "ast",
       "id": "engine_mod_stabilization",
       "community": 1,
@@ -2228,7 +2248,7 @@
       "label": "Mstop",
       "file_type": "code",
       "source_file": "crates/boostlss/src/engine/mod.rs",
-      "source_location": "L21",
+      "source_location": "L22",
       "_origin": "ast",
       "id": "engine_mod_mstop",
       "community": 1,
@@ -2238,7 +2258,7 @@
       "label": "Config",
       "file_type": "code",
       "source_file": "crates/boostlss/src/engine/mod.rs",
-      "source_location": "L27",
+      "source_location": "L28",
       "_origin": "ast",
       "id": "engine_mod_config",
       "community": 1,
@@ -2251,14 +2271,14 @@
       "source_location": "",
       "_origin": "ast",
       "id": "default",
-      "community": 63,
+      "community": 192,
       "norm_label": "default"
     },
     {
       "label": ".default()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/engine/mod.rs",
-      "source_location": "L35",
+      "source_location": "L36",
       "_origin": "ast",
       "id": "engine_mod_config_default",
       "community": 1,
@@ -2281,7 +2301,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "engine_noncyclical_cachedlearner",
-      "community": 1,
+      "community": 2,
       "norm_label": "cachedlearner"
     },
     {
@@ -2291,18 +2311,48 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "engine_noncyclical_fit_noncyclical",
-      "community": 0,
+      "community": 102,
       "norm_label": "fit_noncyclical()"
+    },
+    {
+      "label": "fit_noncyclical_outer()",
+      "file_type": "code",
+      "source_file": "crates/boostlss/src/engine/noncyclical.rs",
+      "source_location": "L145",
+      "_origin": "ast",
+      "id": "engine_noncyclical_fit_noncyclical_outer",
+      "community": 0,
+      "norm_label": "fit_noncyclical_outer()"
     },
     {
       "label": "test_fit_noncyclical_selects_best_param()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/engine/noncyclical.rs",
-      "source_location": "L153",
+      "source_location": "L240",
       "_origin": "ast",
       "id": "engine_noncyclical_test_fit_noncyclical_selects_best_param",
       "community": 1,
       "norm_label": "test_fit_noncyclical_selects_best_param()"
+    },
+    {
+      "label": "test_algorithm_variants_exist()",
+      "file_type": "code",
+      "source_file": "crates/boostlss/src/engine/noncyclical.rs",
+      "source_location": "L265",
+      "_origin": "ast",
+      "id": "engine_noncyclical_test_algorithm_variants_exist",
+      "community": 0,
+      "norm_label": "test_algorithm_variants_exist()"
+    },
+    {
+      "label": "test_fit_noncyclical_outer()",
+      "file_type": "code",
+      "source_file": "crates/boostlss/src/engine/noncyclical.rs",
+      "source_location": "L273",
+      "_origin": "ast",
+      "id": "engine_noncyclical_test_fit_noncyclical_outer",
+      "community": 0,
+      "norm_label": "test_fit_noncyclical_outer()"
     },
     {
       "label": "stabilization.rs",
@@ -2311,7 +2361,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "engine_stabilization",
-      "community": 148,
+      "community": 102,
       "norm_label": "stabilization.rs"
     },
     {
@@ -2321,7 +2371,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "engine_stabilization_stabilize",
-      "community": 148,
+      "community": 102,
       "norm_label": "stabilize()"
     },
     {
@@ -2331,7 +2381,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "engine_stabilization_test_empty_array",
-      "community": 148,
+      "community": 102,
       "norm_label": "test_empty_array()"
     },
     {
@@ -2341,7 +2391,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "engine_stabilization_test_stabilize_none",
-      "community": 148,
+      "community": 102,
       "norm_label": "test_stabilize_none()"
     },
     {
@@ -2351,7 +2401,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "engine_stabilization_test_stabilize_mad",
-      "community": 148,
+      "community": 102,
       "norm_label": "test_stabilize_mad()"
     },
     {
@@ -2361,7 +2411,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "engine_stabilization_test_stabilize_l2",
-      "community": 148,
+      "community": 102,
       "norm_label": "test_stabilize_l2()"
     },
     {
@@ -2371,7 +2421,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_error",
-      "community": 140,
+      "community": 0,
       "norm_label": "error.rs"
     },
     {
@@ -2381,7 +2431,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_error_boostlsserror",
-      "community": 140,
+      "community": 0,
       "norm_label": "boostlsserror"
     },
     {
@@ -2391,7 +2441,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "src_error_test_error_display",
-      "community": 140,
+      "community": 0,
       "norm_label": "test_error_display()"
     },
     {
@@ -2511,7 +2561,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "family_binomial",
-      "community": 134,
+      "community": 191,
       "norm_label": "binomial.rs"
     },
     {
@@ -2521,7 +2571,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "family_binomial_default_binomial_params",
-      "community": 134,
+      "community": 191,
       "norm_label": "default_binomial_params()"
     },
     {
@@ -2531,7 +2581,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "family_binomial_binomiallss",
-      "community": 134,
+      "community": 191,
       "norm_label": "binomiallss"
     },
     {
@@ -2541,7 +2591,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "family_binomial_binomiallss_new",
-      "community": 134,
+      "community": 191,
       "norm_label": ".new()"
     },
     {
@@ -2551,7 +2601,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "family_binomial_binomiallss_check_response",
-      "community": 134,
+      "community": 191,
       "norm_label": ".check_response()"
     },
     {
@@ -2561,7 +2611,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "family_binomial_binomiallss_default",
-      "community": 134,
+      "community": 191,
       "norm_label": ".default()"
     },
     {
@@ -2581,7 +2631,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "family_binomial_binomiallss_nll",
-      "community": 134,
+      "community": 191,
       "norm_label": ".nll()"
     },
     {
@@ -2591,7 +2641,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "family_binomial_binomiallss_ngradient",
-      "community": 134,
+      "community": 191,
       "norm_label": ".ngradient()"
     },
     {
@@ -2611,7 +2661,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "family_binomial_check_response_bounds",
-      "community": 134,
+      "community": 191,
       "norm_label": "check_response_bounds()"
     },
     {
@@ -2621,7 +2671,7 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "family_binomial_gradient_matches_finite_difference",
-      "community": 134,
+      "community": 191,
       "norm_label": "gradient_matches_finite_difference()"
     },
     {
@@ -2731,7 +2781,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "family_gaussian",
-      "community": 63,
+      "community": 134,
       "norm_label": "gaussian.rs"
     },
     {
@@ -2741,7 +2791,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "family_gaussian_default_gaussian_params",
-      "community": 63,
+      "community": 134,
       "norm_label": "default_gaussian_params()"
     },
     {
@@ -2751,7 +2801,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "family_gaussian_gaussianlss",
-      "community": 63,
+      "community": 134,
       "norm_label": "gaussianlss"
     },
     {
@@ -2761,7 +2811,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "family_gaussian_gaussianlss_new",
-      "community": 63,
+      "community": 134,
       "norm_label": ".new()"
     },
     {
@@ -2771,7 +2821,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "family_gaussian_gaussianlss_default",
-      "community": 63,
+      "community": 134,
       "norm_label": ".default()"
     },
     {
@@ -2791,7 +2841,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "family_gaussian_gaussianlss_nll",
-      "community": 0,
+      "community": 134,
       "norm_label": ".nll()"
     },
     {
@@ -2801,7 +2851,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "family_gaussian_gaussianlss_ngradient",
-      "community": 0,
+      "community": 134,
       "norm_label": ".ngradient()"
     },
     {
@@ -2821,7 +2871,7 @@
       "source_location": "L120",
       "_origin": "ast",
       "id": "family_gaussian_gaussian_lss_init_offsets",
-      "community": 63,
+      "community": 134,
       "norm_label": "gaussian_lss_init_offsets()"
     },
     {
@@ -2831,7 +2881,7 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "family_gaussian_gaussian_lss_ngradient_matches_finite_diff",
-      "community": 0,
+      "community": 134,
       "norm_label": "gaussian_lss_ngradient_matches_finite_diff()"
     },
     {
@@ -3131,7 +3181,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "family_mod_dummyfamily_params",
-      "community": 38,
+      "community": 63,
       "norm_label": ".params()"
     },
     {
@@ -3171,7 +3221,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "family_nbinomial",
-      "community": 38,
+      "community": 140,
       "norm_label": "nbinomial.rs"
     },
     {
@@ -3181,7 +3231,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "family_nbinomial_default_nbinomial_params",
-      "community": 38,
+      "community": 140,
       "norm_label": "default_nbinomial_params()"
     },
     {
@@ -3191,7 +3241,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "family_nbinomial_nbinomiallss",
-      "community": 38,
+      "community": 140,
       "norm_label": "nbinomiallss"
     },
     {
@@ -3201,7 +3251,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "family_nbinomial_nbinomiallss_new",
-      "community": 38,
+      "community": 140,
       "norm_label": ".new()"
     },
     {
@@ -3211,7 +3261,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "family_nbinomial_nbinomiallss_default",
-      "community": 38,
+      "community": 140,
       "norm_label": ".default()"
     },
     {
@@ -3231,7 +3281,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "family_nbinomial_nbinomiallss_nll",
-      "community": 122,
+      "community": 140,
       "norm_label": ".nll()"
     },
     {
@@ -3251,7 +3301,7 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "family_nbinomial_nbinomial_init_offsets",
-      "community": 38,
+      "community": 140,
       "norm_label": "nbinomial_init_offsets()"
     },
     {
@@ -3261,7 +3311,7 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "family_nbinomial_nbinomial_nll_is_accurate",
-      "community": 38,
+      "community": 140,
       "norm_label": "nbinomial_nll_is_accurate()"
     },
     {
@@ -3271,7 +3321,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "family_student_t",
-      "community": 63,
+      "community": 192,
       "norm_label": "student_t.rs"
     },
     {
@@ -3281,7 +3331,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "family_student_t_default_student_t_params",
-      "community": 63,
+      "community": 192,
       "norm_label": "default_student_t_params()"
     },
     {
@@ -3291,7 +3341,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "family_student_t_studenttlss",
-      "community": 63,
+      "community": 192,
       "norm_label": "studenttlss"
     },
     {
@@ -3301,7 +3351,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "family_student_t_studenttlss_new",
-      "community": 63,
+      "community": 192,
       "norm_label": ".new()"
     },
     {
@@ -3311,7 +3361,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "family_student_t_studenttlss_default",
-      "community": 63,
+      "community": 192,
       "norm_label": ".default()"
     },
     {
@@ -3321,7 +3371,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "family_student_t_studenttlss_params",
-      "community": 38,
+      "community": 192,
       "norm_label": ".params()"
     },
     {
@@ -3331,7 +3381,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "family_student_t_studenttlss_nll",
-      "community": 0,
+      "community": 134,
       "norm_label": ".nll()"
     },
     {
@@ -3351,7 +3401,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "family_student_t_student_t_init_offsets",
-      "community": 63,
+      "community": 192,
       "norm_label": "student_t_init_offsets()"
     },
     {
@@ -3361,7 +3411,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "family_weibull",
-      "community": 140,
+      "community": 0,
       "norm_label": "weibull.rs"
     },
     {
@@ -3371,7 +3421,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "family_weibull_default_weibull_params",
-      "community": 140,
+      "community": 0,
       "norm_label": "default_weibull_params()"
     },
     {
@@ -3381,7 +3431,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "family_weibull_weibulllss",
-      "community": 140,
+      "community": 0,
       "norm_label": "weibulllss"
     },
     {
@@ -3391,7 +3441,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "family_weibull_weibulllss_new",
-      "community": 140,
+      "community": 0,
       "norm_label": ".new()"
     },
     {
@@ -3401,7 +3451,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "family_weibull_weibulllss_check_response",
-      "community": 140,
+      "community": 0,
       "norm_label": ".check_response()"
     },
     {
@@ -3411,7 +3461,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "family_weibull_weibulllss_default",
-      "community": 140,
+      "community": 0,
       "norm_label": ".default()"
     },
     {
@@ -3431,7 +3481,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "family_weibull_weibulllss_nll",
-      "community": 140,
+      "community": 0,
       "norm_label": ".nll()"
     },
     {
@@ -3441,7 +3491,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "family_weibull_weibulllss_ngradient",
-      "community": 140,
+      "community": 0,
       "norm_label": ".ngradient()"
     },
     {
@@ -3451,7 +3501,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "family_weibull_weibulllss_init_offsets",
-      "community": 140,
+      "community": 0,
       "norm_label": ".init_offsets()"
     },
     {
@@ -3461,7 +3511,7 @@
       "source_location": "L158",
       "_origin": "ast",
       "id": "family_weibull_test_weibull_gradients",
-      "community": 140,
+      "community": 0,
       "norm_label": "test_weibull_gradients()"
     },
     {
@@ -3531,7 +3581,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "family_zip_ziplss_params",
-      "community": 1,
+      "community": 102,
       "norm_label": ".params()"
     },
     {
@@ -3581,7 +3631,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "learner_bspatial",
-      "community": 156,
+      "community": 97,
       "norm_label": "bspatial.rs"
     },
     {
@@ -3671,7 +3721,7 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "learner_bspatial_kronecker_product",
-      "community": 156,
+      "community": 97,
       "norm_label": "kronecker_product()"
     },
     {
@@ -3681,7 +3731,7 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "learner_bspatial_test_kronecker_product",
-      "community": 156,
+      "community": 97,
       "norm_label": "test_kronecker_product()"
     },
     {
@@ -4001,7 +4051,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "learner_mod_baselearner_build_design",
-      "community": 0,
+      "community": 2,
       "norm_label": ".build_design()"
     },
     {
@@ -4021,7 +4071,7 @@
       "source_location": "L115",
       "_origin": "ast",
       "id": "learner_mod_baselearner_penalty_matrix",
-      "community": 97,
+      "community": 2,
       "norm_label": ".penalty_matrix()"
     },
     {
@@ -4031,7 +4081,7 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "learner_mod_baselearner_target_df",
-      "community": 148,
+      "community": 2,
       "norm_label": ".target_df()"
     },
     {
@@ -4041,7 +4091,7 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "learner_mod_baselearner_initialize",
-      "community": 0,
+      "community": 2,
       "norm_label": ".initialize()"
     },
     {
@@ -4061,7 +4111,7 @@
       "source_location": "L237",
       "_origin": "ast",
       "id": "learner_mod_learnerupdate_scale",
-      "community": 0,
+      "community": 102,
       "norm_label": ".scale()"
     },
     {
@@ -4091,7 +4141,7 @@
       "source_location": "L265",
       "_origin": "ast",
       "id": "learner_mod_learnerfit",
-      "community": 1,
+      "community": 2,
       "norm_label": "learnerfit"
     },
     {
@@ -4101,7 +4151,7 @@
       "source_location": "L273",
       "_origin": "ast",
       "id": "learner_mod_learnerfit_fit_update",
-      "community": 98,
+      "community": 127,
       "norm_label": ".fit_update()"
     },
     {
@@ -4111,7 +4161,7 @@
       "source_location": "L292",
       "_origin": "ast",
       "id": "learner_mod_learnerfit_predict_update",
-      "community": 0,
+      "community": 102,
       "norm_label": ".predict_update()"
     },
     {
@@ -4121,7 +4171,7 @@
       "source_location": "L332",
       "_origin": "ast",
       "id": "learner_mod_test_learner_fit",
-      "community": 2,
+      "community": 127,
       "norm_label": "test_learner_fit()"
     },
     {
@@ -4491,7 +4541,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "learner_spline_utils",
-      "community": 140,
+      "community": 0,
       "norm_label": "spline_utils.rs"
     },
     {
@@ -4501,7 +4551,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "learner_spline_utils_splinedata",
-      "community": 140,
+      "community": 0,
       "norm_label": "splinedata"
     },
     {
@@ -4511,7 +4561,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "learner_spline_utils_build_bspline_design",
-      "community": 140,
+      "community": 0,
       "norm_label": "build_bspline_design()"
     },
     {
@@ -4571,7 +4621,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "learner_stump_stumpfitstate",
-      "community": 0,
+      "community": 98,
       "norm_label": "stumpfitstate"
     },
     {
@@ -4631,7 +4681,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "learner_tree_tree",
-      "community": 98,
+      "community": 2,
       "norm_label": "tree"
     },
     {
@@ -4651,7 +4701,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "learner_tree_tree_max_depth",
-      "community": 98,
+      "community": 2,
       "norm_label": ".max_depth()"
     },
     {
@@ -4661,7 +4711,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "learner_tree_tree_min_samples_leaf",
-      "community": 98,
+      "community": 156,
       "norm_label": ".min_samples_leaf()"
     },
     {
@@ -4928,7 +4978,7 @@
       "label": "Scale",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L131",
+      "source_location": "L139",
       "_origin": "ast",
       "id": "src_model_scale",
       "community": 1,
@@ -4938,7 +4988,7 @@
       "label": "UpdateStep",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L137",
+      "source_location": "L145",
       "_origin": "ast",
       "id": "src_model_updatestep",
       "community": 1,
@@ -4948,7 +4998,7 @@
       "label": "Fitted",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L146",
+      "source_location": "L154",
       "_origin": "ast",
       "id": "src_model_fitted",
       "community": 1,
@@ -4958,7 +5008,7 @@
       "label": "Fitted<F>",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L156",
+      "source_location": "L164",
       "_origin": "ast",
       "id": "src_model_fitted_f",
       "community": 1,
@@ -4968,7 +5018,7 @@
       "label": ".new()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L157",
+      "source_location": "L165",
       "_origin": "ast",
       "id": "src_model_fitted_f_new",
       "community": 1,
@@ -4978,7 +5028,7 @@
       "label": ".predict()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L166",
+      "source_location": "L174",
       "_origin": "ast",
       "id": "src_model_fitted_f_predict",
       "community": 0,
@@ -4988,7 +5038,7 @@
       "label": ".feature_importance()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L241",
+      "source_location": "L249",
       "_origin": "ast",
       "id": "src_model_fitted_f_feature_importance",
       "community": 1,
@@ -4998,7 +5048,7 @@
       "label": ".partial_dependence()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L251",
+      "source_location": "L259",
       "_origin": "ast",
       "id": "src_model_fitted_f_partial_dependence",
       "community": 0,
@@ -5008,10 +5058,10 @@
       "label": ".save()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L297",
+      "source_location": "L305",
       "_origin": "ast",
       "id": "src_model_fitted_f_save",
-      "community": 140,
+      "community": 1,
       "norm_label": ".save()"
     },
     {
@@ -5021,24 +5071,24 @@
       "source_location": "",
       "_origin": "ast",
       "id": "p",
-      "community": 140,
+      "community": 1,
       "norm_label": "p"
     },
     {
       "label": ".load()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L306",
+      "source_location": "L314",
       "_origin": "ast",
       "id": "src_model_fitted_f_load",
-      "community": 140,
+      "community": 1,
       "norm_label": ".load()"
     },
     {
       "label": "test_boostlss_new()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L323",
+      "source_location": "L331",
       "_origin": "ast",
       "id": "src_model_test_boostlss_new",
       "community": 1,
@@ -5048,7 +5098,7 @@
       "label": "test_boostlss_on_valid_param()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L329",
+      "source_location": "L337",
       "_origin": "ast",
       "id": "src_model_test_boostlss_on_valid_param",
       "community": 1,
@@ -5058,7 +5108,7 @@
       "label": "test_boostlss_on_invalid_param()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L339",
+      "source_location": "L347",
       "_origin": "ast",
       "id": "src_model_test_boostlss_on_invalid_param",
       "community": 1,
@@ -5068,7 +5118,7 @@
       "label": "test_boostlss_on_multiple_learners()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L347",
+      "source_location": "L355",
       "_origin": "ast",
       "id": "src_model_test_boostlss_on_multiple_learners",
       "community": 1,
@@ -5078,7 +5128,7 @@
       "label": "test_fitted_new_and_predict()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L360",
+      "source_location": "L368",
       "_origin": "ast",
       "id": "src_model_test_fitted_new_and_predict",
       "community": 1,
@@ -5088,7 +5138,7 @@
       "label": "test_update_step_has_risk_reduction()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L373",
+      "source_location": "L381",
       "_origin": "ast",
       "id": "src_model_test_update_step_has_risk_reduction",
       "community": 1,
@@ -5098,7 +5148,7 @@
       "label": "test_feature_importance()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L384",
+      "source_location": "L392",
       "_origin": "ast",
       "id": "src_model_test_feature_importance",
       "community": 1,
@@ -5108,7 +5158,7 @@
       "label": "test_partial_dependence()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L418",
+      "source_location": "L426",
       "_origin": "ast",
       "id": "src_model_test_partial_dependence",
       "community": 1,
@@ -5118,7 +5168,7 @@
       "label": "test_partial_dependence_out_of_bounds()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L447",
+      "source_location": "L455",
       "_origin": "ast",
       "id": "src_model_test_partial_dependence_out_of_bounds",
       "community": 1,
@@ -5128,7 +5178,7 @@
       "label": "test_predict_random_effects_out_of_bounds()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L460",
+      "source_location": "L468",
       "_origin": "ast",
       "id": "src_model_test_predict_random_effects_out_of_bounds",
       "community": 1,
@@ -5138,7 +5188,7 @@
       "label": "test_boostlss_fit_noncyclic_requires_scalar_mstop()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L502",
+      "source_location": "L510",
       "_origin": "ast",
       "id": "src_model_test_boostlss_fit_noncyclic_requires_scalar_mstop",
       "community": 1,
@@ -5341,7 +5391,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "src_param_paramspec_clone",
-      "community": 0,
+      "community": 102,
       "norm_label": ".clone()"
     },
     {
@@ -5401,7 +5451,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_util",
-      "community": 166,
+      "community": 122,
       "norm_label": "util.rs"
     },
     {
@@ -5431,7 +5481,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "src_util_minimize_1d",
-      "community": 166,
+      "community": 122,
       "norm_label": "minimize_1d()"
     },
     {
@@ -5441,7 +5491,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "src_util_weighted_mean_unweighted_is_arithmetic_mean",
-      "community": 166,
+      "community": 122,
       "norm_label": "weighted_mean_unweighted_is_arithmetic_mean()"
     },
     {
@@ -5451,7 +5501,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "src_util_weighted_mean_respects_weights",
-      "community": 166,
+      "community": 122,
       "norm_label": "weighted_mean_respects_weights()"
     },
     {
@@ -5461,7 +5511,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "src_util_weighted_sd_unweighted_is_sample_sd",
-      "community": 166,
+      "community": 122,
       "norm_label": "weighted_sd_unweighted_is_sample_sd()"
     },
     {
@@ -5471,7 +5521,7 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "src_util_minimize_1d_finds_parabola_vertex",
-      "community": 166,
+      "community": 122,
       "norm_label": "minimize_1d_finds_parabola_vertex()"
     },
     {
@@ -5481,7 +5531,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_golden_tests",
-      "community": 102,
+      "community": 63,
       "norm_label": "golden_tests.rs"
     },
     {
@@ -5491,7 +5541,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "tests_golden_tests_inputdata",
-      "community": 102,
+      "community": 63,
       "norm_label": "inputdata"
     },
     {
@@ -5501,7 +5551,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "tests_golden_tests_offsets",
-      "community": 102,
+      "community": 63,
       "norm_label": "offsets"
     },
     {
@@ -5511,8 +5561,18 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "tests_golden_tests_test_golden_offsets_match_r",
-      "community": 102,
+      "community": 63,
       "norm_label": "test_golden_offsets_match_r()"
+    },
+    {
+      "label": "patch.py",
+      "file_type": "code",
+      "source_file": "patch.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "patch",
+      "community": 172,
+      "norm_label": "patch.py"
     },
     {
       "label": "test_conv.rs",
@@ -16601,7 +16661,7 @@
       "source_location": "L740",
       "_origin": "ast",
       "id": "claude_skills_writing_skills_anthropic_best_practices_md_writing_skills_anthropic_best_practices_evaluation_and_iteration",
-      "community": 4,
+      "community": 166,
       "norm_label": "evaluation and iteration"
     },
     {
@@ -16611,7 +16671,7 @@
       "source_location": "L742",
       "_origin": "ast",
       "id": "claude_skills_writing_skills_anthropic_best_practices_md_writing_skills_anthropic_best_practices_build_evaluations_first",
-      "community": 4,
+      "community": 166,
       "norm_label": "build evaluations first"
     },
     {
@@ -16621,7 +16681,7 @@
       "source_location": "L775",
       "_origin": "ast",
       "id": "claude_skills_writing_skills_anthropic_best_practices_md_writing_skills_anthropic_best_practices_develop_skills_iteratively_with_claude",
-      "community": 4,
+      "community": 166,
       "norm_label": "develop skills iteratively with claude"
     },
     {
@@ -16631,7 +16691,7 @@
       "source_location": "L831",
       "_origin": "ast",
       "id": "claude_skills_writing_skills_anthropic_best_practices_md_writing_skills_anthropic_best_practices_observe_how_claude_navigates_skills",
-      "community": 4,
+      "community": 166,
       "norm_label": "observe how claude navigates skills"
     },
     {
@@ -16641,7 +16701,7 @@
       "source_location": "L842",
       "_origin": "ast",
       "id": "claude_skills_writing_skills_anthropic_best_practices_md_writing_skills_anthropic_best_practices_anti_patterns_to_avoid",
-      "community": 172,
+      "community": 4,
       "norm_label": "anti-patterns to avoid"
     },
     {
@@ -16651,7 +16711,7 @@
       "source_location": "L844",
       "_origin": "ast",
       "id": "claude_skills_writing_skills_anthropic_best_practices_md_writing_skills_anthropic_best_practices_avoid_windows_style_paths",
-      "community": 172,
+      "community": 4,
       "norm_label": "avoid windows-style paths"
     },
     {
@@ -16661,7 +16721,7 @@
       "source_location": "L853",
       "_origin": "ast",
       "id": "claude_skills_writing_skills_anthropic_best_practices_md_writing_skills_anthropic_best_practices_avoid_offering_too_many_options",
-      "community": 172,
+      "community": 4,
       "norm_label": "avoid offering too many options"
     },
     {
@@ -19401,7 +19461,7 @@
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
       "source_location": "L158",
-      "community": 1,
+      "community": 102,
       "norm_label": ".predict()",
       "id": "model_fitted_f_predict"
     },
@@ -19419,7 +19479,7 @@
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
       "source_location": "L273",
-      "community": 1,
+      "community": 102,
       "norm_label": ".partial_dependence()",
       "id": "model_fitted_f_partial_dependence"
     },
@@ -20034,9 +20094,9 @@
       "source_location": "L2",
       "weight": 1.0,
       "context": "import",
+      "confidence_score": 1.0,
       "source": "crates_boostlss_py_src_data_rs_src_data",
-      "target": "pyreadonlyarray1",
-      "confidence_score": 1.0
+      "target": "pyreadonlyarray1"
     },
     {
       "relation": "contains",
@@ -20044,9 +20104,9 @@
       "source_file": "crates/boostlss-py/src/data.rs",
       "source_location": "L38",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "crates_boostlss_py_src_data_rs_src_data",
-      "target": "src_data_extract_dataset",
-      "confidence_score": 1.0
+      "target": "src_data_extract_dataset"
     },
     {
       "relation": "contains",
@@ -20054,9 +20114,9 @@
       "source_file": "crates/boostlss-py/src/data.rs",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "crates_boostlss_py_src_data_rs_src_data",
-      "target": "src_data_extract_sparse",
-      "confidence_score": 1.0
+      "target": "src_data_extract_sparse"
     },
     {
       "relation": "imports_from",
@@ -20065,9 +20125,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "context": "import",
+      "confidence_score": 1.0,
       "source": "crates_boostlss_py_src_data_rs_src_data",
-      "target": "src_data_sparsematrix",
-      "confidence_score": 1.0
+      "target": "src_data_sparsematrix"
     },
     {
       "relation": "calls",
@@ -20076,9 +20136,9 @@
       "source_file": "crates/boostlss-py/src/data.rs",
       "source_location": "L47",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_extract_dataset",
-      "target": "src_data_extract_sparse",
-      "confidence_score": 1.0
+      "target": "src_data_extract_sparse"
     },
     {
       "relation": "references",
@@ -20087,9 +20147,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "src_data_extract_sparse",
-      "target": "bound",
-      "confidence_score": 1.0
+      "target": "bound"
     },
     {
       "relation": "references",
@@ -20098,9 +20158,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_extract_sparse",
-      "target": "pyany",
-      "confidence_score": 1.0
+      "target": "pyany"
     },
     {
       "relation": "references",
@@ -20109,9 +20169,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "src_data_extract_sparse",
-      "target": "pyresult",
-      "confidence_score": 1.0
+      "target": "pyresult"
     },
     {
       "relation": "references",
@@ -20120,9 +20180,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "src_data_extract_sparse",
-      "target": "python",
-      "confidence_score": 1.0
+      "target": "python"
     },
     {
       "relation": "references",
@@ -20131,9 +20191,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_extract_sparse",
-      "target": "src_data_sparsematrix",
-      "confidence_score": 1.0
+      "target": "src_data_sparsematrix"
     },
     {
       "relation": "references",
@@ -20142,9 +20202,9 @@
       "source_location": "L38",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "src_data_extract_dataset",
-      "target": "python",
-      "confidence_score": 1.0
+      "target": "python"
     },
     {
       "relation": "references",
@@ -20164,9 +20224,9 @@
       "source_location": "L181",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "src_model_boostlssmodel_fit",
-      "target": "python",
-      "confidence_score": 1.0
+      "target": "python"
     },
     {
       "relation": "references",
@@ -20230,9 +20290,9 @@
       "source_location": "L38",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "src_data_extract_dataset",
-      "target": "bound",
-      "confidence_score": 1.0
+      "target": "bound"
     },
     {
       "relation": "references",
@@ -20274,9 +20334,9 @@
       "source_location": "L181",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "src_model_boostlssmodel_fit",
-      "target": "bound",
-      "confidence_score": 1.0
+      "target": "bound"
     },
     {
       "relation": "references",
@@ -20329,9 +20389,9 @@
       "source_location": "L38",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_extract_dataset",
-      "target": "pyany",
-      "confidence_score": 1.0
+      "target": "pyany"
     },
     {
       "relation": "references",
@@ -20351,9 +20411,9 @@
       "source_location": "L181",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_model_boostlssmodel_fit",
-      "target": "pyany",
-      "confidence_score": 1.0
+      "target": "pyany"
     },
     {
       "relation": "references",
@@ -20362,9 +20422,9 @@
       "source_location": "L363",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_model_boostlssmodel_predict",
-      "target": "pyany",
-      "confidence_score": 1.0
+      "target": "pyany"
     },
     {
       "relation": "references",
@@ -20373,9 +20433,9 @@
       "source_location": "L38",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "src_data_extract_dataset",
-      "target": "pyresult",
-      "confidence_score": 1.0
+      "target": "pyresult"
     },
     {
       "relation": "references",
@@ -20571,9 +20631,9 @@
       "source_location": "L38",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_extract_dataset",
-      "target": "array1",
-      "confidence_score": 1.0
+      "target": "array1"
     },
     {
       "relation": "references",
@@ -20582,9 +20642,9 @@
       "source_location": "L38",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "src_data_extract_dataset",
-      "target": "option",
-      "confidence_score": 1.0
+      "target": "option"
     },
     {
       "relation": "references",
@@ -20593,9 +20653,9 @@
       "source_location": "L38",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_extract_dataset",
-      "target": "src_data_dataset",
-      "confidence_score": 1.0
+      "target": "src_data_dataset"
     },
     {
       "relation": "references",
@@ -20758,9 +20818,9 @@
       "source_location": "L171",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new_csc",
-      "target": "option",
-      "confidence_score": 1.0
+      "target": "option"
     },
     {
       "relation": "references",
@@ -20769,9 +20829,9 @@
       "source_location": "L163",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new_csr",
-      "target": "option",
-      "confidence_score": 1.0
+      "target": "option"
     },
     {
       "relation": "references",
@@ -20780,9 +20840,9 @@
       "source_location": "L121",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_validate_and_create",
-      "target": "option",
-      "confidence_score": 1.0
+      "target": "option"
     },
     {
       "relation": "references",
@@ -21297,9 +21357,9 @@
       "source_location": "L34",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "learner_stump_stump_predict",
-      "target": "array1",
-      "confidence_score": 1.0
+      "target": "array1"
     },
     {
       "relation": "references",
@@ -21308,9 +21368,9 @@
       "source_location": "L81",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "learner_tree_tree_predict",
-      "target": "array1",
-      "confidence_score": 1.0
+      "target": "array1"
     },
     {
       "relation": "references",
@@ -21341,9 +21401,9 @@
       "source_location": "L171",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new_csc",
-      "target": "array1",
-      "confidence_score": 1.0
+      "target": "array1"
     },
     {
       "relation": "references",
@@ -21352,9 +21412,9 @@
       "source_location": "L163",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new_csr",
-      "target": "array1",
-      "confidence_score": 1.0
+      "target": "array1"
     },
     {
       "relation": "references",
@@ -21385,9 +21445,9 @@
       "source_location": "L121",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_validate_and_create",
-      "target": "array1",
-      "confidence_score": 1.0
+      "target": "array1"
     },
     {
       "relation": "references",
@@ -21418,9 +21478,9 @@
       "source_location": "L60",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_designmatrix_get_column",
-      "target": "array1",
-      "confidence_score": 1.0
+      "target": "array1"
     },
     {
       "relation": "references",
@@ -21429,9 +21489,9 @@
       "source_location": "L8",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "src_data_sparsematrix",
-      "target": "array1",
-      "confidence_score": 1.0
+      "target": "array1"
     },
     {
       "relation": "references",
@@ -21440,9 +21500,9 @@
       "source_location": "L13",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "src_data_sparsematrix_new",
-      "target": "array1",
-      "confidence_score": 1.0
+      "target": "array1"
     },
     {
       "relation": "references",
@@ -22207,9 +22267,9 @@
       "source_location": "L171",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new_csc",
-      "target": "self",
-      "confidence_score": 1.0
+      "target": "self"
     },
     {
       "relation": "references",
@@ -22218,9 +22278,9 @@
       "source_location": "L163",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new_csr",
-      "target": "self",
-      "confidence_score": 1.0
+      "target": "self"
     },
     {
       "relation": "references",
@@ -22240,9 +22300,9 @@
       "source_location": "L121",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_validate_and_create",
-      "target": "self",
-      "confidence_score": 1.0
+      "target": "self"
     },
     {
       "relation": "references",
@@ -22262,9 +22322,9 @@
       "source_location": "L13",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_sparsematrix_new",
-      "target": "self",
-      "confidence_score": 1.0
+      "target": "self"
     },
     {
       "relation": "references",
@@ -24059,9 +24119,9 @@
       "source_location": "L127",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_model_boostlssmodel",
-      "target": "src_data_dataset",
-      "confidence_score": 1.0
+      "target": "src_data_dataset"
     },
     {
       "relation": "method",
@@ -24487,6 +24547,17 @@
       "target": "engine_noncyclical_fit_noncyclical"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "crates/boostlss-py/src/model.rs",
+      "source_location": "L212",
+      "weight": 1.0,
+      "source": "src_model_boostlssmodel_fit",
+      "target": "engine_noncyclical_fit_noncyclical_outer"
+    },
+    {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
@@ -24886,9 +24957,9 @@
       "source_file": "crates/boostlss-py/tests/test_model.py",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_model",
-      "target": "tests_test_model_test_sparse_matrix_support",
-      "confidence_score": 1.0
+      "target": "tests_test_model_test_sparse_matrix_support"
     },
     {
       "relation": "contains",
@@ -24899,6 +24970,16 @@
       "confidence_score": 1.0,
       "source": "tests_test_new_families",
       "target": "tests_test_new_families_test_lognormal_fit_predict"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "crates/boostlss-py/tests/test_noncyclic_outer.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "tests_test_noncyclic_outer",
+      "target": "tests_test_noncyclic_outer_test_noncyclic_outer",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -25520,6 +25601,17 @@
     {
       "relation": "references",
       "confidence": "EXTRACTED",
+      "source_file": "crates/boostlss/src/engine/noncyclical.rs",
+      "source_location": "L145",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "engine_noncyclical_fit_noncyclical_outer",
+      "target": "boostlss"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
       "source_file": "crates/boostlss/src/cv/mod.rs",
       "source_location": "L160",
       "weight": 1.0,
@@ -25559,6 +25651,17 @@
       "context": "generic_arg",
       "confidence_score": 1.0,
       "source": "engine_noncyclical_fit_noncyclical",
+      "target": "f"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "crates/boostlss/src/engine/noncyclical.rs",
+      "source_location": "L145",
+      "weight": 1.0,
+      "context": "generic_arg",
+      "confidence_score": 1.0,
+      "source": "engine_noncyclical_fit_noncyclical_outer",
       "target": "f"
     },
     {
@@ -25819,6 +25922,17 @@
       "context": "return_type",
       "confidence_score": 1.0,
       "source": "engine_noncyclical_fit_noncyclical",
+      "target": "result"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "crates/boostlss/src/engine/noncyclical.rs",
+      "source_location": "L145",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "engine_noncyclical_fit_noncyclical_outer",
       "target": "result"
     },
     {
@@ -26290,9 +26404,9 @@
       "source_location": "L15",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "learner_stump_stump_build_fit_state",
-      "target": "result",
-      "confidence_score": 1.0
+      "target": "result"
     },
     {
       "relation": "references",
@@ -26301,9 +26415,9 @@
       "source_location": "L34",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "learner_stump_stump_predict",
-      "target": "result",
-      "confidence_score": 1.0
+      "target": "result"
     },
     {
       "relation": "references",
@@ -26312,9 +26426,9 @@
       "source_location": "L57",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "learner_tree_tree_build_fit_state",
-      "target": "result",
-      "confidence_score": 1.0
+      "target": "result"
     },
     {
       "relation": "references",
@@ -26323,9 +26437,9 @@
       "source_location": "L81",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "learner_tree_tree_predict",
-      "target": "result",
-      "confidence_score": 1.0
+      "target": "result"
     },
     {
       "relation": "references",
@@ -26345,9 +26459,9 @@
       "source_location": "L171",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new_csc",
-      "target": "result",
-      "confidence_score": 1.0
+      "target": "result"
     },
     {
       "relation": "references",
@@ -26356,9 +26470,9 @@
       "source_location": "L163",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new_csr",
-      "target": "result",
-      "confidence_score": 1.0
+      "target": "result"
     },
     {
       "relation": "references",
@@ -26389,9 +26503,9 @@
       "source_location": "L121",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_validate_and_create",
-      "target": "result",
-      "confidence_score": 1.0
+      "target": "result"
     },
     {
       "relation": "references",
@@ -26411,9 +26525,9 @@
       "source_location": "L60",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "src_data_designmatrix_get_column",
-      "target": "result",
-      "confidence_score": 1.0
+      "target": "result"
     },
     {
       "relation": "references",
@@ -26422,9 +26536,9 @@
       "source_location": "L13",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "src_data_sparsematrix_new",
-      "target": "result",
-      "confidence_score": 1.0
+      "target": "result"
     },
     {
       "relation": "references",
@@ -26900,9 +27014,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L114",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "crates_boostlss_src_data_rs_src_data",
-      "target": "src_data_dataset",
-      "confidence_score": 1.0
+      "target": "src_data_dataset"
     },
     {
       "relation": "contains",
@@ -26910,9 +27024,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L297",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "crates_boostlss_src_data_rs_src_data",
-      "target": "src_data_dataset_accepts_valid_data",
-      "confidence_score": 1.0
+      "target": "src_data_dataset_accepts_valid_data"
     },
     {
       "relation": "contains",
@@ -26920,9 +27034,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L288",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "crates_boostlss_src_data_rs_src_data",
-      "target": "src_data_dataset_rejects_negative_weights",
-      "confidence_score": 1.0
+      "target": "src_data_dataset_rejects_negative_weights"
     },
     {
       "relation": "contains",
@@ -26930,9 +27044,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L280",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "crates_boostlss_src_data_rs_src_data",
-      "target": "src_data_dataset_validates_dimensions",
-      "confidence_score": 1.0
+      "target": "src_data_dataset_validates_dimensions"
     },
     {
       "relation": "contains",
@@ -26940,9 +27054,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L53",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "crates_boostlss_src_data_rs_src_data",
-      "target": "src_data_designmatrix",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix"
     },
     {
       "relation": "contains",
@@ -26950,9 +27064,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "crates_boostlss_src_data_rs_src_data",
-      "target": "src_data_sparsematrix",
-      "confidence_score": 1.0
+      "target": "src_data_sparsematrix"
     },
     {
       "relation": "contains",
@@ -26960,9 +27074,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L314",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "crates_boostlss_src_data_rs_src_data",
-      "target": "src_data_test_design_matrix_csc",
-      "confidence_score": 1.0
+      "target": "src_data_test_design_matrix_csc"
     },
     {
       "relation": "contains",
@@ -26970,9 +27084,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L330",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "crates_boostlss_src_data_rs_src_data",
-      "target": "src_data_test_design_matrix_csr",
-      "confidence_score": 1.0
+      "target": "src_data_test_design_matrix_csr"
     },
     {
       "relation": "contains",
@@ -26980,9 +27094,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L306",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "crates_boostlss_src_data_rs_src_data",
-      "target": "src_data_test_design_matrix_dense",
-      "confidence_score": 1.0
+      "target": "src_data_test_design_matrix_dense"
     },
     {
       "relation": "imports_from",
@@ -26991,9 +27105,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "context": "import",
+      "confidence_score": 1.0,
       "source": "crates_boostlss_src_data_rs_src_data",
-      "target": "src_error_boostlsserror",
-      "confidence_score": 1.0
+      "target": "src_error_boostlsserror"
     },
     {
       "relation": "references",
@@ -27002,9 +27116,9 @@
       "source_location": "L171",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new_csc",
-      "target": "src_data_sparsematrix",
-      "confidence_score": 1.0
+      "target": "src_data_sparsematrix"
     },
     {
       "relation": "references",
@@ -27013,9 +27127,9 @@
       "source_location": "L163",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new_csr",
-      "target": "src_data_sparsematrix",
-      "confidence_score": 1.0
+      "target": "src_data_sparsematrix"
     },
     {
       "relation": "method",
@@ -27023,9 +27137,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L13",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_sparsematrix",
-      "target": "src_data_sparsematrix_new",
-      "confidence_score": 1.0
+      "target": "src_data_sparsematrix_new"
     },
     {
       "relation": "references",
@@ -27034,9 +27148,9 @@
       "source_location": "L13",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_sparsematrix_new",
-      "target": "src_error_boostlsserror",
-      "confidence_score": 1.0
+      "target": "src_error_boostlsserror"
     },
     {
       "relation": "references",
@@ -27045,9 +27159,9 @@
       "source_location": "L115",
       "weight": 1.0,
       "context": "field",
+      "confidence_score": 1.0,
       "source": "src_data_dataset",
-      "target": "src_data_designmatrix",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix"
     },
     {
       "relation": "references",
@@ -27056,9 +27170,9 @@
       "source_location": "L179",
       "weight": 1.0,
       "context": "return_type",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_design",
-      "target": "src_data_designmatrix",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix"
     },
     {
       "relation": "references",
@@ -27067,9 +27181,9 @@
       "source_location": "L121",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_validate_and_create",
-      "target": "src_data_designmatrix",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix"
     },
     {
       "relation": "method",
@@ -27077,9 +27191,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L60",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_designmatrix",
-      "target": "src_data_designmatrix_get_column",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix_get_column"
     },
     {
       "relation": "method",
@@ -27087,9 +27201,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L104",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_designmatrix",
-      "target": "src_data_designmatrix_ncols",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix_ncols"
     },
     {
       "relation": "method",
@@ -27097,9 +27211,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L96",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_designmatrix",
-      "target": "src_data_designmatrix_nrows",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix_nrows"
     },
     {
       "relation": "calls",
@@ -27108,9 +27222,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L61",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_designmatrix_get_column",
-      "target": "src_data_designmatrix_ncols",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix_ncols"
     },
     {
       "relation": "references",
@@ -27119,9 +27233,9 @@
       "source_location": "L60",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_designmatrix_get_column",
-      "target": "src_error_boostlsserror",
-      "confidence_score": 1.0
+      "target": "src_error_boostlsserror"
     },
     {
       "relation": "calls",
@@ -27130,9 +27244,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L322",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_test_design_matrix_csc",
-      "target": "src_data_designmatrix_get_column",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix_get_column"
     },
     {
       "relation": "calls",
@@ -27141,9 +27255,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L338",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_test_design_matrix_csr",
-      "target": "src_data_designmatrix_get_column",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix_get_column"
     },
     {
       "relation": "calls",
@@ -27152,9 +27266,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L309",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_test_design_matrix_dense",
-      "target": "src_data_designmatrix_get_column",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix_get_column"
     },
     {
       "relation": "calls",
@@ -27163,9 +27277,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L184",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_dataset_n_obs",
-      "target": "src_data_designmatrix_nrows",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix_nrows"
     },
     {
       "relation": "calls",
@@ -27174,9 +27288,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L256",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_dataset_subset",
-      "target": "src_data_designmatrix_nrows",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix_nrows"
     },
     {
       "relation": "calls",
@@ -27185,9 +27299,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L126",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_dataset_validate_and_create",
-      "target": "src_data_designmatrix_nrows",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix_nrows"
     },
     {
       "relation": "calls",
@@ -27196,9 +27310,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L188",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_dataset_n_features",
-      "target": "src_data_designmatrix_ncols",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix_ncols"
     },
     {
       "relation": "calls",
@@ -27207,9 +27321,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L251",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_dataset_subset",
-      "target": "src_data_designmatrix_ncols",
-      "confidence_score": 1.0
+      "target": "src_data_designmatrix_ncols"
     },
     {
       "relation": "imports_from",
@@ -27275,6 +27389,17 @@
       "context": "parameter_type",
       "confidence_score": 1.0,
       "source": "engine_noncyclical_fit_noncyclical",
+      "target": "src_data_dataset"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "crates/boostlss/src/engine/noncyclical.rs",
+      "source_location": "L145",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "engine_noncyclical_fit_noncyclical_outer",
       "target": "src_data_dataset"
     },
     {
@@ -27823,9 +27948,9 @@
       "source_location": "L15",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "learner_stump_stump_build_fit_state",
-      "target": "src_data_dataset",
-      "confidence_score": 1.0
+      "target": "src_data_dataset"
     },
     {
       "relation": "references",
@@ -27834,9 +27959,9 @@
       "source_location": "L34",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "learner_stump_stump_predict",
-      "target": "src_data_dataset",
-      "confidence_score": 1.0
+      "target": "src_data_dataset"
     },
     {
       "relation": "references",
@@ -27845,9 +27970,9 @@
       "source_location": "L57",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "learner_tree_tree_build_fit_state",
-      "target": "src_data_dataset",
-      "confidence_score": 1.0
+      "target": "src_data_dataset"
     },
     {
       "relation": "references",
@@ -27856,9 +27981,9 @@
       "source_location": "L81",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "learner_tree_tree_predict",
-      "target": "src_data_dataset",
-      "confidence_score": 1.0
+      "target": "src_data_dataset"
     },
     {
       "relation": "references",
@@ -27887,9 +28012,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L187",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_dataset",
-      "target": "src_data_dataset_n_features",
-      "confidence_score": 1.0
+      "target": "src_data_dataset_n_features"
     },
     {
       "relation": "method",
@@ -27917,9 +28042,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L171",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_dataset",
-      "target": "src_data_dataset_new_csc",
-      "confidence_score": 1.0
+      "target": "src_data_dataset_new_csc"
     },
     {
       "relation": "method",
@@ -27927,9 +28052,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L163",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_dataset",
-      "target": "src_data_dataset_new_csr",
-      "confidence_score": 1.0
+      "target": "src_data_dataset_new_csr"
     },
     {
       "relation": "method",
@@ -27967,9 +28092,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L121",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_dataset",
-      "target": "src_data_dataset_validate_and_create",
-      "confidence_score": 1.0
+      "target": "src_data_dataset_validate_and_create"
     },
     {
       "relation": "method",
@@ -28042,9 +28167,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L160",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new",
-      "target": "src_data_dataset_validate_and_create",
-      "confidence_score": 1.0
+      "target": "src_data_dataset_validate_and_create"
     },
     {
       "relation": "calls",
@@ -28053,9 +28178,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L176",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new_csc",
-      "target": "src_data_dataset_validate_and_create",
-      "confidence_score": 1.0
+      "target": "src_data_dataset_validate_and_create"
     },
     {
       "relation": "calls",
@@ -28064,9 +28189,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L168",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new_csr",
-      "target": "src_data_dataset_validate_and_create",
-      "confidence_score": 1.0
+      "target": "src_data_dataset_validate_and_create"
     },
     {
       "relation": "references",
@@ -28075,9 +28200,9 @@
       "source_location": "L121",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_validate_and_create",
-      "target": "src_error_boostlsserror",
-      "confidence_score": 1.0
+      "target": "src_error_boostlsserror"
     },
     {
       "relation": "calls",
@@ -28086,9 +28211,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L301",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_dataset_accepts_valid_data",
-      "target": "src_data_dataset_new",
-      "confidence_score": 1.0
+      "target": "src_data_dataset_new"
     },
     {
       "relation": "references",
@@ -28139,9 +28264,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L319",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_test_design_matrix_csc",
-      "target": "src_data_dataset_new",
-      "confidence_score": 1.0
+      "target": "src_data_dataset_new"
     },
     {
       "relation": "calls",
@@ -28150,9 +28275,9 @@
       "source_file": "crates/boostlss/src/data.rs",
       "source_location": "L335",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_data_test_design_matrix_csr",
-      "target": "src_data_dataset_new",
-      "confidence_score": 1.0
+      "target": "src_data_dataset_new"
     },
     {
       "relation": "references",
@@ -28414,9 +28539,9 @@
       "source_location": "L163",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new_csr",
-      "target": "src_error_boostlsserror",
-      "confidence_score": 1.0
+      "target": "src_error_boostlsserror"
     },
     {
       "relation": "references",
@@ -28425,9 +28550,9 @@
       "source_location": "L171",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "src_data_dataset_new_csc",
-      "target": "src_error_boostlsserror",
-      "confidence_score": 1.0
+      "target": "src_error_boostlsserror"
     },
     {
       "relation": "calls",
@@ -30137,6 +30262,36 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss/src/engine/noncyclical.rs",
+      "source_location": "L145",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "engine_noncyclical",
+      "target": "engine_noncyclical_fit_noncyclical_outer"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "crates/boostlss/src/engine/noncyclical.rs",
+      "source_location": "L265",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "engine_noncyclical",
+      "target": "engine_noncyclical_test_algorithm_variants_exist"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "crates/boostlss/src/engine/noncyclical.rs",
+      "source_location": "L273",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "engine_noncyclical",
+      "target": "engine_noncyclical_test_fit_noncyclical_outer"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "crates/boostlss/src/engine/noncyclical.rs",
       "source_location": "L153",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -30370,6 +30525,50 @@
       "weight": 1.0,
       "source": "src_param_paramspec_clone",
       "target": "engine_noncyclical_fit_noncyclical"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "crates/boostlss/src/engine/noncyclical.rs",
+      "source_location": "L186",
+      "weight": 1.0,
+      "source": "engine_noncyclical_fit_noncyclical_outer",
+      "target": "engine_stabilization_stabilize"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "crates/boostlss/src/engine/noncyclical.rs",
+      "source_location": "L145",
+      "weight": 1.0,
+      "context": "generic_arg",
+      "confidence_score": 1.0,
+      "source": "engine_noncyclical_fit_noncyclical_outer",
+      "target": "src_error_boostlsserror"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "crates/boostlss/src/engine/noncyclical.rs",
+      "source_location": "L145",
+      "weight": 1.0,
+      "context": "generic_arg",
+      "confidence_score": 1.0,
+      "source": "engine_noncyclical_fit_noncyclical_outer",
+      "target": "src_model_fitted"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "crates/boostlss/src/engine/noncyclical.rs",
+      "source_location": "L287",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "engine_noncyclical_test_fit_noncyclical_outer",
+      "target": "engine_noncyclical_fit_noncyclical_outer"
     },
     {
       "relation": "calls",
@@ -31224,9 +31423,9 @@
       "source_location": "L15",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "learner_stump_stump_build_fit_state",
-      "target": "src_error_boostlsserror",
-      "confidence_score": 1.0
+      "target": "src_error_boostlsserror"
     },
     {
       "relation": "references",
@@ -31235,9 +31434,9 @@
       "source_location": "L34",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "learner_stump_stump_predict",
-      "target": "src_error_boostlsserror",
-      "confidence_score": 1.0
+      "target": "src_error_boostlsserror"
     },
     {
       "relation": "references",
@@ -31246,9 +31445,9 @@
       "source_location": "L57",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "learner_tree_tree_build_fit_state",
-      "target": "src_error_boostlsserror",
-      "confidence_score": 1.0
+      "target": "src_error_boostlsserror"
     },
     {
       "relation": "references",
@@ -31257,9 +31456,9 @@
       "source_location": "L81",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "learner_tree_tree_predict",
-      "target": "src_error_boostlsserror",
-      "confidence_score": 1.0
+      "target": "src_error_boostlsserror"
     },
     {
       "relation": "references",
@@ -31488,9 +31687,9 @@
       "source_file": "crates/boostlss/src/family/beta.rs",
       "source_location": "L44",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "family_beta_betalss_default",
-      "target": "family_beta_betalss_new",
-      "confidence_score": 1.0
+      "target": "family_beta_betalss_new"
     },
     {
       "relation": "calls",
@@ -31499,9 +31698,9 @@
       "source_file": "crates/boostlss/src/family/beta.rs",
       "source_location": "L132",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "family_beta_betalss_init_offsets",
-      "target": "family_beta_betalss_new",
-      "confidence_score": 1.0
+      "target": "family_beta_betalss_new"
     },
     {
       "relation": "calls",
@@ -31541,9 +31740,9 @@
       "source_file": "crates/boostlss/src/family/beta.rs",
       "source_location": "L140",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "family_beta_betalss_init_offsets",
-      "target": "family_beta_betalss_nll",
-      "confidence_score": 1.0
+      "target": "family_beta_betalss_nll"
     },
     {
       "relation": "calls",
@@ -31788,9 +31987,9 @@
       "source_file": "crates/boostlss/src/family/binomial.rs",
       "source_location": "L39",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "family_binomial_binomiallss_default",
-      "target": "family_binomial_binomiallss_new",
-      "confidence_score": 1.0
+      "target": "family_binomial_binomiallss_new"
     },
     {
       "relation": "calls",
@@ -34444,9 +34643,9 @@
       "source_file": "crates/boostlss/src/learner/bspatial.rs",
       "source_location": "L59",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "learner_bspatial_bivariatepspline_build_design",
-      "target": "learner_bspatial_bivariatepspline_new",
-      "confidence_score": 1.0
+      "target": "learner_bspatial_bivariatepspline_new"
     },
     {
       "relation": "calls",
@@ -34824,9 +35023,9 @@
       "source_file": "crates/boostlss/src/learner/constrained_pspline.rs",
       "source_location": "L123",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "learner_constrained_pspline_constrainedfitstate_fit_update",
-      "target": "learner_constrained_pspline_constrainedpspline_new",
-      "confidence_score": 1.0
+      "target": "learner_constrained_pspline_constrainedpspline_new"
     },
     {
       "relation": "calls",
@@ -35089,17 +35288,6 @@
       "target": "learner_linear_linear_penalty_matrix"
     },
     {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "crates/boostlss/src/learner/mod.rs",
-      "source_location": "L38",
-      "weight": 1.0,
-      "confidence_score": 0.8,
-      "source": "learner_mod_baselearner_from",
-      "target": "learner_linear_linear"
-    },
-    {
       "relation": "imports_from",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss/src/learner/mod.rs",
@@ -35119,6 +35307,17 @@
       "context": "generic_arg",
       "confidence_score": 1.0,
       "source": "learner_mod_baselearner",
+      "target": "learner_linear_linear"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "crates/boostlss/src/learner/mod.rs",
+      "source_location": "L38",
+      "weight": 1.0,
+      "confidence_score": 0.8,
+      "source": "learner_mod_baselearner_from",
       "target": "learner_linear_linear"
     },
     {
@@ -36646,9 +36845,9 @@
       "source_file": "crates/boostlss/src/learner/stump.rs",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "learner_stump_stump",
-      "target": "learner_stump_stump_build_fit_state",
-      "confidence_score": 1.0
+      "target": "learner_stump_stump_build_fit_state"
     },
     {
       "relation": "method",
@@ -36666,9 +36865,9 @@
       "source_file": "crates/boostlss/src/learner/stump.rs",
       "source_location": "L34",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "learner_stump_stump",
-      "target": "learner_stump_stump_predict",
-      "confidence_score": 1.0
+      "target": "learner_stump_stump_predict"
     },
     {
       "relation": "references",
@@ -36677,9 +36876,9 @@
       "source_location": "L15",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "learner_stump_stump_build_fit_state",
-      "target": "learner_stump_stumpfitstate",
-      "confidence_score": 1.0
+      "target": "learner_stump_stumpfitstate"
     },
     {
       "relation": "method",
@@ -36749,9 +36948,9 @@
       "source_location": "L81",
       "weight": 1.0,
       "context": "parameter_type",
+      "confidence_score": 1.0,
       "source": "learner_tree_tree_predict",
-      "target": "learner_tree_treenode",
-      "confidence_score": 1.0
+      "target": "learner_tree_treenode"
     },
     {
       "relation": "references",
@@ -36780,9 +36979,9 @@
       "source_file": "crates/boostlss/src/learner/tree.rs",
       "source_location": "L57",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "learner_tree_tree",
-      "target": "learner_tree_tree_build_fit_state",
-      "confidence_score": 1.0
+      "target": "learner_tree_tree_build_fit_state"
     },
     {
       "relation": "method",
@@ -36820,9 +37019,9 @@
       "source_file": "crates/boostlss/src/learner/tree.rs",
       "source_location": "L81",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "learner_tree_tree",
-      "target": "learner_tree_tree_predict",
-      "confidence_score": 1.0
+      "target": "learner_tree_tree_predict"
     },
     {
       "relation": "calls",
@@ -36853,9 +37052,9 @@
       "source_location": "L57",
       "weight": 1.0,
       "context": "generic_arg",
+      "confidence_score": 1.0,
       "source": "learner_tree_tree_build_fit_state",
-      "target": "learner_tree_treefitstate",
-      "confidence_score": 1.0
+      "target": "learner_tree_treefitstate"
     },
     {
       "relation": "method",
@@ -39025,9 +39224,9 @@
       "source_file": "tests/test_stabsel.py",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_stabsel",
-      "target": "tests_test_stabsel_test_stabsel_error_bounds",
-      "confidence_score": 1.0
+      "target": "tests_test_stabsel_test_stabsel_error_bounds"
     },
     {
       "relation": "contains",
@@ -39035,9 +39234,9 @@
       "source_file": "tests/test_stabsel.py",
       "source_location": "L23",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_stabsel",
-      "target": "tests_test_stabsel_test_stabsel_selects_informative_features",
-      "confidence_score": 1.0
+      "target": "tests_test_stabsel_test_stabsel_selects_informative_features"
     },
     {
       "relation": "contains",
@@ -51771,5 +51970,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "146e34d8a519744ee07dfbaf69ee87fcdc36237c"
+  "built_at_commit": "af7c09b965784d71b250da9254a1ca351d7ed648"
 }

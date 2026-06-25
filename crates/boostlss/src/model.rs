@@ -123,6 +123,14 @@ impl<F: Family + Clone> BoostLss<F> {
                 }
                 crate::engine::noncyclical::fit_noncyclical(self, data)
             }
+            Algorithm::NonCyclicOuter => {
+                if matches!(self.config.mstop, Mstop::PerParam(_)) {
+                    return Err(BoostlssError::InvalidConfig(
+                        "NonCyclic algorithm requires a Scalar Mstop".into(),
+                    ));
+                }
+                crate::engine::noncyclical::fit_noncyclical_outer(self, data)
+            }
         }
     }
 }
@@ -265,7 +273,7 @@ impl<F: Family> Fitted<F> {
             )));
         }
 
-        let mut base_design = match data.design() {
+        let base_design = match data.design() {
             crate::data::DesignMatrix::Dense(mat) => mat.clone(),
             _ => {
                 return Err(BoostlssError::DataError(

@@ -8,6 +8,7 @@ pub mod stabilization;
 pub enum Algorithm {
     Cyclic,
     NonCyclic,
+    NonCyclicOuter,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

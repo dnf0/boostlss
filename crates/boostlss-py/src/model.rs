@@ -2,7 +2,7 @@ use crate::family::PyFamily;
 use boostlss::cv::{CvRisk, Resampling};
 use boostlss::data::Dataset;
 use boostlss::engine::cyclical::fit_cyclical;
-use boostlss::engine::noncyclical::fit_noncyclical;
+use boostlss::engine::noncyclical::{fit_noncyclical, fit_noncyclical_outer};
 use boostlss::engine::{Algorithm, Mstop};
 use boostlss::family::{
     BetaLss, BinomialLss, GEVLss, GaussianLss, LogNormalLss, WeibullLss, ZIPLss,
@@ -135,9 +135,10 @@ impl BoostLssModel {
         let algorithm_enum = match algorithm {
             "cyclic" => Algorithm::Cyclic,
             "noncyclic" => Algorithm::NonCyclic,
+            "noncyclic_outer" => Algorithm::NonCyclicOuter,
             _ => {
                 return Err(pyo3::exceptions::PyValueError::new_err(
-                    "algorithm must be 'cyclic' or 'noncyclic'",
+                    "algorithm must be 'cyclic', 'noncyclic', or 'noncyclic_outer'",
                 ))
             }
         };
@@ -206,6 +207,11 @@ impl BoostLssModel {
                 }
 
                 let fitted = match self.algorithm {
+                    Algorithm::NonCyclicOuter => {
+                        let model = model.algorithm(Algorithm::NonCyclicOuter);
+                        fit_noncyclical_outer(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                     Algorithm::NonCyclic => {
@@ -229,6 +235,11 @@ impl BoostLssModel {
                 }
 
                 let fitted = match self.algorithm {
+                    Algorithm::NonCyclicOuter => {
+                        let model = model.algorithm(Algorithm::NonCyclicOuter);
+                        fit_noncyclical_outer(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                     Algorithm::NonCyclic => {
@@ -252,6 +263,11 @@ impl BoostLssModel {
                 }
 
                 let fitted = match self.algorithm {
+                    Algorithm::NonCyclicOuter => {
+                        let model = model.algorithm(Algorithm::NonCyclicOuter);
+                        fit_noncyclical_outer(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                     Algorithm::NonCyclic => {
@@ -275,6 +291,11 @@ impl BoostLssModel {
                 }
 
                 let fitted = match self.algorithm {
+                    Algorithm::NonCyclicOuter => {
+                        let model = model.algorithm(Algorithm::NonCyclicOuter);
+                        fit_noncyclical_outer(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                     Algorithm::NonCyclic => {
@@ -298,6 +319,11 @@ impl BoostLssModel {
                 }
 
                 let fitted = match self.algorithm {
+                    Algorithm::NonCyclicOuter => {
+                        let model = model.algorithm(Algorithm::NonCyclicOuter);
+                        fit_noncyclical_outer(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                     Algorithm::NonCyclic => {
@@ -321,6 +347,11 @@ impl BoostLssModel {
                 }
 
                 let fitted = match self.algorithm {
+                    Algorithm::NonCyclicOuter => {
+                        let model = model.algorithm(Algorithm::NonCyclicOuter);
+                        fit_noncyclical_outer(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                     Algorithm::NonCyclic => {
@@ -344,6 +375,11 @@ impl BoostLssModel {
                 }
 
                 let fitted = match self.algorithm {
+                    Algorithm::NonCyclicOuter => {
+                        let model = model.algorithm(Algorithm::NonCyclicOuter);
+                        fit_noncyclical_outer(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                     Algorithm::NonCyclic => {
@@ -397,6 +433,7 @@ impl BoostLssModel {
                     }
 
                     let model = match self.algorithm {
+                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
                         Algorithm::Cyclic => model,
                         Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
                     };
@@ -426,6 +463,7 @@ impl BoostLssModel {
                     }
 
                     let model = match self.algorithm {
+                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
                         Algorithm::Cyclic => model,
                         Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
                     };
@@ -455,6 +493,7 @@ impl BoostLssModel {
                     }
 
                     let model = match self.algorithm {
+                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
                         Algorithm::Cyclic => model,
                         Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
                     };
@@ -484,6 +523,7 @@ impl BoostLssModel {
                     }
 
                     let model = match self.algorithm {
+                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
                         Algorithm::Cyclic => model,
                         Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
                     };
@@ -513,6 +553,7 @@ impl BoostLssModel {
                     }
 
                     let model = match self.algorithm {
+                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
                         Algorithm::Cyclic => model,
                         Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
                     };
@@ -542,6 +583,7 @@ impl BoostLssModel {
                     }
 
                     let model = match self.algorithm {
+                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
                         Algorithm::Cyclic => model,
                         Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
                     };
@@ -571,6 +613,7 @@ impl BoostLssModel {
                     }
 
                     let model = match self.algorithm {
+                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
                         Algorithm::Cyclic => model,
                         Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
                     };
@@ -684,6 +727,7 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
                 let model = match self.algorithm {
+                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
                     Algorithm::Cyclic => model,
                     Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
                 };
@@ -705,6 +749,7 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
                 let model = match self.algorithm {
+                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
                     Algorithm::Cyclic => model,
                     Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
                 };
@@ -726,6 +771,7 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
                 let model = match self.algorithm {
+                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
                     Algorithm::Cyclic => model,
                     Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
                 };
@@ -747,6 +793,7 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
                 let model = match self.algorithm {
+                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
                     Algorithm::Cyclic => model,
                     Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
                 };
@@ -768,6 +815,7 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
                 let model = match self.algorithm {
+                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
                     Algorithm::Cyclic => model,
                     Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
                 };
@@ -789,6 +837,7 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
                 let model = match self.algorithm {
+                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
                     Algorithm::Cyclic => model,
                     Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
                 };
@@ -810,6 +859,7 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
                 }
                 let model = match self.algorithm {
+                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
                     Algorithm::Cyclic => model,
                     Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
                 };
@@ -858,6 +908,7 @@ impl BoostLssModel {
 
     fn __getnewargs__(&self) -> (PyFamily, usize, f64, String) {
         let algo_str = match self.algorithm {
+            Algorithm::NonCyclicOuter => "noncyclic_outer",
             Algorithm::Cyclic => "cyclic",
             Algorithm::NonCyclic => "noncyclic",
         }
@@ -881,6 +932,7 @@ impl BoostLssModel {
         dict.set_item("mstop", self.mstop)?;
         dict.set_item("step_length", self.step_length)?;
         let algo_str = match self.algorithm {
+            Algorithm::NonCyclicOuter => "noncyclic_outer",
             Algorithm::Cyclic => "cyclic",
             Algorithm::NonCyclic => "noncyclic",
         };
@@ -937,6 +989,7 @@ impl BoostLssModel {
             match algo_str.as_str() {
                 "cyclic" => Algorithm::Cyclic,
                 "noncyclic" => Algorithm::NonCyclic,
+                "noncyclic_outer" => Algorithm::NonCyclicOuter,
                 _ => return Err(pyo3::exceptions::PyValueError::new_err("Unknown algorithm")),
             }
         } else {

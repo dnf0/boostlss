@@ -45,3 +45,7 @@ nav:
   - Quickstart: quickstart.md
   - Examples: examples.md
   - API Reference: api.md
+  - Theory & Deep Dives:
+    - Algorithms: theory/algorithms.md
+    - Base Learners: theory/base_learners.md
+    - Distribution Families: theory/families.md

@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import genextreme
 
@@ -54,20 +53,20 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
 # Plot True vs Predicted mu (Location)
 idx_temp = np.argsort(temperature)
-ax1.plot(temperature[idx_temp], mu_true[idx_temp], 'k--', label="True $\mu$", linewidth=2)
-ax1.scatter(temperature[idx_temp], mu_pred[idx_temp], c='blue', alpha=0.1, label="Predicted $\mu$", s=5)
+ax1.plot(temperature[idx_temp], mu_true[idx_temp], 'k--', label=r"True $\mu$", linewidth=2)
+ax1.scatter(temperature[idx_temp], mu_pred[idx_temp], c='blue', alpha=0.1, label=r"Predicted $\mu$", s=5)
 ax1.set_xlabel("Temperature")
-ax1.set_ylabel("$\mu$")
-ax1.set_title("Location Parameter ($\mu$) vs Temperature")
+ax1.set_ylabel(r"$\mu$")
+ax1.set_title(r"Location Parameter ($\mu$) vs Temperature")
 ax1.legend()
 
 # Plot True vs Predicted sigma (Scale)
 idx_pres = np.argsort(pressure_drop)
-ax2.plot(pressure_drop[idx_pres], sigma_true[idx_pres], 'k--', label="True $\sigma$", linewidth=2)
-ax2.scatter(pressure_drop[idx_pres], sigma_pred[idx_pres], c='red', alpha=0.3, label="Predicted $\sigma$", s=10)
+ax2.plot(pressure_drop[idx_pres], sigma_true[idx_pres], 'k--', label=r"True $\sigma$", linewidth=2)
+ax2.scatter(pressure_drop[idx_pres], sigma_pred[idx_pres], c='red', alpha=0.3, label=r"Predicted $\sigma$", s=10)
 ax2.set_xlabel("Pressure Drop")
-ax2.set_ylabel("$\sigma$")
-ax2.set_title("Scale Parameter ($\sigma$) vs Pressure Drop")
+ax2.set_ylabel(r"$\sigma$")
+ax2.set_title(r"Scale Parameter ($\sigma$) vs Pressure Drop")
 ax2.legend()
 
 plt.tight_layout()

@@ -38,7 +38,7 @@ def run_benchmark():
         
         # Predict
         start_time = time.time()
-        preds = model.predict(X, "mu")
+        _ = model.predict(X, "mu")
         pred_time = time.time() - start_time
         
         print(f"  Predict time: {pred_time:.3f} seconds")

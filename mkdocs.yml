@@ -46,7 +46,7 @@ nav:
   - Examples: examples.md
   - End-to-End Tutorials:
     - Spatial Bivariate Splines: examples/spatial_bivariate.md
-    - Robust Student-T Regression: examples/robust_student_t.md
+    - Zero-Inflated Poisson Regression: examples/zero_inflated_counts.md
   - API Reference: api.md
   - Theory & Deep Dives:
     - Algorithms: theory/algorithms.md

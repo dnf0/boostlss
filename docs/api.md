@@ -25,8 +25,11 @@ BoostLssModel(family: PyFamily, mstop: int = 100, step_length: float = 0.1, algo
 - `fit(X, y)`: Train the model on the design matrix `X` and response vector `y`.
 - `predict(X, param: str) -> np.ndarray`: Predict the value of a specific parameter for data `X`.
 - `cvrisk(folds: int = 10)`: Run k-fold cross-validation to find the optimal `mstop`.
-- `stabsel(b: int = 100, pfer: float = None, pi_thr: float = None)`: Run stability selection to find informative base learners.
+- `stabsel(b: int = 100, pfer: float = None, pi_thr: float = None) -> PyStabselResult`: Run stability selection to find informative base learners.
 - `feature_importance() -> list[float]`: Get the empirical risk reduction (importance) of each base learner.
+- `partial_dependence(X, learner_idx: int) -> np.ndarray`: Compute the partial dependence of a specific base learner over the given data.
+- `save(path: str)`: Serialize and save the model to disk.
+- `load(path: str) -> BoostLssModel`: Load a serialized model from disk. (This is a static method in Python).
 
 ---
 
@@ -49,6 +52,15 @@ PyFamily(name: str)
 - `"LogNormalLSS"`: Log-Normal distribution (models `mu`, `sigma`).
 - `"ZIPLss"`: Zero-Inflated Poisson distribution (models `mu`, `sigma`).
 - `"GEVLss"`: Generalized Extreme Value distribution (models `mu`, `sigma`, `xi`).
+
+---
+
+### `PyStabselResult`
+
+The result object returned by `BoostLssModel.stabsel()`.
+
+**Properties:**
+- `selected` (`list[int]`): The indices of the base learners that were selected as stable.
 
 ---
 

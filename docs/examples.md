@@ -143,3 +143,60 @@ stabsel_result = model.stabsel(b=50, pfer=1.0)
 print("Selected base learners:")
 print(stabsel_result.selected)
 ```
+
+## Model Interpretation
+
+`boostlss` provides methods to interpret the trained model, such as computing the empirical risk reduction (feature importance) and the partial dependence of individual base learners.
+
+```python
+import numpy as np
+from boostlss_py import PyFamily, PyPSplineLearner, BoostLssModel
+
+np.random.seed(42)
+X = np.random.uniform(-3, 3, size=(200, 2))
+# y depends heavily on X_0, less on X_1
+y = np.sin(X[:, 0]) * 2.0 + X[:, 1] * 0.5 + np.random.normal(size=200) * 0.2
+
+model = BoostLssModel(PyFamily("GaussianLSS"), mstop=150)
+model.add_learner("mu", PyPSplineLearner(0))
+model.add_learner("mu", PyPSplineLearner(1))
+
+model.fit(X, y)
+
+# 1. Feature Importance
+# Returns a list of importance scores corresponding to the order learners were added
+importances = model.feature_importance()
+print(f"Importance for X_0 learner: {importances[0]}")
+print(f"Importance for X_1 learner: {importances[1]}")
+
+# 2. Partial Dependence
+# Calculate the marginal effect of the first base learner (X_0) across the data X
+pd_X0 = model.partial_dependence(X, learner_idx=0)
+print(f"Partial dependence shape: {pd_X0.shape}")
+```
+
+## Model Serialization (Save/Load)
+
+You can serialize a trained `BoostLssModel` to disk for later use, including its current state and selected base learners.
+
+```python
+import numpy as np
+from boostlss_py import PyFamily, PyLinearLearner, BoostLssModel
+
+X = np.random.normal(size=(100, 2))
+y = X[:, 0] * 2.0 + np.random.normal(size=100)
+
+model = BoostLssModel(PyFamily("GaussianLSS"), mstop=50)
+model.add_learner("mu", PyLinearLearner(0))
+model.fit(X, y)
+
+# Save the model to a file
+model.save("my_boostlss_model.json")
+
+# Later, or in a different process, load the model
+# Note that load() is a static method called on the class itself
+loaded_model = BoostLssModel.load("my_boostlss_model.json")
+
+# The loaded model can be used immediately for prediction
+preds = loaded_model.predict(X, "mu")
+```

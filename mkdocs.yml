@@ -53,6 +53,8 @@ nav:
   - End-to-End Tutorials:
     - Spatial Bivariate Splines: examples/spatial_bivariate.md
     - Zero-Inflated Poisson Regression: examples/zero_inflated_counts.md
+    - Insurance Claims (LogNormal): examples/lognormal_claims.md
+    - Extreme Weather (GEV): examples/extreme_value_theory.md
   - API Reference: api.md
   - Theory & Deep Dives:
     - Algorithms: theory/algorithms.md

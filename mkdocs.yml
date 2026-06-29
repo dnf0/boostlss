@@ -50,14 +50,15 @@ nav:
   - Home: index.md
   - Quickstart: quickstart.md
   - Examples: examples.md
-  - End-to-End Tutorials:
-    - Spatial Bivariate Splines: examples/spatial_bivariate.md
-    - Zero-Inflated Poisson Regression: examples/zero_inflated_counts.md
-    - Insurance Claims (LogNormal): examples/lognormal_claims.md
-    - Extreme Weather (GEV): examples/extreme_value_theory.md
-  - API Reference: api.md
   - Theory & Deep Dives:
-    - Algorithms: theory/algorithms.md
-    - Base Learners: theory/base_learners.md
-    - Distribution Families: theory/families.md
-    - Performance Benchmarks: theory/benchmarks.md
+      - Algorithms: theory/algorithms.md
+      - Base Learners: theory/base_learners.md
+      - Distribution Families: theory/families.md
+      - Performance Benchmarks: theory/benchmarks.md
+  - End-to-End Tutorials:
+      - Spatial Bivariate Splines: examples/spatial_bivariate.md
+      - Zero-Inflated Poisson Regression: examples/zero_inflated_counts.md
+      - Insurance Claims (LogNormal): examples/lognormal_claims.md
+      - Extreme Weather (GEV): examples/extreme_value_theory.md
+      - Long-Tail Distributions (JSU): examples/long_tail_jsu.md
+  - API Reference: api.md

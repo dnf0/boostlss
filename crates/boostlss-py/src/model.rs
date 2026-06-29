@@ -5,7 +5,7 @@ use boostlss::engine::cyclical::fit_cyclical;
 use boostlss::engine::noncyclical::{fit_noncyclical, fit_noncyclical_outer};
 use boostlss::engine::{Algorithm, Mstop};
 use boostlss::family::{
-    BetaLss, BinomialLss, GEVLss, GaussianLss, LogNormalLss, WeibullLss, ZIPLss,
+    BetaLss, BinomialLss, GEVLss, GaussianLss, JSULss, LogNormalLss, WeibullLss, ZIPLss,
 };
 use boostlss::learner::{BaseLearner, RandomEffects};
 use boostlss::model::{BoostLss, Fitted, Scale};
@@ -21,6 +21,7 @@ enum FittedModel {
     LogNormal(Fitted<LogNormalLss>),
     Zip(Fitted<ZIPLss>),
     Gev(Fitted<GEVLss>),
+    Jsu(Fitted<JSULss>),
 }
 
 impl FittedModel {
@@ -52,6 +53,9 @@ impl FittedModel {
             Self::Gev(fitted) => fitted
                 .predict(dataset, param, scale)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Jsu(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
         }
     }
 
@@ -64,6 +68,7 @@ impl FittedModel {
             Self::LogNormal(fitted) => fitted.feature_importance(),
             Self::Zip(fitted) => fitted.feature_importance(),
             Self::Gev(fitted) => fitted.feature_importance(),
+            Self::Jsu(fitted) => fitted.feature_importance(),
         }
     }
 
@@ -94,6 +99,9 @@ impl FittedModel {
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
             Self::Gev(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Jsu(fitted) => fitted
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
         }
@@ -391,6 +399,34 @@ impl BoostLssModel {
 
                 self.fitted = Some(FittedModel::Gev(fitted));
             }
+            PyFamily::Jsu => {
+                let mut model = BoostLss::new(JSULss::new())
+                    .step_length(self.step_length)
+                    .mstop(Mstop::Scalar(self.mstop));
+
+                for (param, learner) in &self.learners {
+                    model = model
+                        .on(param.as_str(), |p| p.add(learner.clone()))
+                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+                }
+
+                let fitted = match self.algorithm {
+                    Algorithm::NonCyclicOuter => {
+                        let model = model.algorithm(Algorithm::NonCyclicOuter);
+                        fit_noncyclical_outer(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
+
+                self.fitted = Some(FittedModel::Jsu(fitted));
+            }
         }
         Ok(())
     }
@@ -603,6 +639,36 @@ impl BoostLssModel {
                 }
                 PyFamily::Gev => {
                     let mut model = BoostLss::new(GEVLss::new())
+                        .step_length(self.step_length)
+                        .mstop(Mstop::Scalar(self.mstop));
+
+                    for (param, learner) in &self.learners {
+                        model = model
+                            .on(param.as_str(), |p| p.add(learner.clone()))
+                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+                    }
+
+                    let model = match self.algorithm {
+                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
+
+                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
+                    let result = cv
+                        .run(&dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+
+                    let dict = PyDict::new_bound(py);
+                    match result.optimal_mstop {
+                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
+                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
+                    }
+                    dict.set_item("mean_risk", result.mean_risk)?;
+                    Ok(dict)
+                }
+                PyFamily::Jsu => {
+                    let mut model = BoostLss::new(JSULss::new())
                         .step_length(self.step_length)
                         .mstop(Mstop::Scalar(self.mstop));
 
@@ -871,6 +937,28 @@ impl BoostLssModel {
                 )
                 .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
             }
+            PyFamily::Jsu => {
+                let mut model = BoostLss::new(JSULss::new())
+                    .step_length(self.step_length)
+                    .mstop(Mstop::Scalar(self.mstop));
+                for (param, learner) in &self.learners {
+                    model = model
+                        .on(param.as_str(), |p| p.add(learner.clone()))
+                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+                }
+                let model = match self.algorithm {
+                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
+                    Algorithm::Cyclic => model,
+                    Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                };
+                boostlss::cv::stabsel::run_stabsel(
+                    &model,
+                    &dataset,
+                    Mstop::Scalar(self.mstop),
+                    &config,
+                )
+                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+            }
         };
 
         let mut probabilities = std::collections::HashMap::new();
@@ -927,6 +1015,7 @@ impl BoostLssModel {
             PyFamily::LogNormal => "LogNormalLss",
             PyFamily::Zip => "ZIPLss",
             PyFamily::Gev => "GEVLss",
+            PyFamily::Jsu => "JSULss",
         };
         dict.set_item("family", family_str)?;
         dict.set_item("mstop", self.mstop)?;
@@ -948,6 +1037,7 @@ impl BoostLssModel {
                 FittedModel::LogNormal(f) => bincode::serialize(f),
                 FittedModel::Zip(f) => bincode::serialize(f),
                 FittedModel::Gev(f) => bincode::serialize(f),
+                FittedModel::Jsu(f) => bincode::serialize(f),
             }
             .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
             dict.set_item("fitted", PyBytes::new_bound(py, &bytes))?;
@@ -974,7 +1064,8 @@ impl BoostLssModel {
             "LogNormalLss" => PyFamily::LogNormal,
             "ZIPLss" => PyFamily::Zip,
             "GEVLss" => PyFamily::Gev,
-            _ => return Err(pyo3::exceptions::PyValueError::new_err("Unknown family")),
+            "JSULss" => PyFamily::Jsu,
+            _ => return Err(pyo3::exceptions::PyRuntimeError::new_err("Unknown family")),
         };
         self.mstop = state
             .get_item("mstop")?
@@ -1024,6 +1115,10 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),
                 PyFamily::Gev => FittedModel::Gev(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                PyFamily::Jsu => FittedModel::Jsu(
                     bincode::deserialize(bytes)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),

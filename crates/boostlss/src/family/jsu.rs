@@ -41,7 +41,34 @@ impl Family for JSULss {
     }
 
     fn nll(&self, data: &Dataset, eta: &[Array1<f64>]) -> Result<f64, BoostlssError> {
-        unimplemented!()
+        let mu = &eta[0]; // Identity
+        let sigma = eta[1].mapv(|x| x.exp().max(1e-10)); // Log
+        let nu = &eta[2]; // Identity
+        let tau = eta[3].mapv(|x| x.exp().max(1e-10)); // Log
+
+        let mut total_nll = 0.0;
+        let y = data.response();
+        let w = data.weights();
+
+        let half_log_2pi = 0.5 * (2.0 * std::f64::consts::PI).ln();
+
+        for i in 0..data.n_obs() {
+            let sig = sigma[i];
+            let z = (y[i] - mu[i]) / sig;
+
+            // r = -nu + tau * asinh(z)
+            let asinh_z = z.asinh();
+            let r = -nu[i] + tau[i] * asinh_z;
+
+            // log_pdf = log(tau) - log(sigma) - 0.5*log(z^2 + 1) - 0.5*log(2*pi) - 0.5*r^2
+            let log_pdf =
+                tau[i].ln() - sig.ln() - 0.5 * (z * z + 1.0).ln() - half_log_2pi - 0.5 * r * r;
+
+            let weight = w.map(|w_arr| w_arr[i]).unwrap_or(1.0);
+            total_nll -= weight * log_pdf;
+        }
+
+        Ok(total_nll)
     }
 
     fn init_offsets(&self, data: &Dataset) -> Result<Vec<f64>, BoostlssError> {
@@ -61,5 +88,21 @@ mod tests {
         assert_eq!(fam.params()[1].name, "sigma");
         assert_eq!(fam.params()[2].name, "nu");
         assert_eq!(fam.params()[3].name, "tau");
+    }
+
+    #[test]
+    fn test_jsu_nll() {
+        use ndarray::{array, Array2};
+        let fam = JSULss::new();
+        let y = array![0.0, 1.0, 2.0];
+        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None).unwrap();
+        let eta = vec![
+            array![0.0, 0.0, 0.0],
+            array![0.0, 0.0, 0.0],
+            array![0.0, 0.0, 0.0],
+            array![0.0, 0.0, 0.0],
+        ];
+        let nll = fam.nll(&ds, &eta).unwrap();
+        assert!(nll > 0.0);
     }
 }

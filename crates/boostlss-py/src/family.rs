@@ -10,6 +10,7 @@ pub enum PyFamily {
     LogNormal,
     Zip,
     Gev,
+    Jsu,
 }
 
 #[pymethods]
@@ -24,6 +25,7 @@ impl PyFamily {
             "LogNormalLSS" | "LogNormalLss" => Ok(PyFamily::LogNormal),
             "ZIPLSS" | "ZIPLss" | "ZipLss" => Ok(PyFamily::Zip),
             "GEVLSS" | "GEVLss" | "GevLss" => Ok(PyFamily::Gev),
+            "JSULSS" | "JSULss" | "JsuLss" => Ok(PyFamily::Jsu),
             _ => Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "Unknown family: {}",
                 name
@@ -40,6 +42,7 @@ impl PyFamily {
             PyFamily::LogNormal => ("LogNormalLSS",),
             PyFamily::Zip => ("ZIPLSS",),
             PyFamily::Gev => ("GEVLSS",),
+            PyFamily::Jsu => ("JSULSS",),
         }
     }
 }

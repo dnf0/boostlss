@@ -127,13 +127,14 @@ mod tests {
         let fam = JSULss::new();
         let y = array![1.0, 2.0, 3.0, 4.0, 5.0];
         let w = array![1.0, 1.0, 1.0, 1.0, 1.0];
-        // using regular Dataset::new as new_with_design_matrix does not exist
         let ds = Dataset::new(Array2::<f64>::zeros((5, 1)), y, Some(w)).unwrap();
+
         let offsets = fam.init_offsets(&ds).unwrap();
         assert_eq!(offsets.len(), 4);
-        // sigma is set to standard deviation of y = sqrt(2.5) ~ 1.58. Inverse of log is ln(1.58) ~ 0.45, so > 0
-        assert!(offsets[1] > 0.0);
-        // tau is set to 1. Inverse of log is ln(1) = 0. Wait, test says > 0. Let's fix test: >= 0.0
-        assert!(offsets[3] >= 0.0);
+
+        approx::assert_relative_eq!(offsets[0], 3.0, epsilon = 1e-5);
+        approx::assert_relative_eq!(offsets[1], 1.5811388f64.ln(), epsilon = 1e-5);
+        approx::assert_relative_eq!(offsets[2], 0.0, epsilon = 1e-5);
+        approx::assert_relative_eq!(offsets[3], 0.0, epsilon = 1e-5);
     }
 }

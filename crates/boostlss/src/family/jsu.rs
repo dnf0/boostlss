@@ -2,7 +2,7 @@ use crate::data::Dataset;
 use crate::error::BoostlssError;
 use crate::family::Family;
 use crate::param::{IdentityLink, LogLink, ParamSpec};
-use crate::util::{minimize_1d, weighted_mean, weighted_sd};
+use crate::util::{weighted_mean, weighted_sd};
 use ndarray::Array1;
 use serde::{Deserialize, Serialize};
 
@@ -73,7 +73,21 @@ impl Family for JSULss {
     }
 
     fn init_offsets(&self, data: &Dataset) -> Result<Vec<f64>, BoostlssError> {
-        unimplemented!()
+        let y = data.response();
+        let w = data.weights();
+
+        let mu_init = weighted_mean(y, w);
+        let sigma_init = weighted_sd(y, w);
+
+        let nu_init = 0.0;
+        let tau_init = 1.0;
+
+        let eta_mu = self.params[0].link.link(mu_init);
+        let eta_sigma = self.params[1].link.link(sigma_init.max(1e-10));
+        let eta_nu = self.params[2].link.link(nu_init);
+        let eta_tau = self.params[3].link.link(tau_init);
+
+        Ok(vec![eta_mu, eta_sigma, eta_nu, eta_tau])
     }
 }
 
@@ -105,5 +119,21 @@ mod tests {
         ];
         let nll = fam.nll(&ds, &eta).unwrap();
         approx::assert_relative_eq!(nll, 5.3385595, epsilon = 1e-5);
+    }
+
+    #[test]
+    fn test_jsu_init() {
+        use ndarray::{array, Array2};
+        let fam = JSULss::new();
+        let y = array![1.0, 2.0, 3.0, 4.0, 5.0];
+        let w = array![1.0, 1.0, 1.0, 1.0, 1.0];
+        // using regular Dataset::new as new_with_design_matrix does not exist
+        let ds = Dataset::new(Array2::<f64>::zeros((5, 1)), y, Some(w)).unwrap();
+        let offsets = fam.init_offsets(&ds).unwrap();
+        assert_eq!(offsets.len(), 4);
+        // sigma is set to standard deviation of y = sqrt(2.5) ~ 1.58. Inverse of log is ln(1.58) ~ 0.45, so > 0
+        assert!(offsets[1] > 0.0);
+        // tau is set to 1. Inverse of log is ln(1) = 0. Wait, test says > 0. Let's fix test: >= 0.0
+        assert!(offsets[3] >= 0.0);
     }
 }

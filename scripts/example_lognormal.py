@@ -16,7 +16,7 @@ car_value = np.random.uniform(10_000, 100_000, n_samples)
 mu_true = 7.0 - 0.01 * age + 0.00001 * car_value
 
 # The scale parameter (sigma) varies non-linearly with age (e.g. young drivers have highly variable claims)
-sigma_true = 0.5 + 1.5 * np.exp(-((age - 20) / 10)**2)
+sigma_true = 0.5 + 1.5 * np.exp(-(((age - 20) / 10) ** 2))
 
 # Generate claims from LogNormal
 claims = lognorm.rvs(s=sigma_true, scale=np.exp(mu_true))
@@ -46,8 +46,10 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 # Plot True vs Predicted mu (Location)
 # Sort by car_value for a cleaner line plot
 idx = np.argsort(car_value)
-ax1.plot(car_value[idx], mu_true[idx], 'k--', label=r"True $\mu$", linewidth=2)
-ax1.scatter(car_value[idx], mu_pred[idx], c='blue', alpha=0.1, label=r"Predicted $\mu$", s=5)
+ax1.plot(car_value[idx], mu_true[idx], "k--", label=r"True $\mu$", linewidth=2)
+ax1.scatter(
+    car_value[idx], mu_pred[idx], c="blue", alpha=0.1, label=r"Predicted $\mu$", s=5
+)
 ax1.set_xlabel("Car Value")
 ax1.set_ylabel(r"$\mu$")
 ax1.set_title(r"Location Parameter ($\mu$) vs Car Value")
@@ -55,13 +57,20 @@ ax1.legend()
 
 # Plot True vs Predicted sigma (Scale)
 idx_age = np.argsort(age)
-ax2.plot(age[idx_age], sigma_true[idx_age], 'k--', label=r"True $\sigma$", linewidth=2)
-ax2.scatter(age[idx_age], sigma_pred[idx_age], c='red', alpha=0.3, label=r"Predicted $\sigma$", s=10)
+ax2.plot(age[idx_age], sigma_true[idx_age], "k--", label=r"True $\sigma$", linewidth=2)
+ax2.scatter(
+    age[idx_age],
+    sigma_pred[idx_age],
+    c="red",
+    alpha=0.3,
+    label=r"Predicted $\sigma$",
+    s=10,
+)
 ax2.set_xlabel("Age")
 ax2.set_ylabel(r"$\sigma$")
 ax2.set_title(r"Scale Parameter ($\sigma$) vs Age")
 ax2.legend()
 
 plt.tight_layout()
-plt.savefig("docs/assets/lognormal_claims.png", dpi=300, bbox_inches='tight')
+plt.savefig("docs/assets/lognormal_claims.png", dpi=300, bbox_inches="tight")
 print("Saved docs/assets/lognormal_claims.png")

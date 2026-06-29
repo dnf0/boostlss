@@ -54,7 +54,7 @@ model = BoostLssModel(
 
 ## 5. Add Base Learners
 
-You must add at least one base learner for *each* parameter of the distribution family you selected.
+You must add at least one base learner for _each_ parameter of the distribution family you selected.
 
 ```python
 # We add a linear base learner on feature index 0 for both "mu" and "sigma".
@@ -62,7 +62,7 @@ model.add_learner("mu", PyLinearLearner(0))
 model.add_learner("sigma", PyLinearLearner(0))
 ```
 
-*Note: You can add multiple learners for a single parameter. The algorithm will automatically select the best learner at each step.*
+_Note: You can add multiple learners for a single parameter. The algorithm will automatically select the best learner at each step._
 
 ## 6. Fit the Model
 

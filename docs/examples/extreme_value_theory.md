@@ -3,6 +3,7 @@
 Modeling the probability of extreme events (like the maximum recorded wind speed in a year or the highest daily temperature) requires Extreme Value Theory. The standard approach is to model the block-maxima using the Generalized Extreme Value (GEV) distribution.
 
 The GEV distribution consists of three parameters:
+
 1. **Location ($\mu$)**: The center of the distribution.
 2. **Scale ($\sigma$)**: The dispersion of the distribution.
 3. **Shape ($\nu$ / $\xi$)**: Determines the heaviness of the tail (whether it behaves like a Fréchet, Weibull, or Gumbel distribution).
@@ -27,7 +28,7 @@ n_samples = 4000
 
 # Predictors
 temperature = np.random.uniform(10, 40, n_samples)
-pressure_drop = np.random.uniform(0, 50, n_samples) 
+pressure_drop = np.random.uniform(0, 50, n_samples)
 
 # The location parameter (mu) varies linearly with temperature and pressure drop
 mu_true = 20.0 + 0.5 * temperature + 0.3 * pressure_drop
@@ -82,4 +83,4 @@ Plotting the parameters shows that BoostLSS successfully identifies both the lin
 
 ![GEV Extreme Weather Plot](../assets/gev_extreme_weather.png)
 
-This fully-conditional modeling approach is critical for climate science, allowing analysts to predict not just the *average* wind speed, but the exact shift in the *probability of a catastrophic storm* under changing conditions.
+This fully-conditional modeling approach is critical for climate science, allowing analysts to predict not just the _average_ wind speed, but the exact shift in the _probability of a catastrophic storm_ under changing conditions.

@@ -6,9 +6,10 @@ In this tutorial, we will use BoostLSS to model both the expected value and the 
 
 ## Synthetic Data Generation
 
-We'll simulate $5,000$ insurance claims where the size of the claim depends on the policyholder's `age` and their `car_value`. 
-* We assume the **location ($\mu$)** of the distribution scales linearly with the car value and age.
-* We assume the **scale/dispersion ($\sigma$)** varies non-linearly with age, where very young drivers exhibit a much wider spread in claim severity than older drivers.
+We'll simulate $5,000$ insurance claims where the size of the claim depends on the policyholder's `age` and their `car_value`.
+
+- We assume the **location ($\mu$)** of the distribution scales linearly with the car value and age.
+- We assume the **scale/dispersion ($\sigma$)** varies non-linearly with age, where very young drivers exhibit a much wider spread in claim severity than older drivers.
 
 ```python
 import numpy as np

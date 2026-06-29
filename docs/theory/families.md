@@ -2,11 +2,12 @@
 
 In standard regression (e.g., OLS), we only model the conditional mean ($\mu = E[Y|X]$) and assume the variance ($\sigma^2$) is constant for all observations.
 
-**Distributional Regression (GAMLSS)** expands this by allowing *all* parameters of a target distribution to depend on covariates $X$.
+**Distributional Regression (GAMLSS)** expands this by allowing _all_ parameters of a target distribution to depend on covariates $X$.
 
 $$ Y \sim \mathcal{D}(\theta_1(X), \theta_2(X), \dots, \theta_k(X)) $$
 
 Where $\theta_k(X)$ are the parameters of the distribution, which usually map to:
+
 - Location ($\mu$): Mean, median, or general central tendency.
 - Scale ($\sigma$): Variance or dispersion.
 - Shape ($\nu, \tau, \dots$): Skewness, kurtosis, or tail weight.
@@ -19,6 +20,7 @@ To solve this, `boostlss` uses **Link Functions**.
 $$ \theta_k = h^{-1}(\eta_k) $$
 
 Where:
+
 - $\eta_k$ is the unbounded additive predictor formed by the base learners.
 - $h^{-1}$ is the inverse link function that maps the unbounded prediction into the valid parameter space.
 
@@ -28,10 +30,10 @@ Example: For $\sigma > 0$, `boostlss` uses the log-link. The base learners predi
 
 ### Continuous Data
 
-- **`GaussianLSS`**: Normal distribution. 
+- **`GaussianLSS`**: Normal distribution.
   - Models: $\mu$ (Identity link), $\sigma$ (Log link).
   - Use case: Standard continuous regression with heteroscedasticity.
-- **`StudentTLSS`**: Student's t-distribution. 
+- **`StudentTLSS`**: Student's t-distribution.
   - Models: $\mu$ (Identity), $\sigma$ (Log), $df$ (Log shift).
   - Use case: Robust regression. The degrees of freedom ($df$) parameter allows modeling heavy tails to handle outliers gracefully.
 - **`LogNormalLSS`**: Log-Normal distribution.

@@ -39,7 +39,7 @@ y = np.random.normal(loc=true_mu, scale=true_sigma)
 
 ## 2. Model Initialization
 
-We'll use a `GaussianLSS` family. We want to model *both* the mean (`mu`) and the variance (`sigma`) as spatial surfaces.
+We'll use a `GaussianLSS` family. We want to model _both_ the mean (`mu`) and the variance (`sigma`) as spatial surfaces.
 
 ```python
 # Initialize the model with cyclic algorithm
@@ -49,13 +49,13 @@ model = BoostLssModel(family, mstop=300, step_length=0.1)
 # Add Bivariate Splines for both parameters
 # We specify the indices of the two interacting features (0 and 1)
 model.add_learner("mu", PyBivariatePSplineLearner(
-    feature1_idx=0, 
+    feature1_idx=0,
     feature2_idx=1,
     df=6.0  # Slightly higher df for a more flexible 2D surface
 ))
 
 model.add_learner("sigma", PyBivariatePSplineLearner(
-    feature1_idx=0, 
+    feature1_idx=0,
     feature2_idx=1,
     df=4.0  # Lower df for variance to prevent overfitting the noise
 ))
@@ -75,8 +75,8 @@ To visualize what the model learned, we'll generate a dense grid over the $[-3, 
 ```python
 # 1. Create a dense grid for plotting
 grid_x1, grid_x2 = np.meshgrid(
-    np.linspace(-3, 3, 50),
-    np.linspace(-3, 3, 50)
+    np.linspace(X[:, 0].min(), X[:, 0].max(), 50),
+    np.linspace(X[:, 1].min(), X[:, 1].max(), 50)
 )
 grid_X = np.column_stack([grid_x1.ravel(), grid_x2.ravel()])
 
@@ -110,5 +110,6 @@ plt.show()
 ```
 
 ### Key Takeaways
+
 - The `PyBivariatePSplineLearner` handles the complex tensor-product math under the hood.
 - By tuning the `df` argument separately for `mu` and `sigma`, we avoided overfitting the variance surface while keeping the mean surface flexible enough to capture the complex shape.

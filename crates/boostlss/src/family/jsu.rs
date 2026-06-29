@@ -41,10 +41,10 @@ impl Family for JSULss {
     }
 
     fn nll(&self, data: &Dataset, eta: &[Array1<f64>]) -> Result<f64, BoostlssError> {
-        let mu = &eta[0]; // Identity
-        let sigma = eta[1].mapv(|x| x.exp().max(1e-10)); // Log
-        let nu = &eta[2]; // Identity
-        let tau = eta[3].mapv(|x| x.exp().max(1e-10)); // Log
+        let mu = eta[0].mapv(|x| self.params[0].link.response(x));
+        let sigma = eta[1].mapv(|x| self.params[1].link.response(x));
+        let nu = eta[2].mapv(|x| self.params[2].link.response(x));
+        let tau = eta[3].mapv(|x| self.params[3].link.response(x));
 
         let mut total_nll = 0.0;
         let y = data.response();
@@ -53,16 +53,17 @@ impl Family for JSULss {
         let half_log_2pi = 0.5 * (2.0 * std::f64::consts::PI).ln();
 
         for i in 0..data.n_obs() {
-            let sig = sigma[i];
+            let sig = sigma[i].max(1e-10);
             let z = (y[i] - mu[i]) / sig;
 
             // r = -nu + tau * asinh(z)
             let asinh_z = z.asinh();
-            let r = -nu[i] + tau[i] * asinh_z;
+            let tau_i = tau[i].max(1e-10);
+            let r = -nu[i] + tau_i * asinh_z;
 
             // log_pdf = log(tau) - log(sigma) - 0.5*log(z^2 + 1) - 0.5*log(2*pi) - 0.5*r^2
             let log_pdf =
-                tau[i].ln() - sig.ln() - 0.5 * (z * z + 1.0).ln() - half_log_2pi - 0.5 * r * r;
+                tau_i.ln() - sig.ln() - 0.5 * (z * z + 1.0).ln() - half_log_2pi - 0.5 * r * r;
 
             let weight = w.map(|w_arr| w_arr[i]).unwrap_or(1.0);
             total_nll -= weight * log_pdf;
@@ -103,6 +104,6 @@ mod tests {
             array![0.0, 0.0, 0.0],
         ];
         let nll = fam.nll(&ds, &eta).unwrap();
-        assert!(nll > 0.0);
+        approx::assert_relative_eq!(nll, 5.3385595, epsilon = 1e-5);
     }
 }

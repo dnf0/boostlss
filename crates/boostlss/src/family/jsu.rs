@@ -13,7 +13,7 @@ fn default_jsu_params() -> Vec<ParamSpec> {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JSULss {
     #[serde(skip, default = "default_jsu_params")]
-    pub params: Vec<ParamSpec>,
+    params: Vec<ParamSpec>,
 }
 
 impl JSULss {

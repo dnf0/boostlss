@@ -2,6 +2,7 @@ use crate::data::Dataset;
 use crate::error::BoostlssError;
 use crate::family::Family;
 use crate::param::{IdentityLink, LogLink, ParamSpec};
+use crate::util::{minimize_1d, weighted_mean, weighted_sd};
 use ndarray::Array1;
 use serde::{Deserialize, Serialize};
 
@@ -39,11 +40,11 @@ impl Family for JSULss {
         &self.params
     }
 
-    fn nll(&self, _data: &Dataset, _eta: &[Array1<f64>]) -> Result<f64, BoostlssError> {
+    fn nll(&self, data: &Dataset, eta: &[Array1<f64>]) -> Result<f64, BoostlssError> {
         unimplemented!()
     }
 
-    fn init_offsets(&self, _data: &Dataset) -> Result<Vec<f64>, BoostlssError> {
+    fn init_offsets(&self, data: &Dataset) -> Result<Vec<f64>, BoostlssError> {
         unimplemented!()
     }
 }

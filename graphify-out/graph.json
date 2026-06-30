@@ -492,6 +492,46 @@
       "norm_label": "main()"
     },
     {
+      "label": "benchmark_jsu.py",
+      "file_type": "code",
+      "source_file": "benchmark_jsu.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "benchmark_jsu",
+      "community": 214,
+      "norm_label": "benchmark_jsu.py"
+    },
+    {
+      "label": "generate_long_tail_data()",
+      "file_type": "code",
+      "source_file": "benchmark_jsu.py",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "benchmark_jsu_generate_long_tail_data",
+      "community": 214,
+      "norm_label": "generate_long_tail_data()"
+    },
+    {
+      "label": "benchmark_speed.py",
+      "file_type": "code",
+      "source_file": "benchmark_speed.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "benchmark_speed",
+      "community": 215,
+      "norm_label": "benchmark_speed.py"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "benchmark_speed.py",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "benchmark_speed_main",
+      "community": 215,
+      "norm_label": "main()"
+    },
+    {
       "label": "boostlss",
       "file_type": "code",
       "type": "package",
@@ -511,7 +551,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_data",
-      "community": 4,
+      "community": 207,
       "norm_label": "data.rs"
     },
     {
@@ -521,7 +561,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_data_extract_sparse",
-      "community": 4,
+      "community": 207,
       "norm_label": "extract_sparse()"
     },
     {
@@ -531,7 +571,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_data_rs_python",
-      "community": 4,
+      "community": 207,
       "norm_label": "python"
     },
     {
@@ -541,7 +581,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_data_rs_bound",
-      "community": 4,
+      "community": 207,
       "norm_label": "bound"
     },
     {
@@ -551,7 +591,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_data_rs_pyany",
-      "community": 4,
+      "community": 207,
       "norm_label": "pyany"
     },
     {
@@ -561,7 +601,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_data_rs_pyresult",
-      "community": 4,
+      "community": 207,
       "norm_label": "pyresult"
     },
     {
@@ -571,7 +611,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_data_extract_dataset",
-      "community": 4,
+      "community": 207,
       "norm_label": "extract_dataset()"
     },
     {
@@ -581,7 +621,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_data_rs_option",
-      "community": 4,
+      "community": 207,
       "norm_label": "option"
     },
     {
@@ -591,7 +631,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_data_rs_array1",
-      "community": 4,
+      "community": 207,
       "norm_label": "array1"
     },
     {
@@ -618,7 +658,7 @@
       "label": ".new()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/family.rs",
-      "source_location": "L18",
+      "source_location": "L19",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_family_pyfamily_new",
       "community": 104,
@@ -648,7 +688,7 @@
       "label": ".__getnewargs__()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/family.rs",
-      "source_location": "L34",
+      "source_location": "L36",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_family_pyfamily_getnewargs",
       "community": 104,
@@ -680,9 +720,9 @@
       "source_file": "crates/boostlss-py/src/learner.rs",
       "source_location": "L15",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_learner_pylinearlearner_new",
       "community": 73,
-      "norm_label": ".new()",
-      "id": "crates_boostlss_py_src_learner_pylinearlearner_new"
+      "norm_label": ".new()"
     },
     {
       "label": "Self",
@@ -740,9 +780,9 @@
       "source_file": "crates/boostlss-py/src/learner.rs",
       "source_location": "L38",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_learner_pystumplearner_new",
       "community": 73,
-      "norm_label": ".new()",
-      "id": "crates_boostlss_py_src_learner_pystumplearner_new"
+      "norm_label": ".new()"
     },
     {
       "label": "PyTreeLearner",
@@ -770,9 +810,9 @@
       "source_file": "crates/boostlss-py/src/learner.rs",
       "source_location": "L61",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_learner_pytreelearner_new",
       "community": 73,
-      "norm_label": ".new()",
-      "id": "crates_boostlss_py_src_learner_pytreelearner_new"
+      "norm_label": ".new()"
     },
     {
       "label": "PyPSplineLearner",
@@ -790,9 +830,9 @@
       "source_file": "crates/boostlss-py/src/learner.rs",
       "source_location": "L94",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_learner_pypsplinelearner_new",
       "community": 73,
-      "norm_label": ".new()",
-      "id": "crates_boostlss_py_src_learner_pypsplinelearner_new"
+      "norm_label": ".new()"
     },
     {
       "label": ".get_cyclic()",
@@ -830,9 +870,9 @@
       "source_file": "crates/boostlss-py/src/learner.rs",
       "source_location": "L157",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_learner_pybivariatepsplinelearner_new",
       "community": 73,
-      "norm_label": ".new()",
-      "id": "crates_boostlss_py_src_learner_pybivariatepsplinelearner_new"
+      "norm_label": ".new()"
     },
     {
       "label": "PyConstrainedPSplineLearner",
@@ -938,11 +978,11 @@
       "label": ".predict()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L27",
+      "source_location": "L28",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_model_fittedmodel_predict",
       "community": 104,
-      "norm_label": ".predict()",
-      "id": "crates_boostlss_py_src_model_fittedmodel_predict"
+      "norm_label": ".predict()"
     },
     {
       "label": "PyResult",
@@ -968,11 +1008,11 @@
       "label": ".feature_importance()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L58",
+      "source_location": "L62",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_model_fittedmodel_feature_importance",
       "community": 104,
-      "norm_label": ".feature_importance()",
-      "id": "crates_boostlss_py_src_model_fittedmodel_feature_importance"
+      "norm_label": ".feature_importance()"
     },
     {
       "label": "Vec",
@@ -988,17 +1028,17 @@
       "label": ".partial_dependence()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L70",
+      "source_location": "L75",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_model_fittedmodel_partial_dependence",
       "community": 104,
-      "norm_label": ".partial_dependence()",
-      "id": "crates_boostlss_py_src_model_fittedmodel_partial_dependence"
+      "norm_label": ".partial_dependence()"
     },
     {
       "label": "PyRandomEffectsLearner",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L105",
+      "source_location": "L113",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_model_pyrandomeffectslearner",
       "community": 104,
@@ -1008,11 +1048,11 @@
       "label": ".new()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L114",
+      "source_location": "L122",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_model_pyrandomeffectslearner_new",
       "community": 104,
-      "norm_label": ".new()",
-      "id": "crates_boostlss_py_src_model_pyrandomeffectslearner_new"
+      "norm_label": ".new()"
     },
     {
       "label": "Self",
@@ -1028,7 +1068,7 @@
       "label": "BoostLssModel",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L120",
+      "source_location": "L128",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_model_boostlssmodel",
       "community": 104,
@@ -1068,17 +1108,17 @@
       "label": ".new()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L134",
+      "source_location": "L142",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_model_boostlssmodel_new",
       "community": 104,
-      "norm_label": ".new()",
-      "id": "crates_boostlss_py_src_model_boostlssmodel_new"
+      "norm_label": ".new()"
     },
     {
       "label": ".add_learner()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L157",
+      "source_location": "L165",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_model_boostlssmodel_add_learner",
       "community": 104,
@@ -1108,11 +1148,11 @@
       "label": ".fit()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L180",
+      "source_location": "L190",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_model_boostlssmodel_fit",
       "community": 104,
-      "norm_label": ".fit()",
-      "id": "crates_boostlss_py_src_model_boostlssmodel_fit"
+      "norm_label": ".fit()"
     },
     {
       "label": "Python",
@@ -1131,18 +1171,18 @@
       "source_location": "",
       "_origin": "ast",
       "id": "pyreadonlyarray1",
-      "community": 4,
+      "community": 207,
       "norm_label": "pyreadonlyarray1"
     },
     {
       "label": ".predict()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L364",
+      "source_location": "L443",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_model_boostlssmodel_predict",
       "community": 104,
-      "norm_label": ".predict()",
-      "id": "crates_boostlss_py_src_model_boostlssmodel_predict"
+      "norm_label": ".predict()"
     },
     {
       "label": "PyArray1",
@@ -1158,7 +1198,7 @@
       "label": ".cvrisk()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L419",
+      "source_location": "L463",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_model_boostlssmodel_cvrisk",
       "community": 104,
@@ -1178,21 +1218,21 @@
       "label": ".feature_importance()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L611",
+      "source_location": "L717",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_model_boostlssmodel_feature_importance",
       "community": 104,
-      "norm_label": ".feature_importance()",
-      "id": "crates_boostlss_py_src_model_boostlssmodel_feature_importance"
+      "norm_label": ".feature_importance()"
     },
     {
       "label": ".partial_dependence()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L622",
+      "source_location": "L728",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_model_boostlssmodel_partial_dependence",
       "community": 104,
-      "norm_label": ".partial_dependence()",
-      "id": "crates_boostlss_py_src_model_boostlssmodel_partial_dependence"
+      "norm_label": ".partial_dependence()"
     },
     {
       "label": "PyReadonlyArray2",
@@ -1208,7 +1248,7 @@
       "label": ".stabsel()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L685",
+      "source_location": "L759",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_model_boostlssmodel_stabsel",
       "community": 104,
@@ -1218,7 +1258,7 @@
       "label": ".__getnewargs__()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L909",
+      "source_location": "L1005",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_model_boostlssmodel_getnewargs",
       "community": 104,
@@ -1228,7 +1268,7 @@
       "label": ".__getstate__()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L919",
+      "source_location": "L1015",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_model_boostlssmodel_getstate",
       "community": 104,
@@ -1238,7 +1278,7 @@
       "label": ".__setstate__()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L964",
+      "source_location": "L1062",
       "_origin": "ast",
       "id": "crates_boostlss_py_src_model_boostlssmodel_setstate",
       "community": 104,
@@ -1248,21 +1288,21 @@
       "label": ".save()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L798",
+      "source_location": "L1161",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_model_boostlssmodel_save",
       "community": 104,
-      "norm_label": ".save()",
-      "id": "crates_boostlss_py_src_model_boostlssmodel_save"
+      "norm_label": ".save()"
     },
     {
       "label": ".load()",
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L809",
+      "source_location": "L1172",
       "_origin": "ast",
+      "id": "crates_boostlss_py_src_model_boostlssmodel_load",
       "community": 104,
-      "norm_label": ".load()",
-      "id": "crates_boostlss_py_src_model_boostlssmodel_load"
+      "norm_label": ".load()"
     },
     {
       "label": "PyType",
@@ -2251,7 +2291,7 @@
       "source_location": "L114",
       "_origin": "ast",
       "id": "crates_boostlss_src_data_dataset",
-      "community": 7,
+      "community": 4,
       "norm_label": "dataset"
     },
     {
@@ -2331,7 +2371,7 @@
       "source_location": "L183",
       "_origin": "ast",
       "id": "crates_boostlss_src_data_dataset_n_obs",
-      "community": 7,
+      "community": 4,
       "norm_label": ".n_obs()"
     },
     {
@@ -2371,7 +2411,7 @@
       "source_location": "L199",
       "_origin": "ast",
       "id": "crates_boostlss_src_data_dataset_set_weights",
-      "community": 7,
+      "community": 4,
       "norm_label": ".set_weights()"
     },
     {
@@ -2381,7 +2421,7 @@
       "source_location": "L216",
       "_origin": "ast",
       "id": "crates_boostlss_src_data_dataset_with_weights",
-      "community": 7,
+      "community": 4,
       "norm_label": ".with_weights()"
     },
     {
@@ -2541,7 +2581,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_mod",
-      "community": 1,
+      "community": 14,
       "norm_label": "mod.rs"
     },
     {
@@ -2551,7 +2591,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_mod_algorithm",
-      "community": 1,
+      "community": 14,
       "norm_label": "algorithm"
     },
     {
@@ -2561,7 +2601,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_mod_stabilization",
-      "community": 1,
+      "community": 14,
       "norm_label": "stabilization"
     },
     {
@@ -2581,7 +2621,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_mod_config",
-      "community": 1,
+      "community": 14,
       "norm_label": "config"
     },
     {
@@ -2591,7 +2631,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_mod_rs_default",
-      "community": 1,
+      "community": 14,
       "norm_label": "default"
     },
     {
@@ -2601,7 +2641,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_mod_config_default",
-      "community": 1,
+      "community": 14,
       "norm_label": ".default()"
     },
     {
@@ -2611,7 +2651,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_mod_rs_self",
-      "community": 1,
+      "community": 14,
       "norm_label": "self"
     },
     {
@@ -2721,7 +2761,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_stabilization",
-      "community": 104,
+      "community": 10,
       "norm_label": "stabilization.rs"
     },
     {
@@ -2731,7 +2771,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_stabilization_stabilize",
-      "community": 104,
+      "community": 10,
       "norm_label": "stabilize()"
     },
     {
@@ -2741,7 +2781,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_stabilization_rs_array1",
-      "community": 104,
+      "community": 10,
       "norm_label": "array1"
     },
     {
@@ -2751,7 +2791,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_stabilization_rs_option",
-      "community": 104,
+      "community": 10,
       "norm_label": "option"
     },
     {
@@ -2761,7 +2801,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_stabilization_test_empty_array",
-      "community": 104,
+      "community": 10,
       "norm_label": "test_empty_array()"
     },
     {
@@ -2771,7 +2811,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_stabilization_test_stabilize_none",
-      "community": 104,
+      "community": 10,
       "norm_label": "test_stabilize_none()"
     },
     {
@@ -2781,7 +2821,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_stabilization_test_stabilize_mad",
-      "community": 104,
+      "community": 10,
       "norm_label": "test_stabilize_mad()"
     },
     {
@@ -2791,7 +2831,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "crates_boostlss_src_engine_stabilization_test_stabilize_l2",
-      "community": 104,
+      "community": 10,
       "norm_label": "test_stabilize_l2()"
     },
     {
@@ -2801,7 +2841,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "crates_boostlss_src_error",
-      "community": 7,
+      "community": 49,
       "norm_label": "error.rs"
     },
     {
@@ -2811,7 +2851,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "crates_boostlss_src_error_boostlsserror",
-      "community": 7,
+      "community": 49,
       "norm_label": "boostlsserror"
     },
     {
@@ -2821,7 +2861,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "crates_boostlss_src_error_test_error_display",
-      "community": 7,
+      "community": 49,
       "norm_label": "test_error_display()"
     },
     {
@@ -2941,7 +2981,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "crates_boostlss_src_family_beta_betalss_params",
-      "community": 49,
+      "community": 55,
       "norm_label": ".params()"
     },
     {
@@ -3391,7 +3431,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "crates_boostlss_src_family_gaussian_gaussianlss_params",
-      "community": 50,
+      "community": 55,
       "norm_label": ".params()"
     },
     {
@@ -3721,7 +3761,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "crates_boostlss_src_family_jsu_jsulss_params",
-      "community": 29,
+      "community": 55,
       "norm_label": ".params()"
     },
     {
@@ -3761,7 +3801,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "crates_boostlss_src_family_jsu_jsulss_init_offsets",
-      "community": 29,
+      "community": 10,
       "norm_label": ".init_offsets()"
     },
     {
@@ -3931,7 +3971,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "crates_boostlss_src_family_log_normal_lognormallss_params",
-      "community": 38,
+      "community": 7,
       "norm_label": ".params()"
     },
     {
@@ -4001,7 +4041,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "crates_boostlss_src_family_mod_family",
-      "community": 63,
+      "community": 29,
       "norm_label": "family"
     },
     {
@@ -4011,7 +4051,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_src_family_mod_rs_debug",
-      "community": 63,
+      "community": 29,
       "norm_label": "debug"
     },
     {
@@ -4038,11 +4078,11 @@
       "label": ".new()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/family/mod.rs",
-      "source_location": "L83",
+      "source_location": "L85",
       "_origin": "ast",
+      "id": "crates_boostlss_src_family_mod_dummyfamily_new",
       "community": 63,
-      "norm_label": ".new()",
-      "id": "crates_boostlss_src_family_mod_dummyfamily_new"
+      "norm_label": ".new()"
     },
     {
       "label": "Self",
@@ -4521,7 +4561,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "crates_boostlss_src_family_weibull_weibulllss_params",
-      "community": 51,
+      "community": 55,
       "norm_label": ".params()"
     },
     {
@@ -5011,7 +5051,7 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "crates_boostlss_src_learner_constrained_pspline_constrainedpspline_build_design",
-      "community": 7,
+      "community": 49,
       "norm_label": ".build_design()"
     },
     {
@@ -5021,7 +5061,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_src_learner_constrained_pspline_rs_result",
-      "community": 7,
+      "community": 49,
       "norm_label": "result"
     },
     {
@@ -6031,7 +6071,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "crates_boostlss_src_learner_stump_stump_build_fit_state",
-      "community": 7,
+      "community": 49,
       "norm_label": ".build_fit_state()"
     },
     {
@@ -6041,7 +6081,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_src_learner_stump_rs_result",
-      "community": 7,
+      "community": 49,
       "norm_label": "result"
     },
     {
@@ -6051,7 +6091,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "crates_boostlss_src_learner_stump_stump_predict",
-      "community": 7,
+      "community": 49,
       "norm_label": ".predict()"
     },
     {
@@ -6061,7 +6101,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_src_learner_stump_rs_array1",
-      "community": 7,
+      "community": 49,
       "norm_label": "array1"
     },
     {
@@ -6221,7 +6261,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "crates_boostlss_src_learner_tree_tree_build_fit_state",
-      "community": 7,
+      "community": 49,
       "norm_label": ".build_fit_state()"
     },
     {
@@ -6231,7 +6271,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_src_learner_tree_rs_result",
-      "community": 7,
+      "community": 49,
       "norm_label": "result"
     },
     {
@@ -6241,7 +6281,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "crates_boostlss_src_learner_tree_tree_predict",
-      "community": 7,
+      "community": 49,
       "norm_label": ".predict()"
     },
     {
@@ -6251,7 +6291,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_src_learner_tree_rs_array1",
-      "community": 7,
+      "community": 49,
       "norm_label": "array1"
     },
     {
@@ -6308,7 +6348,7 @@
       "label": "test_tree_fit_update()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/learner/tree.rs",
-      "source_location": "L270",
+      "source_location": "L271",
       "_origin": "ast",
       "id": "crates_boostlss_src_learner_tree_test_tree_fit_update",
       "community": 40,
@@ -6370,9 +6410,9 @@
       "source_file": "crates/boostlss/src/model.rs",
       "source_location": "L18",
       "_origin": "ast",
+      "id": "crates_boostlss_src_model_parambuilder_new",
       "community": 1,
-      "norm_label": ".new()",
-      "id": "crates_boostlss_src_model_parambuilder_new"
+      "norm_label": ".new()"
     },
     {
       "label": "Self",
@@ -6440,9 +6480,9 @@
       "source_file": "crates/boostlss/src/model.rs",
       "source_location": "L39",
       "_origin": "ast",
+      "id": "crates_boostlss_src_model_boostlss_f_new",
       "community": 1,
-      "norm_label": ".new()",
-      "id": "crates_boostlss_src_model_boostlss_f_new"
+      "norm_label": ".new()"
     },
     {
       "label": ".algorithm()",
@@ -6568,11 +6608,11 @@
       "label": ".fit()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L107",
+      "source_location": "L115",
       "_origin": "ast",
+      "id": "crates_boostlss_src_model_boostlss_f_fit",
       "community": 1,
-      "norm_label": ".fit()",
-      "id": "crates_boostlss_src_model_boostlss_f_fit"
+      "norm_label": ".fit()"
     },
     {
       "label": "Scale",
@@ -6581,7 +6621,7 @@
       "source_location": "L139",
       "_origin": "ast",
       "id": "crates_boostlss_src_model_scale",
-      "community": 1,
+      "community": 104,
       "norm_label": "scale"
     },
     {
@@ -6618,21 +6658,21 @@
       "label": ".new()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L149",
+      "source_location": "L165",
       "_origin": "ast",
+      "id": "crates_boostlss_src_model_fitted_f_new",
       "community": 1,
-      "norm_label": ".new()",
-      "id": "crates_boostlss_src_model_fitted_f_new"
+      "norm_label": ".new()"
     },
     {
       "label": ".predict()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L158",
+      "source_location": "L174",
       "_origin": "ast",
+      "id": "crates_boostlss_src_model_fitted_f_predict",
       "community": 1,
-      "norm_label": ".predict()",
-      "id": "crates_boostlss_src_model_fitted_f_predict"
+      "norm_label": ".predict()"
     },
     {
       "label": "Array1",
@@ -6648,31 +6688,31 @@
       "label": ".feature_importance()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L263",
+      "source_location": "L249",
       "_origin": "ast",
+      "id": "crates_boostlss_src_model_fitted_f_feature_importance",
       "community": 1,
-      "norm_label": ".feature_importance()",
-      "id": "crates_boostlss_src_model_fitted_f_feature_importance"
+      "norm_label": ".feature_importance()"
     },
     {
       "label": ".partial_dependence()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L273",
+      "source_location": "L259",
       "_origin": "ast",
+      "id": "crates_boostlss_src_model_fitted_f_partial_dependence",
       "community": 1,
-      "norm_label": ".partial_dependence()",
-      "id": "crates_boostlss_src_model_fitted_f_partial_dependence"
+      "norm_label": ".partial_dependence()"
     },
     {
       "label": ".save()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L310",
+      "source_location": "L305",
       "_origin": "ast",
+      "id": "crates_boostlss_src_model_fitted_f_save",
       "community": 1,
-      "norm_label": ".save()",
-      "id": "crates_boostlss_src_model_fitted_f_save"
+      "norm_label": ".save()"
     },
     {
       "label": "P",
@@ -6688,11 +6728,11 @@
       "label": ".load()",
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
-      "source_location": "L319",
+      "source_location": "L314",
       "_origin": "ast",
+      "id": "crates_boostlss_src_model_fitted_f_load",
       "community": 1,
-      "norm_label": ".load()",
-      "id": "crates_boostlss_src_model_fitted_f_load"
+      "norm_label": ".load()"
     },
     {
       "label": "test_boostlss_new()",
@@ -6811,7 +6851,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "crates_boostlss_src_param",
-      "community": 38,
+      "community": 55,
       "norm_label": "param.rs"
     },
     {
@@ -6850,9 +6890,9 @@
       "source_file": "crates/boostlss/src/param.rs",
       "source_location": "L14",
       "_origin": "ast",
+      "id": "crates_boostlss_src_param_identitylink_link",
       "community": 38,
-      "norm_label": ".link()",
-      "id": "crates_boostlss_src_param_identitylink_link"
+      "norm_label": ".link()"
     },
     {
       "label": ".response()",
@@ -6860,9 +6900,9 @@
       "source_file": "crates/boostlss/src/param.rs",
       "source_location": "L17",
       "_origin": "ast",
+      "id": "crates_boostlss_src_param_identitylink_response",
       "community": 38,
-      "norm_label": ".response()",
-      "id": "crates_boostlss_src_param_identitylink_response"
+      "norm_label": ".response()"
     },
     {
       "label": ".deriv()",
@@ -6870,9 +6910,9 @@
       "source_file": "crates/boostlss/src/param.rs",
       "source_location": "L20",
       "_origin": "ast",
+      "id": "crates_boostlss_src_param_identitylink_deriv",
       "community": 38,
-      "norm_label": ".deriv()",
-      "id": "crates_boostlss_src_param_identitylink_deriv"
+      "norm_label": ".deriv()"
     },
     {
       "label": ".clone_box()",
@@ -6880,9 +6920,9 @@
       "source_file": "crates/boostlss/src/param.rs",
       "source_location": "L23",
       "_origin": "ast",
+      "id": "crates_boostlss_src_param_identitylink_clone_box",
       "community": 38,
-      "norm_label": ".clone_box()",
-      "id": "crates_boostlss_src_param_identitylink_clone_box"
+      "norm_label": ".clone_box()"
     },
     {
       "label": "Box",
@@ -6930,9 +6970,9 @@
       "source_file": "crates/boostlss/src/param.rs",
       "source_location": "L31",
       "_origin": "ast",
+      "id": "crates_boostlss_src_param_loglink_link",
       "community": 38,
-      "norm_label": ".link()",
-      "id": "crates_boostlss_src_param_loglink_link"
+      "norm_label": ".link()"
     },
     {
       "label": ".response()",
@@ -6940,9 +6980,9 @@
       "source_file": "crates/boostlss/src/param.rs",
       "source_location": "L34",
       "_origin": "ast",
+      "id": "crates_boostlss_src_param_loglink_response",
       "community": 38,
-      "norm_label": ".response()",
-      "id": "crates_boostlss_src_param_loglink_response"
+      "norm_label": ".response()"
     },
     {
       "label": ".deriv()",
@@ -6950,9 +6990,9 @@
       "source_file": "crates/boostlss/src/param.rs",
       "source_location": "L37",
       "_origin": "ast",
+      "id": "crates_boostlss_src_param_loglink_deriv",
       "community": 38,
-      "norm_label": ".deriv()",
-      "id": "crates_boostlss_src_param_loglink_deriv"
+      "norm_label": ".deriv()"
     },
     {
       "label": ".clone_box()",
@@ -6960,9 +7000,9 @@
       "source_file": "crates/boostlss/src/param.rs",
       "source_location": "L40",
       "_origin": "ast",
+      "id": "crates_boostlss_src_param_loglink_clone_box",
       "community": 38,
-      "norm_label": ".clone_box()",
-      "id": "crates_boostlss_src_param_loglink_clone_box"
+      "norm_label": ".clone_box()"
     },
     {
       "label": "LogitLink",
@@ -6980,9 +7020,9 @@
       "source_file": "crates/boostlss/src/param.rs",
       "source_location": "L48",
       "_origin": "ast",
+      "id": "crates_boostlss_src_param_logitlink_link",
       "community": 38,
-      "norm_label": ".link()",
-      "id": "crates_boostlss_src_param_logitlink_link"
+      "norm_label": ".link()"
     },
     {
       "label": ".response()",
@@ -6990,9 +7030,9 @@
       "source_file": "crates/boostlss/src/param.rs",
       "source_location": "L51",
       "_origin": "ast",
+      "id": "crates_boostlss_src_param_logitlink_response",
       "community": 38,
-      "norm_label": ".response()",
-      "id": "crates_boostlss_src_param_logitlink_response"
+      "norm_label": ".response()"
     },
     {
       "label": ".deriv()",
@@ -7000,9 +7040,9 @@
       "source_file": "crates/boostlss/src/param.rs",
       "source_location": "L54",
       "_origin": "ast",
+      "id": "crates_boostlss_src_param_logitlink_deriv",
       "community": 38,
-      "norm_label": ".deriv()",
-      "id": "crates_boostlss_src_param_logitlink_deriv"
+      "norm_label": ".deriv()"
     },
     {
       "label": ".clone_box()",
@@ -7010,9 +7050,9 @@
       "source_file": "crates/boostlss/src/param.rs",
       "source_location": "L57",
       "_origin": "ast",
+      "id": "crates_boostlss_src_param_logitlink_clone_box",
       "community": 38,
-      "norm_label": ".clone_box()",
-      "id": "crates_boostlss_src_param_logitlink_clone_box"
+      "norm_label": ".clone_box()"
     },
     {
       "label": "ParamSpec",
@@ -7021,7 +7061,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "crates_boostlss_src_param_paramspec",
-      "community": 38,
+      "community": 55,
       "norm_label": "paramspec"
     },
     {
@@ -7041,7 +7081,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "crates_boostlss_src_param_rs_clone",
-      "community": 38,
+      "community": 55,
       "norm_label": "clone"
     },
     {
@@ -7091,7 +7131,7 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "crates_boostlss_src_param_identity_link_inverses",
-      "community": 38,
+      "community": 55,
       "norm_label": "identity_link_inverses()"
     },
     {
@@ -7101,7 +7141,7 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "crates_boostlss_src_param_log_link_inverses",
-      "community": 38,
+      "community": 55,
       "norm_label": "log_link_inverses()"
     },
     {
@@ -7111,7 +7151,7 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "crates_boostlss_src_param_logit_link_inverses",
-      "community": 38,
+      "community": 55,
       "norm_label": "logit_link_inverses()"
     },
     {
@@ -7313,6 +7353,26 @@
       "id": "docs_javascripts_mathjax",
       "community": 203,
       "norm_label": "mathjax.js"
+    },
+    {
+      "label": "resolve_py.py",
+      "file_type": "code",
+      "source_file": "resolve_py.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "resolve_py",
+      "community": 216,
+      "norm_label": "resolve_py.py"
+    },
+    {
+      "label": "resolver.py",
+      "file_type": "code",
+      "source_file": "resolver.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "resolver",
+      "community": 217,
+      "norm_label": "resolver.py"
     },
     {
       "label": "benchmark.py",
@@ -20925,6 +20985,76 @@
       "norm_label": "predicting the full distribution"
     },
     {
+      "label": "long_tail_jsu.md",
+      "file_type": "document",
+      "source_file": "docs/examples/long_tail_jsu.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_examples_long_tail_jsu",
+      "community": 211,
+      "norm_label": "long_tail_jsu.md"
+    },
+    {
+      "label": "Modeling Long-Tail Distributions with JSU",
+      "file_type": "document",
+      "source_file": "docs/examples/long_tail_jsu.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_examples_long_tail_jsu_modeling_long_tail_distributions_with_jsu",
+      "community": 211,
+      "norm_label": "modeling long-tail distributions with jsu"
+    },
+    {
+      "label": "1. Setup and Data Generation",
+      "file_type": "document",
+      "source_file": "docs/examples/long_tail_jsu.md",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "docs_examples_long_tail_jsu_1_setup_and_data_generation",
+      "community": 211,
+      "norm_label": "1. setup and data generation"
+    },
+    {
+      "label": "2. Training the BoostLSS Model",
+      "file_type": "document",
+      "source_file": "docs/examples/long_tail_jsu.md",
+      "source_location": "L49",
+      "_origin": "ast",
+      "id": "docs_examples_long_tail_jsu_2_training_the_boostlss_model",
+      "community": 211,
+      "norm_label": "2. training the boostlss model"
+    },
+    {
+      "label": "3. Comparison with Standard Baselines",
+      "file_type": "document",
+      "source_file": "docs/examples/long_tail_jsu.md",
+      "source_location": "L68",
+      "_origin": "ast",
+      "id": "docs_examples_long_tail_jsu_3_comparison_with_standard_baselines",
+      "community": 211,
+      "norm_label": "3. comparison with standard baselines"
+    },
+    {
+      "label": "Why does JSU win on MAE?",
+      "file_type": "document",
+      "source_file": "docs/examples/long_tail_jsu.md",
+      "source_location": "L97",
+      "_origin": "ast",
+      "id": "docs_examples_long_tail_jsu_why_does_jsu_win_on_mae",
+      "community": 211,
+      "norm_label": "why does jsu win on mae?"
+    },
+    {
+      "label": "4. Predicting the Full Distribution",
+      "file_type": "document",
+      "source_file": "docs/examples/long_tail_jsu.md",
+      "source_location": "L101",
+      "_origin": "ast",
+      "id": "docs_examples_long_tail_jsu_4_predicting_the_full_distribution",
+      "community": 211,
+      "norm_label": "4. predicting the full distribution"
+    },
+    {
       "label": "spatial_bivariate.md",
       "file_type": "document",
       "source_file": "docs/examples/spatial_bivariate.md",
@@ -21455,6 +21585,56 @@
       "norm_label": "task 2: core algorithm loop (stage 1 & 2)"
     },
     {
+      "label": "2026-06-30-histtree-learner-plan.md",
+      "file_type": "document",
+      "source_file": "docs/plans/2026-06-30-histtree-learner-plan.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_plans_2026_06_30_histtree_learner_plan",
+      "community": 213,
+      "norm_label": "2026-06-30-histtree-learner-plan.md"
+    },
+    {
+      "label": "HistTree Implementation Plan",
+      "file_type": "document",
+      "source_file": "docs/plans/2026-06-30-histtree-learner-plan.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_plans_2026_06_30_histtree_learner_plan_histtree_implementation_plan",
+      "community": 213,
+      "norm_label": "histtree implementation plan"
+    },
+    {
+      "label": "Task 1: Create the HistTree Structs and Enum Wiring",
+      "file_type": "document",
+      "source_file": "docs/plans/2026-06-30-histtree-learner-plan.md",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "docs_plans_2026_06_30_histtree_learner_plan_task_1_create_the_histtree_structs_and_enum_wiring",
+      "community": 213,
+      "norm_label": "task 1: create the histtree structs and enum wiring"
+    },
+    {
+      "label": "Task 2: Implement Node Splitting and Histogram Accumulation",
+      "file_type": "document",
+      "source_file": "docs/plans/2026-06-30-histtree-learner-plan.md",
+      "source_location": "L155",
+      "_origin": "ast",
+      "id": "docs_plans_2026_06_30_histtree_learner_plan_task_2_implement_node_splitting_and_histogram_accumulation",
+      "community": 213,
+      "norm_label": "task 2: implement node splitting and histogram accumulation"
+    },
+    {
+      "label": "Task 3: Python Bindings and Integration",
+      "file_type": "document",
+      "source_file": "docs/plans/2026-06-30-histtree-learner-plan.md",
+      "source_location": "L337",
+      "_origin": "ast",
+      "id": "docs_plans_2026_06_30_histtree_learner_plan_task_3_python_bindings_and_integration",
+      "community": 213,
+      "norm_label": "task 3: python bindings and integration"
+    },
+    {
       "label": "quickstart.md",
       "file_type": "document",
       "source_file": "docs/quickstart.md",
@@ -21543,6 +21723,76 @@
       "id": "docs_quickstart_7_make_predictions",
       "community": 60,
       "norm_label": "7. make predictions"
+    },
+    {
+      "label": "2026-06-30-histtree-learner-design.md",
+      "file_type": "document",
+      "source_file": "docs/specs/2026-06-30-histtree-learner-design.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_specs_2026_06_30_histtree_learner_design",
+      "community": 212,
+      "norm_label": "2026-06-30-histtree-learner-design.md"
+    },
+    {
+      "label": "HistTree Learner Design Specification",
+      "file_type": "document",
+      "source_file": "docs/specs/2026-06-30-histtree-learner-design.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_specs_2026_06_30_histtree_learner_design_histtree_learner_design_specification",
+      "community": 212,
+      "norm_label": "histtree learner design specification"
+    },
+    {
+      "label": "Overview",
+      "file_type": "document",
+      "source_file": "docs/specs/2026-06-30-histtree-learner-design.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "docs_specs_2026_06_30_histtree_learner_design_overview",
+      "community": 212,
+      "norm_label": "overview"
+    },
+    {
+      "label": "API & Architecture (Separate Learner)",
+      "file_type": "document",
+      "source_file": "docs/specs/2026-06-30-histtree-learner-design.md",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "docs_specs_2026_06_30_histtree_learner_design_api_architecture_separate_learner",
+      "community": 212,
+      "norm_label": "api & architecture (separate learner)"
+    },
+    {
+      "label": "Quantization Strategy (Initialization)",
+      "file_type": "document",
+      "source_file": "docs/specs/2026-06-30-histtree-learner-design.md",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "docs_specs_2026_06_30_histtree_learner_design_quantization_strategy_initialization",
+      "community": 212,
+      "norm_label": "quantization strategy (initialization)"
+    },
+    {
+      "label": "Histogram Construction (Tree Building)",
+      "file_type": "document",
+      "source_file": "docs/specs/2026-06-30-histtree-learner-design.md",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "docs_specs_2026_06_30_histtree_learner_design_histogram_construction_tree_building",
+      "community": 212,
+      "norm_label": "histogram construction (tree building)"
+    },
+    {
+      "label": "Integration Points",
+      "file_type": "document",
+      "source_file": "docs/specs/2026-06-30-histtree-learner-design.md",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "docs_specs_2026_06_30_histtree_learner_design_integration_points",
+      "community": 212,
+      "norm_label": "integration points"
     },
     {
       "label": "algorithms.md",
@@ -21978,7 +22228,7 @@
       "file_type": "code",
       "source_file": "crates/boostlss/src/model.rs",
       "source_location": "L1",
-      "community": 104,
+      "community": 218,
       "norm_label": "model.rs",
       "id": "users_danielfisher_repos_boostlss_crates_boostlss_src_model_rs"
     },
@@ -22023,7 +22273,7 @@
       "file_type": "code",
       "source_file": "crates/boostlss-py/src/model.rs",
       "source_location": "L1",
-      "community": 207,
+      "community": 104,
       "norm_label": "model.rs",
       "id": "users_danielfisher_repos_boostlss_crates_boostlss_py_src_model_rs"
     }
@@ -22418,6 +22668,26 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "benchmark_jsu.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "benchmark_jsu",
+      "target": "benchmark_jsu_generate_long_tail_data",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "benchmark_speed.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "benchmark_speed",
+      "target": "benchmark_speed_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/data.rs",
       "source_location": "L38",
       "weight": 1.0,
@@ -22680,7 +22950,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/family.rs",
-      "source_location": "L34",
+      "source_location": "L36",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_family_pyfamily",
       "target": "crates_boostlss_py_src_family_pyfamily_getnewargs",
@@ -22690,7 +22960,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/family.rs",
-      "source_location": "L18",
+      "source_location": "L19",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_family_pyfamily",
       "target": "crates_boostlss_py_src_family_pyfamily_new",
@@ -22722,7 +22992,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L121",
+      "source_location": "L129",
       "weight": 1.0,
       "context": "field",
       "source": "crates_boostlss_py_src_model_boostlssmodel",
@@ -22733,7 +23003,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L909",
+      "source_location": "L1005",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_getnewargs",
@@ -22744,7 +23014,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L134",
+      "source_location": "L142",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_new",
@@ -22755,7 +23025,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/family.rs",
-      "source_location": "L18",
+      "source_location": "L19",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_family_pyfamily_new",
@@ -22766,7 +23036,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/family.rs",
-      "source_location": "L18",
+      "source_location": "L19",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_family_pyfamily_new",
@@ -23321,7 +23591,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L120",
+      "source_location": "L128",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model",
       "target": "crates_boostlss_py_src_model_boostlssmodel",
@@ -23341,7 +23611,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L105",
+      "source_location": "L113",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model",
       "target": "crates_boostlss_py_src_model_pyrandomeffectslearner",
@@ -23366,7 +23636,7 @@
       "weight": 1.0,
       "context": "import",
       "source": "crates_boostlss_py_src_model",
-      "target": "users_danielfisher_repos_boostlss_crates_boostlss_src_model_rs",
+      "target": "users_danielfisher_repos_boostlss_crates_boostlss_py_src_model_rs",
       "confidence_score": 1.0
     },
     {
@@ -23384,7 +23654,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L126",
+      "source_location": "L134",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel",
@@ -23395,7 +23665,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L58",
+      "source_location": "L62",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_fittedmodel",
       "target": "crates_boostlss_py_src_model_fittedmodel_feature_importance",
@@ -23405,7 +23675,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L70",
+      "source_location": "L75",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_fittedmodel",
       "target": "crates_boostlss_py_src_model_fittedmodel_partial_dependence",
@@ -23415,7 +23685,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L27",
+      "source_location": "L28",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_fittedmodel",
       "target": "crates_boostlss_py_src_model_fittedmodel_predict",
@@ -23426,7 +23696,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L34",
+      "source_location": "L35",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_fittedmodel_predict",
       "target": "crates_boostlss_py_src_model_boostlssmodel_predict",
@@ -23436,7 +23706,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L27",
+      "source_location": "L28",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_fittedmodel_predict",
@@ -23447,7 +23717,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L27",
+      "source_location": "L28",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_fittedmodel_predict",
@@ -23458,7 +23728,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L27",
+      "source_location": "L28",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_fittedmodel_predict",
@@ -23469,7 +23739,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L27",
+      "source_location": "L28",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_fittedmodel_predict",
@@ -23480,7 +23750,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L157",
+      "source_location": "L165",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_add_learner",
@@ -23491,7 +23761,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L419",
+      "source_location": "L463",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_cvrisk",
@@ -23502,7 +23772,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L643",
+      "source_location": "L717",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_feature_importance",
@@ -23513,7 +23783,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L182",
+      "source_location": "L190",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_fit",
@@ -23524,7 +23794,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L919",
+      "source_location": "L1015",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_getstate",
@@ -23535,7 +23805,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L1069",
+      "source_location": "L1172",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_load",
@@ -23546,7 +23816,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L134",
+      "source_location": "L142",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_new",
@@ -23557,7 +23827,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L654",
+      "source_location": "L728",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_partial_dependence",
@@ -23568,7 +23838,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L399",
+      "source_location": "L443",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_predict",
@@ -23579,7 +23849,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L1058",
+      "source_location": "L1161",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_save",
@@ -23590,7 +23860,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L964",
+      "source_location": "L1062",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_setstate",
@@ -23601,7 +23871,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L685",
+      "source_location": "L759",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_stabsel",
@@ -23612,7 +23882,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L70",
+      "source_location": "L75",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_fittedmodel_partial_dependence",
@@ -23624,7 +23894,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L60",
+      "source_location": "L64",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_fittedmodel_feature_importance",
       "target": "crates_boostlss_py_src_model_boostlssmodel_feature_importance",
@@ -23634,7 +23904,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L58",
+      "source_location": "L62",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_fittedmodel_feature_importance",
@@ -23645,7 +23915,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L125",
+      "source_location": "L133",
       "weight": 1.0,
       "context": "field",
       "source": "crates_boostlss_py_src_model_boostlssmodel",
@@ -23656,7 +23926,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L643",
+      "source_location": "L717",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_feature_importance",
@@ -23667,7 +23937,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L654",
+      "source_location": "L728",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_partial_dependence",
@@ -23678,7 +23948,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L70",
+      "source_location": "L75",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_fittedmodel_partial_dependence",
@@ -23690,7 +23960,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L78",
+      "source_location": "L83",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_fittedmodel_partial_dependence",
       "target": "crates_boostlss_py_src_model_boostlssmodel_partial_dependence",
@@ -23700,7 +23970,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L70",
+      "source_location": "L75",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_fittedmodel_partial_dependence",
@@ -23711,7 +23981,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L114",
+      "source_location": "L122",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_pyrandomeffectslearner",
       "target": "crates_boostlss_py_src_model_pyrandomeffectslearner_new",
@@ -23721,7 +23991,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L114",
+      "source_location": "L122",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_pyrandomeffectslearner_new",
@@ -23732,7 +24002,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L1069",
+      "source_location": "L1172",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_load",
@@ -23743,7 +24013,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L134",
+      "source_location": "L142",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_new",
@@ -23754,7 +24024,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L157",
+      "source_location": "L165",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel",
       "target": "crates_boostlss_py_src_model_boostlssmodel_add_learner",
@@ -23764,7 +24034,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L419",
+      "source_location": "L463",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel",
       "target": "crates_boostlss_py_src_model_boostlssmodel_cvrisk",
@@ -23774,7 +24044,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L643",
+      "source_location": "L717",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel",
       "target": "crates_boostlss_py_src_model_boostlssmodel_feature_importance",
@@ -23784,7 +24054,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L182",
+      "source_location": "L190",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel",
       "target": "crates_boostlss_py_src_model_boostlssmodel_fit",
@@ -23794,7 +24064,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L909",
+      "source_location": "L1005",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel",
       "target": "crates_boostlss_py_src_model_boostlssmodel_getnewargs",
@@ -23804,7 +24074,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L919",
+      "source_location": "L1015",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel",
       "target": "crates_boostlss_py_src_model_boostlssmodel_getstate",
@@ -23814,7 +24084,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L1069",
+      "source_location": "L1172",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel",
       "target": "crates_boostlss_py_src_model_boostlssmodel_load",
@@ -23824,7 +24094,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L134",
+      "source_location": "L142",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel",
       "target": "crates_boostlss_py_src_model_boostlssmodel_new",
@@ -23834,7 +24104,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L654",
+      "source_location": "L728",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel",
       "target": "crates_boostlss_py_src_model_boostlssmodel_partial_dependence",
@@ -23844,7 +24114,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L399",
+      "source_location": "L443",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel",
       "target": "crates_boostlss_py_src_model_boostlssmodel_predict",
@@ -23854,7 +24124,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L1058",
+      "source_location": "L1161",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel",
       "target": "crates_boostlss_py_src_model_boostlssmodel_save",
@@ -23864,7 +24134,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L964",
+      "source_location": "L1062",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel",
       "target": "crates_boostlss_py_src_model_boostlssmodel_setstate",
@@ -23874,7 +24144,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L685",
+      "source_location": "L759",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel",
       "target": "crates_boostlss_py_src_model_boostlssmodel_stabsel",
@@ -23884,7 +24154,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L125",
+      "source_location": "L133",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel",
@@ -23895,7 +24165,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L127",
+      "source_location": "L135",
       "weight": 1.0,
       "context": "field",
       "source": "crates_boostlss_py_src_model_boostlssmodel",
@@ -23906,7 +24176,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L125",
+      "source_location": "L133",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel",
@@ -23917,7 +24187,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L127",
+      "source_location": "L135",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel",
@@ -23928,7 +24198,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L124",
+      "source_location": "L132",
       "weight": 1.0,
       "context": "field",
       "source": "crates_boostlss_py_src_model_boostlssmodel",
@@ -23939,7 +24209,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L157",
+      "source_location": "L165",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_add_learner",
@@ -23950,7 +24220,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L909",
+      "source_location": "L1005",
       "weight": 1.0,
       "context": "return_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_getnewargs",
@@ -23961,7 +24231,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L685",
+      "source_location": "L759",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_stabsel",
@@ -23973,7 +24243,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L171",
+      "source_location": "L179",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel_add_learner",
       "target": "crates_boostlss_py_src_model_boostlssmodel_new",
@@ -23984,7 +24254,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L425",
+      "source_location": "L469",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel_cvrisk",
       "target": "crates_boostlss_py_src_model_boostlssmodel_new",
@@ -23995,7 +24265,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L199",
+      "source_location": "L207",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel_fit",
       "target": "crates_boostlss_py_src_model_boostlssmodel_new",
@@ -24006,7 +24276,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L672",
+      "source_location": "L746",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel_partial_dependence",
       "target": "crates_boostlss_py_src_model_boostlssmodel_new",
@@ -24017,7 +24287,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L716",
+      "source_location": "L790",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel_stabsel",
       "target": "crates_boostlss_py_src_model_boostlssmodel_new",
@@ -24027,7 +24297,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L157",
+      "source_location": "L165",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_add_learner",
@@ -24038,7 +24308,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L157",
+      "source_location": "L165",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_add_learner",
@@ -24049,7 +24319,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L419",
+      "source_location": "L463",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_cvrisk",
@@ -24060,7 +24330,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L182",
+      "source_location": "L190",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_fit",
@@ -24071,7 +24341,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L919",
+      "source_location": "L1015",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_getstate",
@@ -24082,7 +24352,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L1069",
+      "source_location": "L1172",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_load",
@@ -24093,7 +24363,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L399",
+      "source_location": "L443",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_predict",
@@ -24104,7 +24374,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L964",
+      "source_location": "L1062",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_setstate",
@@ -24115,7 +24385,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L182",
+      "source_location": "L190",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_fit",
@@ -24126,7 +24396,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L399",
+      "source_location": "L443",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_predict",
@@ -24137,7 +24407,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L182",
+      "source_location": "L190",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_fit",
@@ -24150,7 +24420,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L215",
+      "source_location": "L223",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel_fit",
       "target": "crates_boostlss_src_engine_cyclical_fit_cyclical"
@@ -24161,7 +24431,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L219",
+      "source_location": "L228",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel_fit",
       "target": "crates_boostlss_src_engine_noncyclical_fit_noncyclical"
@@ -24172,7 +24442,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L212",
+      "source_location": "L220",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel_fit",
       "target": "crates_boostlss_src_engine_noncyclical_fit_noncyclical_outer"
@@ -24181,7 +24451,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L182",
+      "source_location": "L190",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_fit",
@@ -24192,7 +24462,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L419",
+      "source_location": "L463",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_cvrisk",
@@ -24203,7 +24473,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L919",
+      "source_location": "L1015",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_getstate",
@@ -24214,7 +24484,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L1069",
+      "source_location": "L1172",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_load",
@@ -24225,7 +24495,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L654",
+      "source_location": "L728",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_partial_dependence",
@@ -24236,7 +24506,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L399",
+      "source_location": "L443",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_predict",
@@ -24247,7 +24517,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L1058",
+      "source_location": "L1161",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_save",
@@ -24258,7 +24528,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L399",
+      "source_location": "L443",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_predict",
@@ -24269,7 +24539,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L419",
+      "source_location": "L463",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_cvrisk",
@@ -24280,7 +24550,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L919",
+      "source_location": "L1015",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_getstate",
@@ -24291,7 +24561,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L964",
+      "source_location": "L1062",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_setstate",
@@ -24302,7 +24572,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L654",
+      "source_location": "L728",
       "weight": 1.0,
       "context": "parameter_type",
       "source": "crates_boostlss_py_src_model_boostlssmodel_partial_dependence",
@@ -24313,7 +24583,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L685",
+      "source_location": "L759",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_stabsel",
@@ -24325,7 +24595,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L1059",
+      "source_location": "L1162",
       "weight": 1.0,
       "source": "crates_boostlss_py_src_model_boostlssmodel_save",
       "target": "crates_boostlss_py_src_model_boostlssmodel_getstate",
@@ -24335,7 +24605,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss-py/src/model.rs",
-      "source_location": "L1069",
+      "source_location": "L1172",
       "weight": 1.0,
       "context": "generic_arg",
       "source": "crates_boostlss_py_src_model_boostlssmodel_load",
@@ -27585,7 +27855,7 @@
       "weight": 1.0,
       "context": "import",
       "source": "crates_boostlss_src_engine_cyclical",
-      "target": "users_danielfisher_repos_boostlss_crates_boostlss_src_model_rs",
+      "target": "users_danielfisher_repos_boostlss_crates_boostlss_py_src_model_rs",
       "confidence_score": 1.0
     },
     {
@@ -27947,7 +28217,7 @@
       "weight": 1.0,
       "context": "import",
       "source": "crates_boostlss_src_engine_noncyclical",
-      "target": "users_danielfisher_repos_boostlss_crates_boostlss_src_model_rs",
+      "target": "users_danielfisher_repos_boostlss_crates_boostlss_py_src_model_rs",
       "confidence_score": 1.0
     },
     {
@@ -36678,7 +36948,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss/src/learner/tree.rs",
-      "source_location": "L270",
+      "source_location": "L271",
       "weight": 1.0,
       "source": "crates_boostlss_src_learner_tree",
       "target": "crates_boostlss_src_learner_tree_test_tree_fit_update",
@@ -36845,7 +37115,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss/src/learner/tree.rs",
-      "source_location": "L227",
+      "source_location": "L232",
       "weight": 1.0,
       "source": "crates_boostlss_src_learner_tree_treefitstate_build_tree",
       "target": "crates_boostlss_src_learner_tree_tree_new",
@@ -36953,7 +37223,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "crates/boostlss/src/learner/tree.rs",
-      "source_location": "L281",
+      "source_location": "L282",
       "weight": 1.0,
       "source": "crates_boostlss_src_learner_tree_test_tree_fit_update",
       "target": "crates_boostlss_src_learner_tree_treefitstate_fit_update",
@@ -51663,6 +51933,66 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "docs/examples/long_tail_jsu.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_examples_long_tail_jsu",
+      "target": "docs_examples_long_tail_jsu_modeling_long_tail_distributions_with_jsu",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/examples/long_tail_jsu.md",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "docs_examples_long_tail_jsu_modeling_long_tail_distributions_with_jsu",
+      "target": "docs_examples_long_tail_jsu_1_setup_and_data_generation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/examples/long_tail_jsu.md",
+      "source_location": "L49",
+      "weight": 1.0,
+      "source": "docs_examples_long_tail_jsu_modeling_long_tail_distributions_with_jsu",
+      "target": "docs_examples_long_tail_jsu_2_training_the_boostlss_model",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/examples/long_tail_jsu.md",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "docs_examples_long_tail_jsu_modeling_long_tail_distributions_with_jsu",
+      "target": "docs_examples_long_tail_jsu_3_comparison_with_standard_baselines",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/examples/long_tail_jsu.md",
+      "source_location": "L101",
+      "weight": 1.0,
+      "source": "docs_examples_long_tail_jsu_modeling_long_tail_distributions_with_jsu",
+      "target": "docs_examples_long_tail_jsu_4_predicting_the_full_distribution",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/examples/long_tail_jsu.md",
+      "source_location": "L97",
+      "weight": 1.0,
+      "source": "docs_examples_long_tail_jsu_3_comparison_with_standard_baselines",
+      "target": "docs_examples_long_tail_jsu_why_does_jsu_win_on_mae",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "docs/examples/spatial_bivariate.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -52133,6 +52463,46 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "docs/plans/2026-06-30-histtree-learner-plan.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_plans_2026_06_30_histtree_learner_plan",
+      "target": "docs_plans_2026_06_30_histtree_learner_plan_histtree_implementation_plan",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/plans/2026-06-30-histtree-learner-plan.md",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "docs_plans_2026_06_30_histtree_learner_plan_histtree_implementation_plan",
+      "target": "docs_plans_2026_06_30_histtree_learner_plan_task_1_create_the_histtree_structs_and_enum_wiring",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/plans/2026-06-30-histtree-learner-plan.md",
+      "source_location": "L155",
+      "weight": 1.0,
+      "source": "docs_plans_2026_06_30_histtree_learner_plan_histtree_implementation_plan",
+      "target": "docs_plans_2026_06_30_histtree_learner_plan_task_2_implement_node_splitting_and_histogram_accumulation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/plans/2026-06-30-histtree-learner-plan.md",
+      "source_location": "L337",
+      "weight": 1.0,
+      "source": "docs_plans_2026_06_30_histtree_learner_plan_histtree_implementation_plan",
+      "target": "docs_plans_2026_06_30_histtree_learner_plan_task_3_python_bindings_and_integration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "docs/quickstart.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -52208,6 +52578,66 @@
       "weight": 1.0,
       "source": "docs_quickstart_quickstart",
       "target": "docs_quickstart_7_make_predictions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/specs/2026-06-30-histtree-learner-design.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_specs_2026_06_30_histtree_learner_design",
+      "target": "docs_specs_2026_06_30_histtree_learner_design_histtree_learner_design_specification",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/specs/2026-06-30-histtree-learner-design.md",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "docs_specs_2026_06_30_histtree_learner_design_histtree_learner_design_specification",
+      "target": "docs_specs_2026_06_30_histtree_learner_design_api_architecture_separate_learner",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/specs/2026-06-30-histtree-learner-design.md",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "docs_specs_2026_06_30_histtree_learner_design_histtree_learner_design_specification",
+      "target": "docs_specs_2026_06_30_histtree_learner_design_histogram_construction_tree_building",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/specs/2026-06-30-histtree-learner-design.md",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "docs_specs_2026_06_30_histtree_learner_design_histtree_learner_design_specification",
+      "target": "docs_specs_2026_06_30_histtree_learner_design_integration_points",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/specs/2026-06-30-histtree-learner-design.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "docs_specs_2026_06_30_histtree_learner_design_histtree_learner_design_specification",
+      "target": "docs_specs_2026_06_30_histtree_learner_design_overview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/specs/2026-06-30-histtree-learner-design.md",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "docs_specs_2026_06_30_histtree_learner_design_histtree_learner_design_specification",
+      "target": "docs_specs_2026_06_30_histtree_learner_design_quantization_strategy_initialization",
       "confidence_score": 1.0
     },
     {
@@ -52572,5 +53002,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "63dac0b0066f69135b32c4c5538594983b9d38fe"
+  "built_at_commit": "6e20bec77fdfee1d84582955134297ba47f11239"
 }

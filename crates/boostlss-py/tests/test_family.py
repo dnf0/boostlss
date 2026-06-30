@@ -48,3 +48,19 @@ def test_logistic():
 
     model.fit(X, y)
     assert len(model.predict(X, "mu")) == 10
+
+
+def test_laplace():
+    from boostlss_py import LaplaceLss, BoostLssModel, PyLinearLearner
+    import numpy as np
+
+    fam = LaplaceLss()
+    model = BoostLssModel(fam, mstop=2)
+    model.add_learner("mu", PyLinearLearner(0))
+    model.add_learner("b", PyLinearLearner(0))
+
+    y = np.random.laplace(loc=5, scale=2, size=10)
+    X = np.random.normal(size=(10, 2))
+
+    model.fit(X, y)
+    assert len(model.predict(X, "mu")) == 10

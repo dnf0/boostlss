@@ -1,3 +1,4 @@
+use boostlss::family::LaplaceLss;
 use boostlss::family::TweedieLss;
 use boostlss::family::ZINBLss;
 use pyo3::prelude::*;
@@ -99,6 +100,26 @@ impl PyLogisticLss {
     #[new]
     pub fn new() -> Self {
         Self
+    }
+
+    fn __getnewargs__<'py>(&self, py: Python<'py>) -> pyo3::Bound<'py, pyo3::types::PyTuple> {
+        pyo3::types::PyTuple::empty_bound(py)
+    }
+}
+
+#[pyclass(name = "LaplaceLss", module = "boostlss_py")]
+#[derive(Clone)]
+pub struct PyLaplaceLss {
+    pub inner: LaplaceLss,
+}
+
+#[pymethods]
+impl PyLaplaceLss {
+    #[new]
+    pub fn new() -> Self {
+        Self {
+            inner: LaplaceLss::new(),
+        }
     }
 
     fn __getnewargs__<'py>(&self, py: Python<'py>) -> pyo3::Bound<'py, pyo3::types::PyTuple> {

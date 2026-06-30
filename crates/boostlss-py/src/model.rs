@@ -1,11 +1,11 @@
-use crate::family::{PyFamily, PyTweedieLss, PyZINBLss};
+use crate::family::{PyFamily, PyLaplaceLss, PyTweedieLss, PyZINBLss};
 use boostlss::cv::{CvRisk, Resampling};
 use boostlss::data::Dataset;
 use boostlss::engine::cyclical::fit_cyclical;
 use boostlss::engine::noncyclical::{fit_noncyclical, fit_noncyclical_outer};
 use boostlss::engine::{Algorithm, Mstop};
 use boostlss::family::{
-    BetaLss, BinomialLss, GEVLss, GaussianLss, JSULss, LogNormalLss, WeibullLss, ZIPLss,
+    BetaLss, BinomialLss, GEVLss, GaussianLss, JSULss, LaplaceLss, LogNormalLss, WeibullLss, ZIPLss,
 };
 use boostlss::family::{TweedieLss, ZINBLss};
 use boostlss::learner::{BaseLearner, RandomEffects};
@@ -115,6 +115,7 @@ pub enum InternalFamily {
     Tweedie(TweedieLss),
     Logistic,
     Zinb(ZINBLss),
+    Laplace(LaplaceLss),
 }
 
 enum FittedModel {
@@ -129,6 +130,7 @@ enum FittedModel {
     Tweedie(Fitted<TweedieLss>),
     Logistic(Fitted<boostlss::family::LogisticLss>),
     Zinb(Fitted<ZINBLss>),
+    Laplace(Fitted<LaplaceLss>),
 }
 
 impl FittedModel {
@@ -172,6 +174,9 @@ impl FittedModel {
             Self::Zinb(fitted) => fitted
                 .predict(dataset, param, scale)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Laplace(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
         }
     }
 
@@ -188,6 +193,7 @@ impl FittedModel {
             Self::Logistic(fitted) => fitted.feature_importance(),
             Self::Tweedie(fitted) => fitted.feature_importance(),
             Self::Zinb(fitted) => fitted.feature_importance(),
+            Self::Laplace(fitted) => fitted.feature_importance(),
         }
     }
 
@@ -230,6 +236,9 @@ impl FittedModel {
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
             Self::Zinb(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Laplace(fitted) => fitted
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
         }
@@ -301,6 +310,8 @@ impl BoostLssModel {
             InternalFamily::Tweedie(t.inner.clone())
         } else if let Ok(z) = family.extract::<PyZINBLss>() {
             InternalFamily::Zinb(z.inner.clone())
+        } else if let Ok(l) = family.extract::<PyLaplaceLss>() {
+            InternalFamily::Laplace(l.inner.clone())
         } else {
             return Err(pyo3::exceptions::PyValueError::new_err("Invalid family"));
         };
@@ -387,6 +398,9 @@ impl BoostLssModel {
             InternalFamily::Zinb(ref z_fam) => {
                 fit_family!(self, &dataset, z_fam.clone(), FittedModel::Zinb)
             }
+            InternalFamily::Laplace(ref l_fam) => {
+                fit_family!(self, &dataset, l_fam.clone(), FittedModel::Laplace)
+            }
         }
         Ok(())
     }
@@ -432,6 +446,9 @@ impl BoostLssModel {
                 }
                 InternalFamily::Zinb(ref z_fam) => {
                     cvrisk_family!(self, &dataset, z_fam.clone(), folds, py)
+                }
+                InternalFamily::Laplace(ref l_fam) => {
+                    cvrisk_family!(self, &dataset, l_fam.clone(), folds, py)
                 }
                 InternalFamily::Binomial => {
                     cvrisk_family!(self, &dataset, BinomialLss::new(), folds, py)
@@ -558,6 +575,9 @@ impl BoostLssModel {
             InternalFamily::Zinb(ref z_fam) => {
                 stabsel_family!(self, &dataset, z_fam.clone(), &config)
             }
+            InternalFamily::Laplace(ref l_fam) => {
+                stabsel_family!(self, &dataset, l_fam.clone(), &config)
+            }
         };
 
         let mut probabilities = std::collections::HashMap::new();
@@ -609,6 +629,9 @@ impl BoostLssModel {
                 InternalFamily::Zinb(z) => {
                     crate::family::PyZINBLss { inner: z.clone() }.into_py(py)
                 }
+                InternalFamily::Laplace(l) => {
+                    crate::family::PyLaplaceLss { inner: l.clone() }.into_py(py)
+                }
                 f => {
                     let py_fam = match f {
                         InternalFamily::Gaussian => PyFamily::Gaussian,
@@ -622,6 +645,7 @@ impl BoostLssModel {
                         InternalFamily::Logistic => unreachable!(),
                         InternalFamily::Tweedie(_) => unreachable!(),
                         InternalFamily::Zinb(_) => unreachable!(),
+                        InternalFamily::Laplace(_) => unreachable!(),
                     };
                     py_fam.into_py(py)
                 }
@@ -648,6 +672,7 @@ impl BoostLssModel {
                 "TweedieLss"
             }
             InternalFamily::Zinb(_) => "ZINBLss",
+            InternalFamily::Laplace(_) => "LaplaceLss",
         };
         dict.set_item("family", family_str)?;
         dict.set_item("mstop", self.mstop)?;
@@ -673,6 +698,7 @@ impl BoostLssModel {
                 FittedModel::Logistic(f) => bincode::serialize(f),
                 FittedModel::Tweedie(f) => bincode::serialize(f),
                 FittedModel::Zinb(f) => bincode::serialize(f),
+                FittedModel::Laplace(f) => bincode::serialize(f),
             }
             .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
             dict.set_item("fitted", PyBytes::new_bound(py, &bytes))?;
@@ -711,6 +737,7 @@ impl BoostLssModel {
             }
             "LogisticLss" => InternalFamily::Logistic,
             "ZINBLss" => InternalFamily::Zinb(boostlss::family::ZINBLss::new()),
+            "LaplaceLss" => InternalFamily::Laplace(boostlss::family::LaplaceLss::new()),
             _ => return Err(pyo3::exceptions::PyRuntimeError::new_err("Unknown family")),
         };
         self.mstop = state
@@ -777,6 +804,10 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),
                 InternalFamily::Zinb(_) => FittedModel::Zinb(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::Laplace(_) => FittedModel::Laplace(
                     bincode::deserialize(bytes)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),

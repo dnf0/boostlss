@@ -51,7 +51,12 @@ impl Family for LogisticLss {
             let wi = w.map_or(1.0, |weights| weights[i]);
 
             let z = (yi - mu) / s;
-            nll += wi * (z + s.ln() + 2.0 * (1.0 + (-z).exp()).ln());
+            let softplus_neg_z = if -z > 0.0 {
+                -z + (1.0 + z.exp()).ln()
+            } else {
+                (1.0 + (-z).exp()).ln()
+            };
+            nll += wi * (z + s.ln() + 2.0 * softplus_neg_z);
         }
         Ok(nll)
     }

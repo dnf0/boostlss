@@ -17,8 +17,8 @@ impl PyZINBLss {
         }
     }
 
-    fn __getnewargs__(&self) -> () {
-        ()
+    fn __getnewargs__<'py>(&self, py: Python<'py>) -> pyo3::Bound<'py, pyo3::types::PyTuple> {
+        pyo3::types::PyTuple::empty_bound(py)
     }
 }
 
@@ -101,7 +101,7 @@ impl PyLogisticLss {
         Self
     }
 
-    fn __getnewargs__(&self) -> () {
-        ()
+    fn __getnewargs__<'py>(&self, py: Python<'py>) -> pyo3::Bound<'py, pyo3::types::PyTuple> {
+        pyo3::types::PyTuple::empty_bound(py)
     }
 }

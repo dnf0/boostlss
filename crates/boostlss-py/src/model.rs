@@ -14,6 +14,94 @@ use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
 use pyo3::types::{PyBytes, PyDict, PyType};
 
+macro_rules! fit_family {
+    ($self:expr, $dataset:expr, $family:expr, $fitted_variant:path) => {{
+        let mut model = BoostLss::new($family)
+            .step_length($self.step_length)
+            .mstop(Mstop::Scalar($self.mstop));
+
+        for (param, learner) in &$self.learners {
+            model = model
+                .on(param.as_str(), |p| p.add(learner.clone()))
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+        }
+
+        let fitted = match $self.algorithm {
+            Algorithm::NonCyclicOuter => {
+                let model = model.algorithm(Algorithm::NonCyclicOuter);
+                fit_noncyclical_outer(model, $dataset)
+                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+            }
+            Algorithm::Cyclic => fit_cyclical(model, $dataset)
+                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+
+            Algorithm::NonCyclic => {
+                let model = model.algorithm(Algorithm::NonCyclic);
+                fit_noncyclical(model, $dataset)
+                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+            }
+        };
+
+        $self.fitted = Some($fitted_variant(fitted));
+    }};
+}
+
+macro_rules! cvrisk_family {
+    ($self:expr, $dataset:expr, $family:expr, $folds:expr, $py:expr) => {{
+        let mut model = BoostLss::new($family)
+            .step_length($self.step_length)
+            .mstop(Mstop::Scalar($self.mstop));
+
+        for (param, learner) in &$self.learners {
+            model = model
+                .on(param.as_str(), |p| p.add(learner.clone()))
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+        }
+
+        let model = match $self.algorithm {
+            Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
+            Algorithm::Cyclic => model,
+            Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+        };
+
+        let cv = CvRisk::new(model, Resampling::KFold { k: $folds });
+        let result = cv
+            .run($dataset)
+            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+
+        let dict = PyDict::new_bound($py);
+        match result.optimal_mstop {
+            Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
+            Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
+        }
+        dict.set_item("mean_risk", result.mean_risk)?;
+        Ok(dict)
+    }};
+}
+
+macro_rules! stabsel_family {
+    ($self:expr, $dataset:expr, $family:expr, $config:expr) => {{
+        let mut model = BoostLss::new($family)
+            .step_length($self.step_length)
+            .mstop(Mstop::Scalar($self.mstop));
+
+        for (param, learner) in &$self.learners {
+            model = model
+                .on(param.as_str(), |p| p.add(learner.clone()))
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+        }
+
+        let model = match $self.algorithm {
+            Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
+            Algorithm::Cyclic => model,
+            Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+        };
+
+        boostlss::cv::stabsel::run_stabsel(&model, $dataset, Mstop::Scalar($self.mstop), $config)
+            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+    }};
+}
+
 #[derive(Clone)]
 pub enum InternalFamily {
     Gaussian,
@@ -272,323 +360,32 @@ impl BoostLssModel {
 
         match &self.family {
             InternalFamily::Gaussian => {
-                let mut model = BoostLss::new(GaussianLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-
-                let fitted = match self.algorithm {
-                    Algorithm::NonCyclicOuter => {
-                        let model = model.algorithm(Algorithm::NonCyclicOuter);
-                        fit_noncyclical_outer(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
-
-                    Algorithm::NonCyclic => {
-                        let model = model.algorithm(Algorithm::NonCyclic);
-                        fit_noncyclical(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                };
-
-                self.fitted = Some(FittedModel::Gaussian(fitted));
+                fit_family!(self, &dataset, GaussianLss::new(), FittedModel::Gaussian)
             }
             InternalFamily::Binomial => {
-                let mut model = BoostLss::new(BinomialLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-
-                let fitted = match self.algorithm {
-                    Algorithm::NonCyclicOuter => {
-                        let model = model.algorithm(Algorithm::NonCyclicOuter);
-                        fit_noncyclical_outer(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
-
-                    Algorithm::NonCyclic => {
-                        let model = model.algorithm(Algorithm::NonCyclic);
-                        fit_noncyclical(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                };
-
-                self.fitted = Some(FittedModel::Binomial(fitted));
+                fit_family!(self, &dataset, BinomialLss::new(), FittedModel::Binomial)
             }
-            InternalFamily::Beta => {
-                let mut model = BoostLss::new(BetaLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-
-                let fitted = match self.algorithm {
-                    Algorithm::NonCyclicOuter => {
-                        let model = model.algorithm(Algorithm::NonCyclicOuter);
-                        fit_noncyclical_outer(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
-
-                    Algorithm::NonCyclic => {
-                        let model = model.algorithm(Algorithm::NonCyclic);
-                        fit_noncyclical(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                };
-
-                self.fitted = Some(FittedModel::Beta(fitted));
-            }
+            InternalFamily::Beta => fit_family!(self, &dataset, BetaLss::new(), FittedModel::Beta),
             InternalFamily::Weibull => {
-                let mut model = BoostLss::new(WeibullLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-
-                let fitted = match self.algorithm {
-                    Algorithm::NonCyclicOuter => {
-                        let model = model.algorithm(Algorithm::NonCyclicOuter);
-                        fit_noncyclical_outer(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
-
-                    Algorithm::NonCyclic => {
-                        let model = model.algorithm(Algorithm::NonCyclic);
-                        fit_noncyclical(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                };
-
-                self.fitted = Some(FittedModel::Weibull(fitted));
+                fit_family!(self, &dataset, WeibullLss::new(), FittedModel::Weibull)
             }
             InternalFamily::LogNormal => {
-                let mut model = BoostLss::new(LogNormalLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-
-                let fitted = match self.algorithm {
-                    Algorithm::NonCyclicOuter => {
-                        let model = model.algorithm(Algorithm::NonCyclicOuter);
-                        fit_noncyclical_outer(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
-
-                    Algorithm::NonCyclic => {
-                        let model = model.algorithm(Algorithm::NonCyclic);
-                        fit_noncyclical(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                };
-
-                self.fitted = Some(FittedModel::LogNormal(fitted));
+                fit_family!(self, &dataset, LogNormalLss::new(), FittedModel::LogNormal)
             }
-            InternalFamily::Zip => {
-                let mut model = BoostLss::new(ZIPLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-
-                let fitted = match self.algorithm {
-                    Algorithm::NonCyclicOuter => {
-                        let model = model.algorithm(Algorithm::NonCyclicOuter);
-                        fit_noncyclical_outer(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
-
-                    Algorithm::NonCyclic => {
-                        let model = model.algorithm(Algorithm::NonCyclic);
-                        fit_noncyclical(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                };
-
-                self.fitted = Some(FittedModel::Zip(fitted));
-            }
-            InternalFamily::Gev => {
-                let mut model = BoostLss::new(GEVLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-
-                let fitted = match self.algorithm {
-                    Algorithm::NonCyclicOuter => {
-                        let model = model.algorithm(Algorithm::NonCyclicOuter);
-                        fit_noncyclical_outer(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
-
-                    Algorithm::NonCyclic => {
-                        let model = model.algorithm(Algorithm::NonCyclic);
-                        fit_noncyclical(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                };
-
-                self.fitted = Some(FittedModel::Gev(fitted));
-            }
-            InternalFamily::Jsu => {
-                let mut model = BoostLss::new(JSULss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-
-                let fitted = match self.algorithm {
-                    Algorithm::NonCyclicOuter => {
-                        let model = model.algorithm(Algorithm::NonCyclicOuter);
-                        fit_noncyclical_outer(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
-
-                    Algorithm::NonCyclic => {
-                        let model = model.algorithm(Algorithm::NonCyclic);
-                        fit_noncyclical(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                };
-
-                self.fitted = Some(FittedModel::Jsu(fitted));
-            }
-            InternalFamily::Logistic => {
-                let mut model = BoostLss::new(boostlss::family::LogisticLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-
-                let fitted = match self.algorithm {
-                    Algorithm::NonCyclicOuter => {
-                        let model = model.algorithm(Algorithm::NonCyclicOuter);
-                        fit_noncyclical_outer(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
-
-                    Algorithm::NonCyclic => {
-                        let model = model.algorithm(Algorithm::NonCyclic);
-                        fit_noncyclical(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                };
-
-                self.fitted = Some(FittedModel::Logistic(fitted));
-            }
+            InternalFamily::Zip => fit_family!(self, &dataset, ZIPLss::new(), FittedModel::Zip),
+            InternalFamily::Gev => fit_family!(self, &dataset, GEVLss::new(), FittedModel::Gev),
+            InternalFamily::Jsu => fit_family!(self, &dataset, JSULss::new(), FittedModel::Jsu),
+            InternalFamily::Logistic => fit_family!(
+                self,
+                &dataset,
+                boostlss::family::LogisticLss::new(),
+                FittedModel::Logistic
+            ),
             InternalFamily::Tweedie(ref t_fam) => {
-                let mut model = BoostLss::new(t_fam.clone())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-
-                let fitted = match self.algorithm {
-                    Algorithm::NonCyclicOuter => {
-                        let model = model.algorithm(Algorithm::NonCyclicOuter);
-                        fit_noncyclical_outer(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
-
-                    Algorithm::NonCyclic => {
-                        let model = model.algorithm(Algorithm::NonCyclic);
-                        fit_noncyclical(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                };
-
-                self.fitted = Some(FittedModel::Tweedie(fitted));
+                fit_family!(self, &dataset, t_fam.clone(), FittedModel::Tweedie)
             }
             InternalFamily::Zinb(ref z_fam) => {
-                let mut model = BoostLss::new(z_fam.clone())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-
-                let fitted = match self.algorithm {
-                    Algorithm::NonCyclicOuter => {
-                        let model = model.algorithm(Algorithm::NonCyclicOuter);
-                        fit_noncyclical_outer(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
-
-                    Algorithm::NonCyclic => {
-                        let model = model.algorithm(Algorithm::NonCyclic);
-                        fit_noncyclical(model, &dataset)
-                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-                    }
-                };
-
-                self.fitted = Some(FittedModel::Zinb(fitted));
+                fit_family!(self, &dataset, z_fam.clone(), FittedModel::Zinb)
             }
         }
         Ok(())
@@ -621,335 +418,34 @@ impl BoostLssModel {
 
             match &self.family {
                 InternalFamily::Gaussian => {
-                    let mut model = BoostLss::new(GaussianLss::new())
-                        .step_length(self.step_length)
-                        .mstop(Mstop::Scalar(self.mstop));
-
-                    for (param, learner) in &self.learners {
-                        model = model
-                            .on(param.as_str(), |p| p.add(learner.clone()))
-                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                    }
-
-                    let model = match self.algorithm {
-                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                        Algorithm::Cyclic => model,
-                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                    };
-
-                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
-                    let result = cv
-                        .run(&dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-
-                    let dict = PyDict::new_bound(py);
-                    match result.optimal_mstop {
-                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
-                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
-                    }
-                    dict.set_item("mean_risk", result.mean_risk)?;
-                    Ok(dict)
+                    cvrisk_family!(self, &dataset, GaussianLss::new(), folds, py)
                 }
-                InternalFamily::Logistic => {
-                    let mut model = BoostLss::new(boostlss::family::LogisticLss::new())
-                        .step_length(self.step_length)
-                        .mstop(Mstop::Scalar(self.mstop));
-
-                    for (param, learner) in &self.learners {
-                        model = model
-                            .on(param.as_str(), |p| p.add(learner.clone()))
-                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                    }
-
-                    let model = match self.algorithm {
-                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                        Algorithm::Cyclic => model,
-                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                    };
-
-                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
-                    let result = cv
-                        .run(&dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-
-                    let dict = PyDict::new_bound(py);
-                    match result.optimal_mstop {
-                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
-                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
-                    }
-                    dict.set_item("mean_risk", result.mean_risk)?;
-                    Ok(dict)
-                }
+                InternalFamily::Logistic => cvrisk_family!(
+                    self,
+                    &dataset,
+                    boostlss::family::LogisticLss::new(),
+                    folds,
+                    py
+                ),
                 InternalFamily::Tweedie(ref t_fam) => {
-                    let mut model = BoostLss::new(t_fam.clone())
-                        .step_length(self.step_length)
-                        .mstop(Mstop::Scalar(self.mstop));
-
-                    for (param, learner) in &self.learners {
-                        model = model
-                            .on(param.as_str(), |p| p.add(learner.clone()))
-                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                    }
-
-                    let model = match self.algorithm {
-                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                        Algorithm::Cyclic => model,
-                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                    };
-
-                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
-                    let result = cv
-                        .run(&dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-
-                    let dict = PyDict::new_bound(py);
-                    match result.optimal_mstop {
-                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
-                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
-                    }
-                    dict.set_item("mean_risk", result.mean_risk)?;
-                    Ok(dict)
+                    cvrisk_family!(self, &dataset, t_fam.clone(), folds, py)
                 }
                 InternalFamily::Zinb(ref z_fam) => {
-                    let mut model = BoostLss::new(z_fam.clone())
-                        .step_length(self.step_length)
-                        .mstop(Mstop::Scalar(self.mstop));
-
-                    for (param, learner) in &self.learners {
-                        model = model
-                            .on(param.as_str(), |p| p.add(learner.clone()))
-                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                    }
-
-                    let model = match self.algorithm {
-                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                        Algorithm::Cyclic => model,
-                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                    };
-
-                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
-                    let result = cv
-                        .run(&dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-
-                    let dict = PyDict::new_bound(py);
-                    match result.optimal_mstop {
-                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
-                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
-                    }
-                    dict.set_item("mean_risk", result.mean_risk)?;
-                    Ok(dict)
+                    cvrisk_family!(self, &dataset, z_fam.clone(), folds, py)
                 }
                 InternalFamily::Binomial => {
-                    let mut model = BoostLss::new(BinomialLss::new())
-                        .step_length(self.step_length)
-                        .mstop(Mstop::Scalar(self.mstop));
-
-                    for (param, learner) in &self.learners {
-                        model = model
-                            .on(param.as_str(), |p| p.add(learner.clone()))
-                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                    }
-
-                    let model = match self.algorithm {
-                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                        Algorithm::Cyclic => model,
-                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                    };
-
-                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
-                    let result = cv
-                        .run(&dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-
-                    let dict = PyDict::new_bound(py);
-                    match result.optimal_mstop {
-                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
-                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
-                    }
-                    dict.set_item("mean_risk", result.mean_risk)?;
-                    Ok(dict)
+                    cvrisk_family!(self, &dataset, BinomialLss::new(), folds, py)
                 }
-                InternalFamily::Beta => {
-                    let mut model = BoostLss::new(BetaLss::new())
-                        .step_length(self.step_length)
-                        .mstop(Mstop::Scalar(self.mstop));
-
-                    for (param, learner) in &self.learners {
-                        model = model
-                            .on(param.as_str(), |p| p.add(learner.clone()))
-                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                    }
-
-                    let model = match self.algorithm {
-                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                        Algorithm::Cyclic => model,
-                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                    };
-
-                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
-                    let result = cv
-                        .run(&dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-
-                    let dict = PyDict::new_bound(py);
-                    match result.optimal_mstop {
-                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
-                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
-                    }
-                    dict.set_item("mean_risk", result.mean_risk)?;
-                    Ok(dict)
-                }
+                InternalFamily::Beta => cvrisk_family!(self, &dataset, BetaLss::new(), folds, py),
                 InternalFamily::Weibull => {
-                    let mut model = BoostLss::new(WeibullLss::new())
-                        .step_length(self.step_length)
-                        .mstop(Mstop::Scalar(self.mstop));
-
-                    for (param, learner) in &self.learners {
-                        model = model
-                            .on(param.as_str(), |p| p.add(learner.clone()))
-                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                    }
-
-                    let model = match self.algorithm {
-                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                        Algorithm::Cyclic => model,
-                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                    };
-
-                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
-                    let result = cv
-                        .run(&dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-
-                    let dict = PyDict::new_bound(py);
-                    match result.optimal_mstop {
-                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
-                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
-                    }
-                    dict.set_item("mean_risk", result.mean_risk)?;
-                    Ok(dict)
+                    cvrisk_family!(self, &dataset, WeibullLss::new(), folds, py)
                 }
                 InternalFamily::LogNormal => {
-                    let mut model = BoostLss::new(LogNormalLss::new())
-                        .step_length(self.step_length)
-                        .mstop(Mstop::Scalar(self.mstop));
-
-                    for (param, learner) in &self.learners {
-                        model = model
-                            .on(param.as_str(), |p| p.add(learner.clone()))
-                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                    }
-
-                    let model = match self.algorithm {
-                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                        Algorithm::Cyclic => model,
-                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                    };
-
-                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
-                    let result = cv
-                        .run(&dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-
-                    let dict = PyDict::new_bound(py);
-                    match result.optimal_mstop {
-                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
-                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
-                    }
-                    dict.set_item("mean_risk", result.mean_risk)?;
-                    Ok(dict)
+                    cvrisk_family!(self, &dataset, LogNormalLss::new(), folds, py)
                 }
-                InternalFamily::Zip => {
-                    let mut model = BoostLss::new(ZIPLss::new())
-                        .step_length(self.step_length)
-                        .mstop(Mstop::Scalar(self.mstop));
-
-                    for (param, learner) in &self.learners {
-                        model = model
-                            .on(param.as_str(), |p| p.add(learner.clone()))
-                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                    }
-
-                    let model = match self.algorithm {
-                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                        Algorithm::Cyclic => model,
-                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                    };
-
-                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
-                    let result = cv
-                        .run(&dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-
-                    let dict = PyDict::new_bound(py);
-                    match result.optimal_mstop {
-                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
-                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
-                    }
-                    dict.set_item("mean_risk", result.mean_risk)?;
-                    Ok(dict)
-                }
-                InternalFamily::Gev => {
-                    let mut model = BoostLss::new(GEVLss::new())
-                        .step_length(self.step_length)
-                        .mstop(Mstop::Scalar(self.mstop));
-
-                    for (param, learner) in &self.learners {
-                        model = model
-                            .on(param.as_str(), |p| p.add(learner.clone()))
-                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                    }
-
-                    let model = match self.algorithm {
-                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                        Algorithm::Cyclic => model,
-                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                    };
-
-                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
-                    let result = cv
-                        .run(&dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-
-                    let dict = PyDict::new_bound(py);
-                    match result.optimal_mstop {
-                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
-                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
-                    }
-                    dict.set_item("mean_risk", result.mean_risk)?;
-                    Ok(dict)
-                }
-                InternalFamily::Jsu => {
-                    let mut model = BoostLss::new(JSULss::new())
-                        .step_length(self.step_length)
-                        .mstop(Mstop::Scalar(self.mstop));
-
-                    for (param, learner) in &self.learners {
-                        model = model
-                            .on(param.as_str(), |p| p.add(learner.clone()))
-                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                    }
-
-                    let model = match self.algorithm {
-                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                        Algorithm::Cyclic => model,
-                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                    };
-
-                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
-                    let result = cv
-                        .run(&dataset)
-                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
-
-                    let dict = PyDict::new_bound(py);
-                    match result.optimal_mstop {
-                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
-                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
-                    }
-                    dict.set_item("mean_risk", result.mean_risk)?;
-                    Ok(dict)
-                }
+                InternalFamily::Zip => cvrisk_family!(self, &dataset, ZIPLss::new(), folds, py),
+                InternalFamily::Gev => cvrisk_family!(self, &dataset, GEVLss::new(), folds, py),
+                InternalFamily::Jsu => cvrisk_family!(self, &dataset, JSULss::new(), folds, py),
             }
         } else {
             Err(pyo3::exceptions::PyRuntimeError::new_err(
@@ -1037,246 +533,30 @@ impl BoostLssModel {
 
         let result = match &self.family {
             InternalFamily::Gaussian => {
-                let mut model = BoostLss::new(GaussianLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-                let model = match self.algorithm {
-                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                    Algorithm::Cyclic => model,
-                    Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                };
-                boostlss::cv::stabsel::run_stabsel(
-                    &model,
-                    &dataset,
-                    Mstop::Scalar(self.mstop),
-                    &config,
-                )
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                stabsel_family!(self, &dataset, GaussianLss::new(), &config)
             }
             InternalFamily::Binomial => {
-                let mut model = BoostLss::new(BinomialLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-                let model = match self.algorithm {
-                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                    Algorithm::Cyclic => model,
-                    Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                };
-                boostlss::cv::stabsel::run_stabsel(
-                    &model,
-                    &dataset,
-                    Mstop::Scalar(self.mstop),
-                    &config,
-                )
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                stabsel_family!(self, &dataset, BinomialLss::new(), &config)
             }
-            InternalFamily::Beta => {
-                let mut model = BoostLss::new(BetaLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-                let model = match self.algorithm {
-                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                    Algorithm::Cyclic => model,
-                    Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                };
-                boostlss::cv::stabsel::run_stabsel(
-                    &model,
-                    &dataset,
-                    Mstop::Scalar(self.mstop),
-                    &config,
-                )
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-            }
-            InternalFamily::Weibull => {
-                let mut model = BoostLss::new(WeibullLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-                let model = match self.algorithm {
-                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                    Algorithm::Cyclic => model,
-                    Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                };
-                boostlss::cv::stabsel::run_stabsel(
-                    &model,
-                    &dataset,
-                    Mstop::Scalar(self.mstop),
-                    &config,
-                )
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-            }
+            InternalFamily::Beta => stabsel_family!(self, &dataset, BetaLss::new(), &config),
+            InternalFamily::Weibull => stabsel_family!(self, &dataset, WeibullLss::new(), &config),
             InternalFamily::LogNormal => {
-                let mut model = BoostLss::new(LogNormalLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-                let model = match self.algorithm {
-                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                    Algorithm::Cyclic => model,
-                    Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                };
-                boostlss::cv::stabsel::run_stabsel(
-                    &model,
-                    &dataset,
-                    Mstop::Scalar(self.mstop),
-                    &config,
-                )
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                stabsel_family!(self, &dataset, LogNormalLss::new(), &config)
             }
-            InternalFamily::Zip => {
-                let mut model = BoostLss::new(ZIPLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-                let model = match self.algorithm {
-                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                    Algorithm::Cyclic => model,
-                    Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                };
-                boostlss::cv::stabsel::run_stabsel(
-                    &model,
-                    &dataset,
-                    Mstop::Scalar(self.mstop),
-                    &config,
-                )
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-            }
-            InternalFamily::Gev => {
-                let mut model = BoostLss::new(GEVLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-                let model = match self.algorithm {
-                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                    Algorithm::Cyclic => model,
-                    Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                };
-                boostlss::cv::stabsel::run_stabsel(
-                    &model,
-                    &dataset,
-                    Mstop::Scalar(self.mstop),
-                    &config,
-                )
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-            }
-            InternalFamily::Jsu => {
-                let mut model = BoostLss::new(JSULss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-                let model = match self.algorithm {
-                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                    Algorithm::Cyclic => model,
-                    Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                };
-                boostlss::cv::stabsel::run_stabsel(
-                    &model,
-                    &dataset,
-                    Mstop::Scalar(self.mstop),
-                    &config,
-                )
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-            }
-            InternalFamily::Logistic => {
-                let mut model = BoostLss::new(boostlss::family::LogisticLss::new())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-                let model = match self.algorithm {
-                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                    Algorithm::Cyclic => model,
-                    Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                };
-                boostlss::cv::stabsel::run_stabsel(
-                    &model,
-                    &dataset,
-                    Mstop::Scalar(self.mstop),
-                    &config,
-                )
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-            }
+            InternalFamily::Zip => stabsel_family!(self, &dataset, ZIPLss::new(), &config),
+            InternalFamily::Gev => stabsel_family!(self, &dataset, GEVLss::new(), &config),
+            InternalFamily::Jsu => stabsel_family!(self, &dataset, JSULss::new(), &config),
+            InternalFamily::Logistic => stabsel_family!(
+                self,
+                &dataset,
+                boostlss::family::LogisticLss::new(),
+                &config
+            ),
             InternalFamily::Tweedie(ref t_fam) => {
-                let mut model = BoostLss::new(t_fam.clone())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-                let model = match self.algorithm {
-                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                    Algorithm::Cyclic => model,
-                    Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                };
-                boostlss::cv::stabsel::run_stabsel(
-                    &model,
-                    &dataset,
-                    Mstop::Scalar(self.mstop),
-                    &config,
-                )
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                stabsel_family!(self, &dataset, t_fam.clone(), &config)
             }
             InternalFamily::Zinb(ref z_fam) => {
-                let mut model = BoostLss::new(z_fam.clone())
-                    .step_length(self.step_length)
-                    .mstop(Mstop::Scalar(self.mstop));
-                for (param, learner) in &self.learners {
-                    model = model
-                        .on(param.as_str(), |p| p.add(learner.clone()))
-                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-                }
-                let model = match self.algorithm {
-                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
-                    Algorithm::Cyclic => model,
-                    Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
-                };
-                boostlss::cv::stabsel::run_stabsel(
-                    &model,
-                    &dataset,
-                    Mstop::Scalar(self.mstop),
-                    &config,
-                )
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                stabsel_family!(self, &dataset, z_fam.clone(), &config)
             }
         };
 

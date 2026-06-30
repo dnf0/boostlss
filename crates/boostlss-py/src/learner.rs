@@ -1,4 +1,4 @@
-use boostlss::learner::{BaseLearner, Linear, Stump, Tree};
+use boostlss::learner::{BaseLearner, HistTree, Linear, Stump, Tree};
 use pyo3::prelude::*;
 
 #[pyclass(module = "boostlss_py")]
@@ -73,6 +73,44 @@ impl From<PyTreeLearner> for BaseLearner {
         tree.max_depth = val.max_depth;
         tree.min_samples_leaf = val.min_samples_leaf;
         BaseLearner::Tree(tree)
+    }
+}
+
+#[pyclass(module = "boostlss_py")]
+#[derive(Clone)]
+pub struct PyHistTreeLearner {
+    pub feature_indices: Vec<usize>,
+    pub max_bins: usize,
+    pub max_depth: usize,
+    pub min_samples_leaf: usize,
+}
+
+#[pymethods]
+impl PyHistTreeLearner {
+    #[new]
+    #[pyo3(signature = (feature_indices, max_bins=256, max_depth=3, min_samples_leaf=1))]
+    fn new(
+        feature_indices: Vec<usize>,
+        max_bins: usize,
+        max_depth: usize,
+        min_samples_leaf: usize,
+    ) -> Self {
+        Self {
+            feature_indices,
+            max_bins,
+            max_depth,
+            min_samples_leaf,
+        }
+    }
+}
+
+impl From<PyHistTreeLearner> for BaseLearner {
+    fn from(val: PyHistTreeLearner) -> Self {
+        let hist_tree = HistTree::new(val.feature_indices)
+            .max_bins(val.max_bins)
+            .max_depth(val.max_depth)
+            .min_samples_leaf(val.min_samples_leaf);
+        BaseLearner::HistTree(hist_tree)
     }
 }
 

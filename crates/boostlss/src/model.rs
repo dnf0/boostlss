@@ -237,6 +237,14 @@ impl<F: Family> Fitted<F> {
                         pred = pred + u_hat;
                     }
                 }
+                LearnerUpdate::HistTree { node: root, .. } => {
+                    if let BaseLearner::HistTree(hist_tree_learner) = learner {
+                        let tree_learner =
+                            crate::learner::Tree::new(hist_tree_learner.feature_indices.clone());
+                        let u_hat = tree_learner.predict(root, data)?;
+                        pred = pred + u_hat;
+                    }
+                }
             }
         }
 

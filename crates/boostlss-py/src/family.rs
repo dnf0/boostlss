@@ -63,4 +63,8 @@ impl PyTweedieLss {
             inner: TweedieLss::new(p),
         }
     }
+
+    fn __getnewargs__(&self) -> (f64,) {
+        (self.inner.p,)
+    }
 }

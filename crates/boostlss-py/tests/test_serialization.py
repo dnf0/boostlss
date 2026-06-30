@@ -46,3 +46,26 @@ def test_save_load(tmp_path):
         loaded_model = pickle.load(f)
     preds_after = loaded_model.predict(X, "mu")
     np.testing.assert_allclose(preds_before, preds_after, rtol=1e-10)
+
+
+def test_pickle_tweedie():
+    from boostlss_py import TweedieLss
+
+    X = np.random.rand(10, 2)
+    # Must use positive response for Tweedie
+    y = np.random.poisson(lam=5, size=10) + np.random.gamma(shape=2, scale=1, size=10)
+    y = np.maximum(y, 0.0)
+
+    fam = TweedieLss(p=1.8)
+    model = BoostLssModel(fam, mstop=2)
+    model.add_learner("mu", Linear(0))
+    model.add_learner("phi", Linear(0))
+
+    model.fit(X, y)
+    preds_before = model.predict(X, "mu")
+
+    dumped = pickle.dumps(model)
+    loaded_model = pickle.loads(dumped)
+
+    preds_after = loaded_model.predict(X, "mu")
+    np.testing.assert_allclose(preds_before, preds_after, rtol=1e-10)

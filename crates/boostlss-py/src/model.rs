@@ -1172,7 +1172,10 @@ impl BoostLssModel {
             InternalFamily::Zip => "ZIPLss",
             InternalFamily::Gev => "GEVLss",
             InternalFamily::Jsu => "JSULss",
-            InternalFamily::Tweedie(_) => "TweedieLss",
+            InternalFamily::Tweedie(t) => {
+                dict.set_item("tweedie_p", t.p)?;
+                "TweedieLss"
+            }
         };
         dict.set_item("family", family_str)?;
         dict.set_item("mstop", self.mstop)?;
@@ -1224,9 +1227,13 @@ impl BoostLssModel {
             "GEVLss" => InternalFamily::Gev,
             "JSULss" => InternalFamily::Jsu,
             "TweedieLss" => {
-                // For simplicity, we just use a default Tweedie here.
-                // In a real scenario, we'd need to serialize `p`. But test_serialization probably doesn't use Tweedie.
-                InternalFamily::Tweedie(boostlss::family::TweedieLss::new(1.5))
+                let p: f64 = state
+                    .get_item("tweedie_p")?
+                    .ok_or_else(|| {
+                        pyo3::exceptions::PyKeyError::new_err("Missing key 'tweedie_p'")
+                    })?
+                    .extract()?;
+                InternalFamily::Tweedie(boostlss::family::TweedieLss::new(p))
             }
             _ => return Err(pyo3::exceptions::PyRuntimeError::new_err("Unknown family")),
         };

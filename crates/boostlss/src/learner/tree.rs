@@ -182,11 +182,16 @@ impl TreeFitState {
         };
         let mut best_split = None;
 
+        let mut active_mask = vec![false; u.len()];
+        for &idx in active_indices {
+            active_mask[idx] = true;
+        }
+
         for (feat_idx, sorted) in self.sorted_features.iter().enumerate() {
-            // Filter sorted elements to only active ones
+            // Filter sorted elements to only active ones using the O(1) mask
             let active_sorted: Vec<&(f64, usize)> = sorted
                 .iter()
-                .filter(|(_, orig_idx)| active_indices.contains(orig_idx))
+                .filter(|(_, orig_idx)| active_mask[*orig_idx])
                 .collect();
 
             let mut left_w = 0.0;
@@ -226,17 +231,13 @@ impl TreeFitState {
         if let Some((feat_idx, split_val)) = best_split {
             let mut left_indices = Vec::new();
             let mut right_indices = Vec::new();
-            for &idx in active_indices {
-                // Find value for this row
-                let val = self.sorted_features[feat_idx]
-                    .iter()
-                    .find(|(_, i)| *i == idx)
-                    .unwrap()
-                    .0;
-                if val <= split_val {
-                    left_indices.push(idx);
-                } else {
-                    right_indices.push(idx);
+            for &(val, idx) in &self.sorted_features[feat_idx] {
+                if active_mask[idx] {
+                    if val <= split_val {
+                        left_indices.push(idx);
+                    } else {
+                        right_indices.push(idx);
+                    }
                 }
             }
             let left = Box::new(self.build_tree(depth + 1, &left_indices, u, w));

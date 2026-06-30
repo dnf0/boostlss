@@ -1,6 +1,6 @@
 use crate::data::Dataset;
 use crate::learner::LearnerUpdate;
-use ndarray::{Array2, ArrayView1};
+use ndarray::{Array2, ArrayView1, ShapeBuilder};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -41,7 +41,7 @@ impl HistTree {
         data: &Dataset,
     ) -> Result<HistTreeFitState, crate::error::BoostlssError> {
         let n_obs = data.n_obs();
-        let mut quantized_data = Array2::<u8>::zeros((n_obs, self.feature_indices.len()));
+        let mut quantized_data = Array2::<u8>::zeros((n_obs, self.feature_indices.len()).f());
         let mut thresholds = Vec::with_capacity(self.feature_indices.len());
 
         for (feat_idx_out, &feat_idx_in) in self.feature_indices.iter().enumerate() {
@@ -90,6 +90,7 @@ impl HistTree {
             thresholds,
             max_depth: self.max_depth,
             min_samples_leaf: self.min_samples_leaf,
+            max_bins: self.max_bins,
         })
     }
 }
@@ -101,6 +102,7 @@ pub struct HistTreeFitState {
     pub thresholds: Vec<Vec<f64>>,
     pub max_depth: usize,
     pub min_samples_leaf: usize,
+    pub max_bins: usize,
 }
 
 impl HistTreeFitState {
@@ -133,12 +135,21 @@ impl HistTreeFitState {
         u: ArrayView1<f64>,
         weights: Option<ArrayView1<f64>>,
     ) -> crate::learner::tree::TreeNode {
+        let u_slice = u.as_slice().unwrap();
+        let w_slice = weights.as_ref().map(|w| w.as_slice().unwrap());
+
         let mut total_w = 0.0;
         let mut total_wu = 0.0;
-        for &idx in &active_indices {
-            let w = weights.map(|w| w[idx]).unwrap_or(1.0);
-            total_w += w;
-            total_wu += w * u[idx];
+        if let Some(w) = w_slice {
+            for &idx in &active_indices {
+                total_w += w[idx];
+                total_wu += w[idx] * u_slice[idx];
+            }
+        } else {
+            for &idx in &active_indices {
+                total_w += 1.0;
+                total_wu += u_slice[idx];
+            }
         }
 
         if depth >= self.max_depth
@@ -161,19 +172,34 @@ impl HistTreeFitState {
         } else {
             -1.0
         };
-        let mut best_split: Option<(usize, u8, f64, f64, Vec<usize>, Vec<usize>)> = None;
+        let mut best_split: Option<(usize, u8, f64, f64)> = None;
+
+        let max_possible_bins = self.max_bins + 1;
+        let mut hist_w = vec![0.0; max_possible_bins];
+        let mut hist_wu = vec![0.0; max_possible_bins];
 
         for (feat_out, _) in self.feature_indices.iter().enumerate() {
             let max_bin = self.thresholds[feat_out].len();
-            // 1. Build Histogram
-            let mut hist_w = vec![0.0; max_bin + 1];
-            let mut hist_wu = vec![0.0; max_bin + 1];
 
-            for &idx in &active_indices {
-                let bin = self.quantized_data[[idx, feat_out]] as usize;
-                let w = weights.map(|w| w[idx]).unwrap_or(1.0);
-                hist_w[bin] += w;
-                hist_wu[bin] += w * u[idx];
+            // Fast reset
+            hist_w[..max_bin].fill(0.0);
+            hist_wu[..max_bin].fill(0.0);
+
+            let col = self.quantized_data.column(feat_out);
+            let col_slice = col.as_slice().unwrap();
+
+            if let Some(w) = w_slice {
+                for &idx in &active_indices {
+                    let bin = col_slice[idx] as usize;
+                    hist_w[bin] += w[idx];
+                    hist_wu[bin] += w[idx] * u_slice[idx];
+                }
+            } else {
+                for &idx in &active_indices {
+                    let bin = col_slice[idx] as usize;
+                    hist_w[bin] += 1.0;
+                    hist_wu[bin] += u_slice[idx];
+                }
             }
 
             // 2. Scan Histogram for split
@@ -195,32 +221,26 @@ impl HistTreeFitState {
 
                 if gain > best_gain {
                     best_gain = gain;
-
-                    // Split the indices explicitly for the children
-                    let mut left_indices = Vec::with_capacity(active_indices.len() / 2);
-                    let mut right_indices = Vec::with_capacity(active_indices.len() / 2);
-
-                    for &idx in &active_indices {
-                        if self.quantized_data[[idx, feat_out]] <= bin as u8 {
-                            left_indices.push(idx);
-                        } else {
-                            right_indices.push(idx);
-                        }
-                    }
-
-                    best_split = Some((
-                        feat_out,
-                        bin as u8,
-                        left_w,
-                        right_w,
-                        left_indices,
-                        right_indices,
-                    ));
+                    best_split = Some((feat_out, bin as u8, left_w, right_w));
                 }
             }
         }
 
-        if let Some((feat_out, best_bin, _lw, _rw, left_idx, right_idx)) = best_split {
+        if let Some((feat_out, best_bin, _lw, _rw)) = best_split {
+            // Reconstruct the indices only for the chosen best split
+            let col = self.quantized_data.column(feat_out);
+            let col_slice = col.as_slice().unwrap();
+
+            let mut left_idx = Vec::with_capacity(active_indices.len() / 2);
+            let mut right_idx = Vec::with_capacity(active_indices.len() / 2);
+            for &idx in &active_indices {
+                if col_slice[idx] <= best_bin {
+                    left_idx.push(idx);
+                } else {
+                    right_idx.push(idx);
+                }
+            }
+
             if left_idx.len() >= self.min_samples_leaf && right_idx.len() >= self.min_samples_leaf {
                 let threshold = self.thresholds[feat_out][best_bin as usize];
 

@@ -6,7 +6,7 @@ import numpy as np
 # Workaround for OpenMP conflict with XGBoost
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-from boostlss_py import PyFamily, PyTreeLearner, BoostLssModel
+from boostlss_py import PyFamily, PyTreeLearner, PyHistTreeLearner, BoostLssModel
 from xgboostlss.model import XGBoostLSS
 from xgboostlss.distributions.Gaussian import Gaussian
 import xgboost as xgb
@@ -52,10 +52,27 @@ def main():
     model.add_learner("sigma", PyTreeLearner(features, max_depth=3, min_samples_leaf=1))
 
     start = time.time()
-    print("Starting BoostLSS...")
+    print("Starting BoostLSS (Exact Tree)...")
     model.fit(X, y)
     boost_time = time.time() - start
-    print(f"BoostLSS Time:   {boost_time:.3f}s")
+    print(f"BoostLSS Time (Exact Tree):   {boost_time:.3f}s")
+
+    # 4. Benchmark boostlss (HistTree)
+    hist_model = BoostLssModel(family, step_length=0.1, mstop=50, algorithm="noncyclic")
+
+    hist_model.add_learner(
+        "mu", PyHistTreeLearner(features, max_depth=3, min_samples_leaf=1, max_bins=256)
+    )
+    hist_model.add_learner(
+        "sigma",
+        PyHistTreeLearner(features, max_depth=3, min_samples_leaf=1, max_bins=256),
+    )
+
+    start = time.time()
+    print("Starting BoostLSS (HistTree)...")
+    hist_model.fit(X, y)
+    hist_time = time.time() - start
+    print(f"BoostLSS Time (HistTree):     {hist_time:.3f}s")
 
 
 if __name__ == "__main__":

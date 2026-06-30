@@ -169,6 +169,8 @@ impl BoostLssModel {
             s.into()
         } else if let Ok(t) = learner.extract::<crate::learner::PyTreeLearner>() {
             t.into()
+        } else if let Ok(ht) = learner.extract::<crate::learner::PyHistTreeLearner>() {
+            ht.into()
         } else if let Ok(p) = learner.extract::<crate::learner::PyPSplineLearner>() {
             p.into()
         } else if let Ok(b) = learner.extract::<crate::learner::PyBivariatePSplineLearner>() {

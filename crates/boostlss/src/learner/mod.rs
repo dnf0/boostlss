@@ -316,7 +316,7 @@ impl LearnerFit {
             }
             Self::Stump(state) => state.fit_update(u, weights),
             Self::Tree(state) => state.fit_update(u, weights),
-            Self::HistTree(_) => unimplemented!("HistTree fit_update not implemented yet"),
+            Self::HistTree(state) => state.fit_update(u, weights),
         }
     }
 

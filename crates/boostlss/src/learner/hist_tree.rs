@@ -1,5 +1,6 @@
 use crate::data::Dataset;
-use ndarray::Array2;
+use crate::learner::LearnerUpdate;
+use ndarray::{Array2, ArrayView1};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -22,6 +23,16 @@ impl HistTree {
 
     pub fn max_bins(mut self, max_bins: usize) -> Self {
         self.max_bins = max_bins;
+        self
+    }
+
+    pub fn max_depth(mut self, max_depth: usize) -> Self {
+        self.max_depth = max_depth;
+        self
+    }
+
+    pub fn min_samples_leaf(mut self, min_samples_leaf: usize) -> Self {
+        self.min_samples_leaf = min_samples_leaf;
         self
     }
 
@@ -92,6 +103,151 @@ pub struct HistTreeFitState {
     pub min_samples_leaf: usize,
 }
 
+impl HistTreeFitState {
+    pub fn fit_update(
+        &self,
+        u: ArrayView1<f64>,
+        weights: Option<ArrayView1<f64>>,
+    ) -> LearnerUpdate {
+        let active_indices: Vec<usize> = (0..u.len())
+            .filter(|&i| {
+                if let Some(w) = weights {
+                    w[i] > 0.0
+                } else {
+                    true
+                }
+            })
+            .collect();
+
+        let root = self.build_tree(active_indices, 0, u, weights);
+        LearnerUpdate::HistTree {
+            node: root,
+            feature_idx: self.feature_indices[0],
+        }
+    }
+
+    fn build_tree(
+        &self,
+        active_indices: Vec<usize>,
+        depth: usize,
+        u: ArrayView1<f64>,
+        weights: Option<ArrayView1<f64>>,
+    ) -> crate::learner::tree::TreeNode {
+        let mut total_w = 0.0;
+        let mut total_wu = 0.0;
+        for &idx in &active_indices {
+            let w = weights.map(|w| w[idx]).unwrap_or(1.0);
+            total_w += w;
+            total_wu += w * u[idx];
+        }
+
+        if depth >= self.max_depth
+            || active_indices.len() < self.min_samples_leaf * 2
+            || total_w <= 1e-9
+        {
+            let mean = if total_w > 1e-9 {
+                total_wu / total_w
+            } else {
+                0.0
+            };
+            return crate::learner::tree::TreeNode::Leaf {
+                value: mean,
+                samples: active_indices.len(),
+            };
+        }
+
+        let mut best_gain = if total_w > 1e-9 {
+            (total_wu * total_wu) / total_w
+        } else {
+            -1.0
+        };
+        let mut best_split: Option<(usize, u8, f64, f64, Vec<usize>, Vec<usize>)> = None;
+
+        for (feat_out, _) in self.feature_indices.iter().enumerate() {
+            let max_bin = self.thresholds[feat_out].len();
+            // 1. Build Histogram
+            let mut hist_w = vec![0.0; max_bin + 1];
+            let mut hist_wu = vec![0.0; max_bin + 1];
+
+            for &idx in &active_indices {
+                let bin = self.quantized_data[[idx, feat_out]] as usize;
+                let w = weights.map(|w| w[idx]).unwrap_or(1.0);
+                hist_w[bin] += w;
+                hist_wu[bin] += w * u[idx];
+            }
+
+            // 2. Scan Histogram for split
+            let mut left_w = 0.0;
+            let mut left_wu = 0.0;
+
+            for bin in 0..max_bin {
+                left_w += hist_w[bin];
+                left_wu += hist_wu[bin];
+
+                let right_w = total_w - left_w;
+                let right_wu = total_wu - left_wu;
+
+                if left_w <= 1e-9 || right_w <= 1e-9 {
+                    continue;
+                }
+
+                let gain = (left_wu * left_wu / left_w) + (right_wu * right_wu / right_w);
+
+                if gain > best_gain {
+                    best_gain = gain;
+
+                    // Split the indices explicitly for the children
+                    let mut left_indices = Vec::with_capacity(active_indices.len() / 2);
+                    let mut right_indices = Vec::with_capacity(active_indices.len() / 2);
+
+                    for &idx in &active_indices {
+                        if self.quantized_data[[idx, feat_out]] <= bin as u8 {
+                            left_indices.push(idx);
+                        } else {
+                            right_indices.push(idx);
+                        }
+                    }
+
+                    best_split = Some((
+                        feat_out,
+                        bin as u8,
+                        left_w,
+                        right_w,
+                        left_indices,
+                        right_indices,
+                    ));
+                }
+            }
+        }
+
+        if let Some((feat_out, best_bin, _lw, _rw, left_idx, right_idx)) = best_split {
+            if left_idx.len() >= self.min_samples_leaf && right_idx.len() >= self.min_samples_leaf {
+                let threshold = self.thresholds[feat_out][best_bin as usize];
+
+                let left = Box::new(self.build_tree(left_idx, depth + 1, u, weights));
+                let right = Box::new(self.build_tree(right_idx, depth + 1, u, weights));
+
+                return crate::learner::tree::TreeNode::Split {
+                    feature_idx: feat_out,
+                    threshold,
+                    left,
+                    right,
+                };
+            }
+        }
+
+        let mean = if total_w > 1e-9 {
+            total_wu / total_w
+        } else {
+            0.0
+        };
+        crate::learner::tree::TreeNode::Leaf {
+            value: mean,
+            samples: active_indices.len(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -111,5 +267,36 @@ mod tests {
         assert_eq!(state.quantized_data.shape(), &[5, 1]);
         assert_eq!(state.thresholds.len(), 1);
         assert!(state.thresholds[0].len() <= 3);
+    }
+
+    #[test]
+    fn test_hist_tree_fit() {
+        let x = array![[1.0], [2.0], [3.0], [4.0], [5.0]];
+        let y = array![1.0, 2.0, 3.0, 4.0, 5.0];
+        let data = crate::data::Dataset::new(x, y.clone(), None).unwrap();
+
+        let hist_tree = HistTree::new(vec![0]).max_bins(5).max_depth(1);
+        let state = hist_tree.build_fit_state(&data).unwrap();
+
+        let u = array![-1.0, -1.0, 0.0, 1.0, 1.0]; // pseudo-residuals
+        let weights = ndarray::Array1::ones(5);
+
+        let update = state.fit_update(u.view(), Some(weights.view()));
+
+        // Assert we built a tree update
+        match update {
+            crate::learner::LearnerUpdate::HistTree { node, .. } => {
+                if let crate::learner::tree::TreeNode::Split { left, right: _, .. } = node {
+                    // It should have successfully split
+                    assert!(
+                        matches!(*left, crate::learner::tree::TreeNode::Leaf { .. })
+                            || matches!(*left, crate::learner::tree::TreeNode::Split { .. })
+                    );
+                } else {
+                    panic!("Expected root to be a Split node");
+                }
+            }
+            _ => panic!("Wrong update type"),
+        }
     }
 }

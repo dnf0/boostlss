@@ -4,7 +4,7 @@ mod learner;
 mod model;
 pub mod stabsel;
 
-use family::{PyFamily, PyTweedieLss, PyZINBLss};
+use family::{PyFamily, PyLogisticLss, PyTweedieLss, PyZINBLss};
 use learner::{
     PyBivariatePSplineLearner, PyConstrainedPSplineLearner, PyHistTreeLearner, PyLinearLearner,
     PyPSplineLearner, PyStumpLearner, PyTreeLearner,
@@ -17,6 +17,7 @@ fn boostlss_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyFamily>()?;
     m.add_class::<PyTweedieLss>()?;
     m.add_class::<PyZINBLss>()?;
+    m.add_class::<PyLogisticLss>()?;
     m.add_class::<PyLinearLearner>()?;
     m.add_class::<PyStumpLearner>()?;
     m.add_class::<PyTreeLearner>()?;

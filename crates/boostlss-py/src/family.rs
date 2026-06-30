@@ -11,7 +11,7 @@ pub struct PyZINBLss {
 #[pymethods]
 impl PyZINBLss {
     #[new]
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             inner: ZINBLss::new(),
         }
@@ -38,7 +38,7 @@ pub enum PyFamily {
 #[pymethods]
 impl PyFamily {
     #[new]
-    fn new(name: &str) -> PyResult<Self> {
+    pub fn new(name: &str) -> PyResult<Self> {
         match name {
             "GaussianLSS" | "GaussianLss" => Ok(PyFamily::Gaussian),
             "BinomialLSS" | "BinomialLss" => Ok(PyFamily::Binomial),
@@ -79,7 +79,7 @@ pub struct PyTweedieLss {
 impl PyTweedieLss {
     #[new]
     #[pyo3(signature = (p=1.5))]
-    fn new(p: f64) -> Self {
+    pub fn new(p: f64) -> Self {
         Self {
             inner: TweedieLss::new(p),
         }
@@ -87,5 +87,21 @@ impl PyTweedieLss {
 
     fn __getnewargs__(&self) -> (f64,) {
         (self.inner.p,)
+    }
+}
+
+#[pyclass(name = "LogisticLss", module = "boostlss_py")]
+#[derive(Clone)]
+pub struct PyLogisticLss;
+
+#[pymethods]
+impl PyLogisticLss {
+    #[new]
+    pub fn new() -> Self {
+        Self
+    }
+
+    fn __getnewargs__(&self) -> () {
+        ()
     }
 }

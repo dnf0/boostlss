@@ -32,3 +32,19 @@ def test_zinb():
 
     model.fit(X, y.astype(float))
     assert len(model.predict(X, "mu")) == 10
+
+
+def test_logistic():
+    from boostlss_py import LogisticLss, BoostLssModel, PyLinearLearner
+    import numpy as np
+
+    fam = LogisticLss()
+    model = BoostLssModel(fam, mstop=2)
+    model.add_learner("mu", PyLinearLearner(0))
+    model.add_learner("s", PyLinearLearner(0))
+
+    y = np.random.logistic(loc=5, scale=2, size=10)
+    X = np.random.normal(size=(10, 2))
+
+    model.fit(X, y)
+    assert len(model.predict(X, "mu")) == 10

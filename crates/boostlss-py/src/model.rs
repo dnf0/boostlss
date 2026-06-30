@@ -25,6 +25,7 @@ pub enum InternalFamily {
     Gev,
     Jsu,
     Tweedie(TweedieLss),
+    Logistic,
     Zinb(ZINBLss),
 }
 
@@ -38,6 +39,7 @@ enum FittedModel {
     Gev(Fitted<GEVLss>),
     Jsu(Fitted<JSULss>),
     Tweedie(Fitted<TweedieLss>),
+    Logistic(Fitted<boostlss::family::LogisticLss>),
     Zinb(Fitted<ZINBLss>),
 }
 
@@ -73,6 +75,9 @@ impl FittedModel {
             Self::Jsu(fitted) => fitted
                 .predict(dataset, param, scale)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Logistic(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
             Self::Tweedie(fitted) => fitted
                 .predict(dataset, param, scale)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
@@ -92,6 +97,7 @@ impl FittedModel {
             Self::Zip(fitted) => fitted.feature_importance(),
             Self::Gev(fitted) => fitted.feature_importance(),
             Self::Jsu(fitted) => fitted.feature_importance(),
+            Self::Logistic(fitted) => fitted.feature_importance(),
             Self::Tweedie(fitted) => fitted.feature_importance(),
             Self::Zinb(fitted) => fitted.feature_importance(),
         }
@@ -127,6 +133,9 @@ impl FittedModel {
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
             Self::Jsu(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Logistic(fitted) => fitted
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
             Self::Tweedie(fitted) => fitted
@@ -198,6 +207,8 @@ impl BoostLssModel {
                 PyFamily::Gev => InternalFamily::Gev,
                 PyFamily::Jsu => InternalFamily::Jsu,
             }
+        } else if let Ok(_) = family.extract::<crate::family::PyLogisticLss>() {
+            InternalFamily::Logistic
         } else if let Ok(t) = family.extract::<PyTweedieLss>() {
             InternalFamily::Tweedie(t.inner.clone())
         } else if let Ok(z) = family.extract::<PyZINBLss>() {
@@ -492,6 +503,35 @@ impl BoostLssModel {
 
                 self.fitted = Some(FittedModel::Jsu(fitted));
             }
+            InternalFamily::Logistic => {
+                let mut model = BoostLss::new(boostlss::family::LogisticLss::new())
+                    .step_length(self.step_length)
+                    .mstop(Mstop::Scalar(self.mstop));
+
+                for (param, learner) in &self.learners {
+                    model = model
+                        .on(param.as_str(), |p| p.add(learner.clone()))
+                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+                }
+
+                let fitted = match self.algorithm {
+                    Algorithm::NonCyclicOuter => {
+                        let model = model.algorithm(Algorithm::NonCyclicOuter);
+                        fit_noncyclical_outer(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
+
+                self.fitted = Some(FittedModel::Logistic(fitted));
+            }
             InternalFamily::Tweedie(ref t_fam) => {
                 let mut model = BoostLss::new(t_fam.clone())
                     .step_length(self.step_length)
@@ -582,6 +622,36 @@ impl BoostLssModel {
             match &self.family {
                 InternalFamily::Gaussian => {
                     let mut model = BoostLss::new(GaussianLss::new())
+                        .step_length(self.step_length)
+                        .mstop(Mstop::Scalar(self.mstop));
+
+                    for (param, learner) in &self.learners {
+                        model = model
+                            .on(param.as_str(), |p| p.add(learner.clone()))
+                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+                    }
+
+                    let model = match self.algorithm {
+                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
+
+                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
+                    let result = cv
+                        .run(&dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+
+                    let dict = PyDict::new_bound(py);
+                    match result.optimal_mstop {
+                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
+                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
+                    }
+                    dict.set_item("mean_risk", result.mean_risk)?;
+                    Ok(dict)
+                }
+                InternalFamily::Logistic => {
+                    let mut model = BoostLss::new(boostlss::family::LogisticLss::new())
                         .step_length(self.step_length)
                         .mstop(Mstop::Scalar(self.mstop));
 
@@ -1142,6 +1212,28 @@ impl BoostLssModel {
                 )
                 .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
             }
+            InternalFamily::Logistic => {
+                let mut model = BoostLss::new(boostlss::family::LogisticLss::new())
+                    .step_length(self.step_length)
+                    .mstop(Mstop::Scalar(self.mstop));
+                for (param, learner) in &self.learners {
+                    model = model
+                        .on(param.as_str(), |p| p.add(learner.clone()))
+                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+                }
+                let model = match self.algorithm {
+                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
+                    Algorithm::Cyclic => model,
+                    Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                };
+                boostlss::cv::stabsel::run_stabsel(
+                    &model,
+                    &dataset,
+                    Mstop::Scalar(self.mstop),
+                    &config,
+                )
+                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+            }
             InternalFamily::Tweedie(ref t_fam) => {
                 let mut model = BoostLss::new(t_fam.clone())
                     .step_length(self.step_length)
@@ -1230,6 +1322,7 @@ impl BoostLssModel {
         .to_string();
         {
             let fam_obj = match &self.family {
+                InternalFamily::Logistic => crate::family::PyLogisticLss::new().into_py(py),
                 InternalFamily::Tweedie(t) => {
                     crate::family::PyTweedieLss { inner: t.clone() }.into_py(py)
                 }
@@ -1246,6 +1339,7 @@ impl BoostLssModel {
                         InternalFamily::Zip => PyFamily::Zip,
                         InternalFamily::Gev => PyFamily::Gev,
                         InternalFamily::Jsu => PyFamily::Jsu,
+                        InternalFamily::Logistic => unreachable!(),
                         InternalFamily::Tweedie(_) => unreachable!(),
                         InternalFamily::Zinb(_) => unreachable!(),
                     };
@@ -1268,6 +1362,7 @@ impl BoostLssModel {
             InternalFamily::Zip => "ZIPLss",
             InternalFamily::Gev => "GEVLss",
             InternalFamily::Jsu => "JSULss",
+            InternalFamily::Logistic => "LogisticLss",
             InternalFamily::Tweedie(t) => {
                 dict.set_item("tweedie_p", t.p)?;
                 "TweedieLss"
@@ -1295,6 +1390,7 @@ impl BoostLssModel {
                 FittedModel::Zip(f) => bincode::serialize(f),
                 FittedModel::Gev(f) => bincode::serialize(f),
                 FittedModel::Jsu(f) => bincode::serialize(f),
+                FittedModel::Logistic(f) => bincode::serialize(f),
                 FittedModel::Tweedie(f) => bincode::serialize(f),
                 FittedModel::Zinb(f) => bincode::serialize(f),
             }
@@ -1333,6 +1429,7 @@ impl BoostLssModel {
                     .extract()?;
                 InternalFamily::Tweedie(boostlss::family::TweedieLss::new(p))
             }
+            "LogisticLss" => InternalFamily::Logistic,
             "ZINBLss" => InternalFamily::Zinb(boostlss::family::ZINBLss::new()),
             _ => return Err(pyo3::exceptions::PyRuntimeError::new_err("Unknown family")),
         };
@@ -1388,6 +1485,10 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),
                 InternalFamily::Jsu => FittedModel::Jsu(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::Logistic => FittedModel::Logistic(
                     bincode::deserialize(bytes)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),

@@ -14,3 +14,21 @@ def test_tweedie():
 
     model.fit(X, y)
     assert len(model.predict(X, "mu")) == 10
+
+
+def test_zinb():
+    from boostlss_py import ZINBLss, BoostLssModel, PyLinearLearner
+    import numpy as np
+
+    fam = ZINBLss()
+    model = BoostLssModel(fam, mstop=2)
+    model.add_learner("mu", PyLinearLearner(0))
+    model.add_learner("sigma", PyLinearLearner(0))
+    model.add_learner("nu", PyLinearLearner(0))
+
+    y = np.random.poisson(lam=5, size=10)
+    y[0:3] = 0.0  # Force zeros
+    X = np.random.normal(size=(10, 2))
+
+    model.fit(X, y.astype(float))
+    assert len(model.predict(X, "mu")) == 10

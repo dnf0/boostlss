@@ -1,5 +1,26 @@
 use boostlss::family::TweedieLss;
+use boostlss::family::ZINBLss;
 use pyo3::prelude::*;
+
+#[pyclass(name = "ZINBLss", module = "boostlss_py")]
+#[derive(Clone)]
+pub struct PyZINBLss {
+    pub inner: ZINBLss,
+}
+
+#[pymethods]
+impl PyZINBLss {
+    #[new]
+    fn new() -> Self {
+        Self {
+            inner: ZINBLss::new(),
+        }
+    }
+
+    fn __getnewargs__(&self) -> () {
+        ()
+    }
+}
 
 #[pyclass(module = "boostlss_py")]
 #[derive(Clone)]

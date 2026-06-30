@@ -16,6 +16,7 @@ pub mod nbinomial;
 pub mod student_t;
 pub mod tweedie;
 pub mod weibull;
+pub mod zinb;
 pub mod zip;
 
 pub use beta::BetaLss;
@@ -29,6 +30,7 @@ pub use nbinomial::NBinomialLss;
 pub use student_t::StudentTLss;
 pub use tweedie::TweedieLss;
 pub use weibull::WeibullLss;
+pub use zinb::ZINBLss;
 pub use zip::ZIPLss;
 
 pub trait Family: std::fmt::Debug {

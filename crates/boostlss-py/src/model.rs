@@ -1,13 +1,13 @@
-use crate::family::{PyFamily, PyTweedieLss};
+use crate::family::{PyFamily, PyTweedieLss, PyZINBLss};
 use boostlss::cv::{CvRisk, Resampling};
 use boostlss::data::Dataset;
 use boostlss::engine::cyclical::fit_cyclical;
 use boostlss::engine::noncyclical::{fit_noncyclical, fit_noncyclical_outer};
 use boostlss::engine::{Algorithm, Mstop};
-use boostlss::family::TweedieLss;
 use boostlss::family::{
     BetaLss, BinomialLss, GEVLss, GaussianLss, JSULss, LogNormalLss, WeibullLss, ZIPLss,
 };
+use boostlss::family::{TweedieLss, ZINBLss};
 use boostlss::learner::{BaseLearner, RandomEffects};
 use boostlss::model::{BoostLss, Fitted, Scale};
 use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
@@ -25,6 +25,7 @@ pub enum InternalFamily {
     Gev,
     Jsu,
     Tweedie(TweedieLss),
+    Zinb(ZINBLss),
 }
 
 enum FittedModel {
@@ -37,6 +38,7 @@ enum FittedModel {
     Gev(Fitted<GEVLss>),
     Jsu(Fitted<JSULss>),
     Tweedie(Fitted<TweedieLss>),
+    Zinb(Fitted<ZINBLss>),
 }
 
 impl FittedModel {
@@ -74,6 +76,9 @@ impl FittedModel {
             Self::Tweedie(fitted) => fitted
                 .predict(dataset, param, scale)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Zinb(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
         }
     }
 
@@ -88,6 +93,7 @@ impl FittedModel {
             Self::Gev(fitted) => fitted.feature_importance(),
             Self::Jsu(fitted) => fitted.feature_importance(),
             Self::Tweedie(fitted) => fitted.feature_importance(),
+            Self::Zinb(fitted) => fitted.feature_importance(),
         }
     }
 
@@ -124,6 +130,9 @@ impl FittedModel {
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
             Self::Tweedie(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Zinb(fitted) => fitted
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
         }
@@ -191,6 +200,8 @@ impl BoostLssModel {
             }
         } else if let Ok(t) = family.extract::<PyTweedieLss>() {
             InternalFamily::Tweedie(t.inner.clone())
+        } else if let Ok(z) = family.extract::<PyZINBLss>() {
+            InternalFamily::Zinb(z.inner.clone())
         } else {
             return Err(pyo3::exceptions::PyValueError::new_err("Invalid family"));
         };
@@ -510,6 +521,35 @@ impl BoostLssModel {
 
                 self.fitted = Some(FittedModel::Tweedie(fitted));
             }
+            InternalFamily::Zinb(ref z_fam) => {
+                let mut model = BoostLss::new(z_fam.clone())
+                    .step_length(self.step_length)
+                    .mstop(Mstop::Scalar(self.mstop));
+
+                for (param, learner) in &self.learners {
+                    model = model
+                        .on(param.as_str(), |p| p.add(learner.clone()))
+                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+                }
+
+                let fitted = match self.algorithm {
+                    Algorithm::NonCyclicOuter => {
+                        let model = model.algorithm(Algorithm::NonCyclicOuter);
+                        fit_noncyclical_outer(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                    Algorithm::Cyclic => fit_cyclical(model, &dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+
+                    Algorithm::NonCyclic => {
+                        let model = model.algorithm(Algorithm::NonCyclic);
+                        fit_noncyclical(model, &dataset)
+                            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+                    }
+                };
+
+                self.fitted = Some(FittedModel::Zinb(fitted));
+            }
         }
         Ok(())
     }
@@ -572,6 +612,36 @@ impl BoostLssModel {
                 }
                 InternalFamily::Tweedie(ref t_fam) => {
                     let mut model = BoostLss::new(t_fam.clone())
+                        .step_length(self.step_length)
+                        .mstop(Mstop::Scalar(self.mstop));
+
+                    for (param, learner) in &self.learners {
+                        model = model
+                            .on(param.as_str(), |p| p.add(learner.clone()))
+                            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+                    }
+
+                    let model = match self.algorithm {
+                        Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
+                        Algorithm::Cyclic => model,
+                        Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                    };
+
+                    let cv = CvRisk::new(model, Resampling::KFold { k: folds });
+                    let result = cv
+                        .run(&dataset)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+
+                    let dict = PyDict::new_bound(py);
+                    match result.optimal_mstop {
+                        Mstop::Scalar(m) => dict.set_item("optimal_mstop", m)?,
+                        Mstop::PerParam(v) => dict.set_item("optimal_mstop", v)?,
+                    }
+                    dict.set_item("mean_risk", result.mean_risk)?;
+                    Ok(dict)
+                }
+                InternalFamily::Zinb(ref z_fam) => {
+                    let mut model = BoostLss::new(z_fam.clone())
                         .step_length(self.step_length)
                         .mstop(Mstop::Scalar(self.mstop));
 
@@ -1094,6 +1164,28 @@ impl BoostLssModel {
                 )
                 .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
             }
+            InternalFamily::Zinb(ref z_fam) => {
+                let mut model = BoostLss::new(z_fam.clone())
+                    .step_length(self.step_length)
+                    .mstop(Mstop::Scalar(self.mstop));
+                for (param, learner) in &self.learners {
+                    model = model
+                        .on(param.as_str(), |p| p.add(learner.clone()))
+                        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+                }
+                let model = match self.algorithm {
+                    Algorithm::NonCyclicOuter => model.algorithm(Algorithm::NonCyclicOuter),
+                    Algorithm::Cyclic => model,
+                    Algorithm::NonCyclic => model.algorithm(Algorithm::NonCyclic),
+                };
+                boostlss::cv::stabsel::run_stabsel(
+                    &model,
+                    &dataset,
+                    Mstop::Scalar(self.mstop),
+                    &config,
+                )
+                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
+            }
         };
 
         let mut probabilities = std::collections::HashMap::new();
@@ -1141,6 +1233,9 @@ impl BoostLssModel {
                 InternalFamily::Tweedie(t) => {
                     crate::family::PyTweedieLss { inner: t.clone() }.into_py(py)
                 }
+                InternalFamily::Zinb(z) => {
+                    crate::family::PyZINBLss { inner: z.clone() }.into_py(py)
+                }
                 f => {
                     let py_fam = match f {
                         InternalFamily::Gaussian => PyFamily::Gaussian,
@@ -1152,6 +1247,7 @@ impl BoostLssModel {
                         InternalFamily::Gev => PyFamily::Gev,
                         InternalFamily::Jsu => PyFamily::Jsu,
                         InternalFamily::Tweedie(_) => unreachable!(),
+                        InternalFamily::Zinb(_) => unreachable!(),
                     };
                     py_fam.into_py(py)
                 }
@@ -1176,6 +1272,7 @@ impl BoostLssModel {
                 dict.set_item("tweedie_p", t.p)?;
                 "TweedieLss"
             }
+            InternalFamily::Zinb(_) => "ZINBLss",
         };
         dict.set_item("family", family_str)?;
         dict.set_item("mstop", self.mstop)?;
@@ -1199,6 +1296,7 @@ impl BoostLssModel {
                 FittedModel::Gev(f) => bincode::serialize(f),
                 FittedModel::Jsu(f) => bincode::serialize(f),
                 FittedModel::Tweedie(f) => bincode::serialize(f),
+                FittedModel::Zinb(f) => bincode::serialize(f),
             }
             .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
             dict.set_item("fitted", PyBytes::new_bound(py, &bytes))?;
@@ -1235,6 +1333,7 @@ impl BoostLssModel {
                     .extract()?;
                 InternalFamily::Tweedie(boostlss::family::TweedieLss::new(p))
             }
+            "ZINBLss" => InternalFamily::Zinb(boostlss::family::ZINBLss::new()),
             _ => return Err(pyo3::exceptions::PyRuntimeError::new_err("Unknown family")),
         };
         self.mstop = state
@@ -1293,6 +1392,10 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),
                 InternalFamily::Tweedie(_) => FittedModel::Tweedie(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::Zinb(_) => FittedModel::Zinb(
                     bincode::deserialize(bytes)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),

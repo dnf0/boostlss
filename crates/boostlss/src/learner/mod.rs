@@ -20,6 +20,9 @@ pub mod tree;
 use serde::{Deserialize, Serialize};
 pub use tree::{Tree, TreeNode};
 
+pub mod hist_tree;
+pub use hist_tree::{HistTree, HistTreeFitState};
+
 pub mod random_effects;
 pub use random_effects::RandomEffects;
 
@@ -30,6 +33,7 @@ pub enum BaseLearner {
     ConstrainedPSpline(constrained_pspline::ConstrainedPSpline),
     Stump(Stump),
     Tree(Tree),
+    HistTree(HistTree),
     RandomEffects(RandomEffects),
     BivariatePSpline(bspatial::BivariatePSpline),
 }
@@ -64,6 +68,12 @@ impl From<Tree> for BaseLearner {
     }
 }
 
+impl From<HistTree> for BaseLearner {
+    fn from(h: HistTree) -> Self {
+        Self::HistTree(h)
+    }
+}
+
 impl From<RandomEffects> for BaseLearner {
     fn from(r: RandomEffects) -> Self {
         Self::RandomEffects(r)
@@ -92,6 +102,9 @@ impl BaseLearner {
             Self::Tree(_) => Err(crate::error::BoostlssError::DataError(
                 "Tree does not use build_design".into(),
             )),
+            Self::HistTree(_) => Err(crate::error::BoostlssError::DataError(
+                "HistTree does not use build_design".into(),
+            )),
             Self::BivariatePSpline(_) => Err(crate::error::BoostlssError::DataError(
                 "BivariatePSpline does not use build_design(x)".into(),
             )),
@@ -106,6 +119,7 @@ impl BaseLearner {
             Self::RandomEffects(r) => format!("RandomEffects_{}", r.feature_idx),
             Self::Stump(s) => format!("Stump_{}", s.feature_idx),
             Self::Tree(_) => "Tree".to_string(),
+            Self::HistTree(_) => "HistTree".to_string(),
             Self::BivariatePSpline(bp) => {
                 format!("BivariatePSpline_{}_{}", bp.feature1_idx, bp.feature2_idx)
             }
@@ -120,6 +134,7 @@ impl BaseLearner {
             Self::RandomEffects(r) => r.penalty_matrix(n_cols),
             Self::Stump(_) => Array2::zeros((0, 0)),
             Self::Tree(_) => Array2::zeros((0, 0)),
+            Self::HistTree(_) => Array2::zeros((0, 0)),
             Self::BivariatePSpline(_) => Array2::zeros((0, 0)),
         }
     }
@@ -132,6 +147,7 @@ impl BaseLearner {
             Self::RandomEffects(r) => Some(r.df),
             Self::Stump(_) => None,
             Self::Tree(_) => None,
+            Self::HistTree(_) => None,
             Self::BivariatePSpline(bp) => Some(bp.df),
         }
     }
@@ -141,6 +157,12 @@ impl BaseLearner {
     ) -> Result<LearnerFit, crate::error::BoostlssError> {
         if let Self::Tree(tree_learner) = self {
             return Ok(LearnerFit::Tree(tree_learner.build_fit_state(data)?));
+        }
+
+        if let Self::HistTree(hist_tree_learner) = self {
+            return Ok(LearnerFit::HistTree(
+                hist_tree_learner.build_fit_state(data)?,
+            ));
         }
 
         if let Self::Stump(stump_learner) = self {
@@ -231,6 +253,10 @@ pub enum LearnerUpdate {
         node: TreeNode,
         param: String,
     },
+    HistTree {
+        node: TreeNode,
+        feature_idx: usize,
+    },
 }
 
 impl LearnerUpdate {
@@ -250,6 +276,9 @@ impl LearnerUpdate {
             Self::Tree { node, .. } => {
                 node.scale(factor);
             }
+            Self::HistTree { node, .. } => {
+                node.scale(factor);
+            }
         }
     }
 }
@@ -267,6 +296,7 @@ pub enum LearnerFit {
     ConstrainedPSpline(constrained_pspline::ConstrainedFitState),
     Stump(stump::StumpFitState),
     Tree(tree::TreeFitState),
+    HistTree(HistTreeFitState),
 }
 
 impl LearnerFit {
@@ -286,6 +316,7 @@ impl LearnerFit {
             }
             Self::Stump(state) => state.fit_update(u, weights),
             Self::Tree(state) => state.fit_update(u, weights),
+            Self::HistTree(_) => unimplemented!("HistTree fit_update not implemented yet"),
         }
     }
 
@@ -313,6 +344,12 @@ impl LearnerFit {
                     .unwrap_or_else(|_| ndarray::Array1::zeros(data.n_obs()))
             }
             (Self::Tree(state), LearnerUpdate::Tree { node: root, .. }) => {
+                let tree_learner = Tree::new(state.feature_indices.clone());
+                tree_learner
+                    .predict(root, data)
+                    .unwrap_or_else(|_| ndarray::Array1::zeros(data.n_obs()))
+            }
+            (Self::HistTree(state), LearnerUpdate::HistTree { node: root, .. }) => {
                 let tree_learner = Tree::new(state.feature_indices.clone());
                 tree_learner
                     .predict(root, data)
@@ -383,6 +420,10 @@ mod tests {
         let t = Tree::new(vec![0]);
         let bl: BaseLearner = t.into();
         assert!(matches!(bl, BaseLearner::Tree(_)));
+
+        let ht = HistTree::new(vec![0]);
+        let bl: BaseLearner = ht.into();
+        assert!(matches!(bl, BaseLearner::HistTree(_)));
     }
 
     #[test]

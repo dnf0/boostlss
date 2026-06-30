@@ -222,6 +222,7 @@ impl BoostLssModel {
                     }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+
                     Algorithm::NonCyclic => {
                         let model = model.algorithm(Algorithm::NonCyclic);
                         fit_noncyclical(model, &dataset)
@@ -250,6 +251,7 @@ impl BoostLssModel {
                     }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+
                     Algorithm::NonCyclic => {
                         let model = model.algorithm(Algorithm::NonCyclic);
                         fit_noncyclical(model, &dataset)
@@ -278,6 +280,7 @@ impl BoostLssModel {
                     }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+
                     Algorithm::NonCyclic => {
                         let model = model.algorithm(Algorithm::NonCyclic);
                         fit_noncyclical(model, &dataset)
@@ -306,6 +309,7 @@ impl BoostLssModel {
                     }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+
                     Algorithm::NonCyclic => {
                         let model = model.algorithm(Algorithm::NonCyclic);
                         fit_noncyclical(model, &dataset)
@@ -334,6 +338,7 @@ impl BoostLssModel {
                     }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+
                     Algorithm::NonCyclic => {
                         let model = model.algorithm(Algorithm::NonCyclic);
                         fit_noncyclical(model, &dataset)
@@ -362,6 +367,7 @@ impl BoostLssModel {
                     }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+
                     Algorithm::NonCyclic => {
                         let model = model.algorithm(Algorithm::NonCyclic);
                         fit_noncyclical(model, &dataset)
@@ -390,6 +396,7 @@ impl BoostLssModel {
                     }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+
                     Algorithm::NonCyclic => {
                         let model = model.algorithm(Algorithm::NonCyclic);
                         fit_noncyclical(model, &dataset)
@@ -418,6 +425,7 @@ impl BoostLssModel {
                     }
                     Algorithm::Cyclic => fit_cyclical(model, &dataset)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+
                     Algorithm::NonCyclic => {
                         let model = model.algorithm(Algorithm::NonCyclic);
                         fit_noncyclical(model, &dataset)

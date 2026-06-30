@@ -14,6 +14,7 @@ pub mod jsu;
 pub mod log_normal;
 pub mod nbinomial;
 pub mod student_t;
+pub mod tweedie;
 pub mod weibull;
 pub mod zip;
 
@@ -26,6 +27,7 @@ pub use jsu::JSULss;
 pub use log_normal::LogNormalLss;
 pub use nbinomial::NBinomialLss;
 pub use student_t::StudentTLss;
+pub use tweedie::TweedieLss;
 pub use weibull::WeibullLss;
 pub use zip::ZIPLss;
 

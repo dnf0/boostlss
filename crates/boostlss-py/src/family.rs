@@ -1,3 +1,4 @@
+use boostlss::family::TweedieLss;
 use pyo3::prelude::*;
 
 #[pyclass(module = "boostlss_py")]
@@ -43,6 +44,23 @@ impl PyFamily {
             PyFamily::Zip => ("ZIPLSS",),
             PyFamily::Gev => ("GEVLSS",),
             PyFamily::Jsu => ("JSULSS",),
+        }
+    }
+}
+
+#[pyclass(name = "TweedieLss", module = "boostlss_py")]
+#[derive(Clone)]
+pub struct PyTweedieLss {
+    pub inner: TweedieLss,
+}
+
+#[pymethods]
+impl PyTweedieLss {
+    #[new]
+    #[pyo3(signature = (p=1.5))]
+    fn new(p: f64) -> Self {
+        Self {
+            inner: TweedieLss::new(p),
         }
     }
 }

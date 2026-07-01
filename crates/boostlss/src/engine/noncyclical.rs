@@ -49,8 +49,26 @@ pub fn fit_noncyclical<F: Family + Clone>(
     let nu = config.step_length;
 
     let mut updates = Vec::new();
+    let mut train_losses = Vec::new();
+    let mut val_losses = if eval_data.is_some() {
+        Some(Vec::new())
+    } else {
+        None
+    };
+    let mut best_val_nll = f64::INFINITY;
+    let mut best_iteration = 0;
 
-    for _m in 1..=max_mstop {
+    let mut current_eval_predictions = if let Some(e_data) = eval_data {
+        let mut preds = Vec::new();
+        for offset in &offsets {
+            preds.push(ndarray::Array1::from_elem(e_data.n_obs(), *offset));
+        }
+        Some(preds)
+    } else {
+        None
+    };
+
+    for m in 1..=max_mstop {
         let base_nll = family.nll(data, &current_predictions)?;
         let num_params = family.params().len();
 
@@ -136,16 +154,59 @@ pub fn fit_noncyclical<F: Family + Clone>(
                     u
                 },
             });
+
+            if let Some(ref mut eval_preds) = current_eval_predictions {
+                if let Some(e_data) = eval_data {
+                    let p = cached_learners
+                        .iter()
+                        .find(|c| c.learner_idx == l_idx)
+                        .unwrap()
+                        .fit_state
+                        .predict_update(&update, e_data);
+                    eval_preds[k] = &eval_preds[k] + &(&p * nu);
+                }
+            }
+        }
+
+        let train_nll = family.nll(data, &current_predictions)?;
+        train_losses.push(train_nll);
+
+        if let Some(ref eval_preds) = current_eval_predictions {
+            if let Some(e_data) = eval_data {
+                let val_nll = family.nll(e_data, eval_preds)?;
+                val_losses.as_mut().unwrap().push(val_nll);
+
+                if val_nll < best_val_nll {
+                    best_val_nll = val_nll;
+                    best_iteration = m;
+                }
+
+                if let Some(patience) = early_stopping_rounds {
+                    if m - best_iteration >= patience {
+                        break;
+                    }
+                }
+            }
+        } else {
+            best_iteration = m;
+        }
+    }
+
+    if early_stopping_rounds.is_some() && eval_data.is_some() {
+        updates.truncate(best_iteration);
+        train_losses.truncate(best_iteration);
+        if let Some(ref mut vl) = val_losses {
+            vl.truncate(best_iteration);
         }
     }
 
     let mut fitted = Fitted::new(family, offsets, learners);
     fitted.updates = updates;
     fitted.eval_results = crate::model::EvalResults {
-        train_loss: vec![],
-        val_loss: None,
+        train_loss: train_losses,
+        val_loss: val_losses,
     };
-    fitted.best_iteration = max_mstop;
+    fitted.best_iteration = best_iteration;
     Ok(fitted)
 }
 
@@ -182,8 +243,26 @@ pub fn fit_noncyclical_outer<F: Family + Clone>(
     };
     let nu = config.step_length;
     let mut updates = Vec::new();
+    let mut train_losses = Vec::new();
+    let mut val_losses = if eval_data.is_some() {
+        Some(Vec::new())
+    } else {
+        None
+    };
+    let mut best_val_nll = f64::INFINITY;
+    let mut best_iteration = 0;
 
-    for _m in 1..=max_mstop {
+    let mut current_eval_predictions = if let Some(e_data) = eval_data {
+        let mut preds = Vec::new();
+        for offset in &offsets {
+            preds.push(ndarray::Array1::from_elem(e_data.n_obs(), *offset));
+        }
+        Some(preds)
+    } else {
+        None
+    };
+
+    for m in 1..=max_mstop {
         let base_nll = family.nll(data, &current_predictions)?;
         let num_params = family.params().len();
 
@@ -220,6 +299,19 @@ pub fn fit_noncyclical_outer<F: Family + Clone>(
         if let Some((k, l_idx, mut update, step)) = best_candidate {
             current_predictions[k] = &current_predictions[k] + &step;
             let risk_reduction = (base_nll - best_nll).max(0.0);
+
+            if let Some(ref mut eval_preds) = current_eval_predictions {
+                if let Some(e_data) = eval_data {
+                    let p = cached_learners
+                        .iter()
+                        .find(|c| c.learner_idx == l_idx)
+                        .unwrap()
+                        .fit_state
+                        .predict_update(&update, e_data);
+                    eval_preds[k] = &eval_preds[k] + &(&p * nu);
+                }
+            }
+
             update.scale(nu);
 
             updates.push(UpdateStep {
@@ -229,15 +321,46 @@ pub fn fit_noncyclical_outer<F: Family + Clone>(
                 update,
             });
         }
+
+        let train_nll = family.nll(data, &current_predictions)?;
+        train_losses.push(train_nll);
+
+        if let Some(ref eval_preds) = current_eval_predictions {
+            if let Some(e_data) = eval_data {
+                let val_nll = family.nll(e_data, eval_preds)?;
+                val_losses.as_mut().unwrap().push(val_nll);
+
+                if val_nll < best_val_nll {
+                    best_val_nll = val_nll;
+                    best_iteration = m;
+                }
+
+                if let Some(patience) = early_stopping_rounds {
+                    if m - best_iteration >= patience {
+                        break;
+                    }
+                }
+            }
+        } else {
+            best_iteration = m;
+        }
+    }
+
+    if early_stopping_rounds.is_some() && eval_data.is_some() {
+        updates.truncate(best_iteration);
+        train_losses.truncate(best_iteration);
+        if let Some(ref mut vl) = val_losses {
+            vl.truncate(best_iteration);
+        }
     }
 
     let mut fitted = Fitted::new(family, offsets, learners);
     fitted.updates = updates;
     fitted.eval_results = crate::model::EvalResults {
-        train_loss: vec![],
-        val_loss: None,
+        train_loss: train_losses,
+        val_loss: val_losses,
     };
-    fitted.best_iteration = max_mstop;
+    fitted.best_iteration = best_iteration;
     Ok(fitted)
 }
 
@@ -301,5 +424,72 @@ mod tests {
         let fitted = fit_noncyclical_outer(model, &data, None, None).unwrap();
         assert_eq!(fitted.updates.len(), 1);
         assert!(fitted.updates[0].risk_reduction > 0.0);
+    }
+    #[test]
+    fn test_early_stopping_noncyclical() {
+        use crate::model::BoostLss;
+        use ndarray::{Array1, Array2};
+
+        let n = 100;
+        let mut x = Array2::zeros((n, 1));
+        let mut y = Array1::zeros(n);
+        for i in 0..n {
+            x[[i, 0]] = (i as f64) / (n as f64);
+            y[i] = x[[i, 0]] * 2.0;
+        }
+        let data = Dataset::new(x.clone(), y.clone(), None, None).unwrap();
+
+        let family = crate::family::GaussianLss::new();
+        // High mstop, should stop early
+        let model = BoostLss::new(family)
+            .mstop(crate::engine::Mstop::Scalar(1000))
+            .step_length(0.1)
+            .algorithm(crate::engine::Algorithm::NonCyclic)
+            .on("mu", |p| {
+                p.add(crate::learner::Linear::new(0).intercept(true))
+            })
+            .unwrap();
+
+        // Use identical data for eval, just to test tracking/stopping mechanics
+        let fitted = model.fit(&data, Some(&data), Some(5)).unwrap();
+
+        assert!(fitted.best_iteration < 1000);
+        assert_eq!(fitted.updates.len(), fitted.best_iteration); // 1 update per mstop
+        assert!(fitted.eval_results.val_loss.is_some());
+        assert_eq!(fitted.eval_results.train_loss.len(), fitted.best_iteration);
+    }
+
+    #[test]
+    fn test_early_stopping_noncyclical_outer() {
+        use crate::model::BoostLss;
+        use ndarray::{Array1, Array2};
+
+        let n = 100;
+        let mut x = Array2::zeros((n, 1));
+        let mut y = Array1::zeros(n);
+        for i in 0..n {
+            x[[i, 0]] = (i as f64) / (n as f64);
+            y[i] = x[[i, 0]] * 2.0;
+        }
+        let data = Dataset::new(x.clone(), y.clone(), None, None).unwrap();
+
+        let family = crate::family::GaussianLss::new();
+        // High mstop, should stop early
+        let model = BoostLss::new(family)
+            .mstop(crate::engine::Mstop::Scalar(1000))
+            .step_length(0.1)
+            .algorithm(crate::engine::Algorithm::NonCyclicOuter)
+            .on("mu", |p| {
+                p.add(crate::learner::Linear::new(0).intercept(true))
+            })
+            .unwrap();
+
+        // Use identical data for eval, just to test tracking/stopping mechanics
+        let fitted = model.fit(&data, Some(&data), Some(5)).unwrap();
+
+        assert!(fitted.best_iteration < 1000);
+        assert_eq!(fitted.updates.len(), fitted.best_iteration); // 1 update per mstop
+        assert!(fitted.eval_results.val_loss.is_some());
+        assert_eq!(fitted.eval_results.train_loss.len(), fitted.best_iteration);
     }
 }

@@ -16,3 +16,8 @@ dev = [
     "pytest-cov",
     "maturin>=1.0",
 ]
+
+[dependency-groups]
+dev = [
+    "scipy>=1.10.1",
+]

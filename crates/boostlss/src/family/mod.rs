@@ -120,7 +120,7 @@ mod tests {
     #[test]
     fn default_ngradient_is_accurate() {
         let fam = DummyFamily::new();
-        let ds = Dataset::new(Array2::<f64>::zeros((2, 1)), array![1.0, 3.0], None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((2, 1)), array![1.0, 3.0], None, None).unwrap();
         let eta = vec![array![0.0, 0.0]];
 
         let grad = fam.ngradient(&ds, &eta, 0).unwrap();

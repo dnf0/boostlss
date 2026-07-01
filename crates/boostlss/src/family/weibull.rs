@@ -110,6 +110,7 @@ impl Family for WeibullLss {
             ndarray::Array2::zeros((y.len(), 0)),
             y.clone(),
             data.weights().cloned(),
+            data.censoring().cloned(),
         )
         .unwrap();
 
@@ -158,7 +159,7 @@ mod tests {
     fn test_weibull_gradients() {
         let fam = WeibullLss::new();
         let y = array![1.5, 2.5, 5.0];
-        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None, None).unwrap();
         let eta = vec![array![0.0, 1.0, 2.0], array![-0.5, 0.0, 0.5]];
 
         let grad_mu = fam.ngradient(&ds, &eta, 0).unwrap();

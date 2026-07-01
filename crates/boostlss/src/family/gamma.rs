@@ -93,7 +93,7 @@ mod tests {
         let fam = GammaLss::new();
         // y = [1.0, 3.0], mean = 2.0, sd = 1.4142...
         // cv = 1.4142... / 2.0 = 0.7071...
-        let ds = Dataset::new(Array2::<f64>::zeros((2, 1)), array![1.0, 3.0], None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((2, 1)), array![1.0, 3.0], None, None).unwrap();
         let offsets = fam.init_offsets(&ds).unwrap();
 
         assert_relative_eq!(offsets[0], 2.0_f64.ln(), epsilon = 1e-4);
@@ -103,7 +103,7 @@ mod tests {
     #[test]
     fn gamma_nll_is_accurate() {
         let fam = GammaLss::new();
-        let ds = Dataset::new(Array2::<f64>::zeros((1, 1)), array![2.0], None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((1, 1)), array![2.0], None, None).unwrap();
 
         // Set mu = 2.0, sigma = 0.5
         let eta = vec![array![2.0_f64.ln()], array![0.5_f64.ln()]];

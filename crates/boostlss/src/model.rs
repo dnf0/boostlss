@@ -298,6 +298,7 @@ impl<F: Family> Fitted<F> {
                 modified_design,
                 data.response().clone(),
                 data.weights().cloned(),
+                data.censoring().cloned(),
             )?;
 
             let preds = self.predict(&modified_data, param, Scale::Link)?;
@@ -378,7 +379,7 @@ mod tests {
         let family = GaussianLss::new();
         let mut fitted = Fitted::new(family, vec![0.0, 0.0], vec![]);
         let data =
-            Dataset::new(Array2::<f64>::zeros((5, 2)), Array1::<f64>::zeros(5), None).unwrap();
+            Dataset::new(Array2::<f64>::zeros((5, 2)), Array1::<f64>::zeros(5), None, None).unwrap();
 
         let pred = fitted.predict(&data, "mu", Scale::Link).unwrap();
         assert_eq!(pred.len(), 5);
@@ -446,7 +447,7 @@ mod tests {
         });
 
         let data =
-            Dataset::new(Array2::<f64>::zeros((5, 2)), Array1::<f64>::zeros(5), None).unwrap();
+            Dataset::new(Array2::<f64>::zeros((5, 2)), Array1::<f64>::zeros(5), None, None).unwrap();
         let grid = vec![1.0, 2.0, 3.0];
 
         // We evaluate feature_idx 1 (the 'x' column in the design matrix, since 0 is intercept for Linear usually, but let's test feature_idx=0 here)
@@ -465,7 +466,7 @@ mod tests {
         let family = GaussianLss::new();
         let mut fitted = Fitted::new(family, vec![0.0, 0.0], vec![]);
         let data =
-            Dataset::new(Array2::<f64>::zeros((5, 2)), Array1::<f64>::zeros(5), None).unwrap();
+            Dataset::new(Array2::<f64>::zeros((5, 2)), Array1::<f64>::zeros(5), None, None).unwrap();
         let grid = vec![1.0, 2.0];
 
         let result = fitted.partial_dependence(&data, "mu", 999, &grid);
@@ -488,6 +489,7 @@ mod tests {
             ndarray::Array2::from_shape_vec((4, 1), x_train.to_vec()).unwrap(),
             y_train,
             None,
+            None,
         )
         .unwrap();
 
@@ -498,6 +500,7 @@ mod tests {
         let ds_test = Dataset::new(
             ndarray::Array2::from_shape_vec((3, 1), x_test.to_vec()).unwrap(),
             ndarray::Array1::zeros(3),
+            None,
             None,
         )
         .unwrap();
@@ -524,7 +527,7 @@ mod tests {
 
         let x = Array2::<f64>::zeros((2, 1));
         let y = array![1.0, 2.0];
-        let data = Dataset::new(x, y, None).unwrap();
+        let data = Dataset::new(x, y, None, None).unwrap();
 
         let model = BoostLss::new(GaussianLss::new())
             .on("mu", |p| p.add(Linear::new(0)))

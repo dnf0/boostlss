@@ -127,7 +127,7 @@ mod tests {
     fn test_fit_cyclical() {
         let x = array![[1.0], [2.0], [3.0], [4.0]];
         let y = array![2.0, 4.0, 6.0, 8.0]; // Perfect linear relationship
-        let data = Dataset::new(x, y.clone(), None).unwrap();
+        let data = Dataset::new(x, y.clone(), None, None).unwrap();
 
         let model = BoostLss::new(GaussianLss::new())
             .on("mu", |p| p.add(Linear::new(0).intercept(true)))
@@ -148,7 +148,7 @@ mod tests {
     fn test_risk_reduction_calculation() {
         let x = array![[1.0], [2.0], [3.0], [4.0]];
         let y = array![2.0, 4.0, 6.0, 8.0];
-        let data = Dataset::new(x, y, None).unwrap();
+        let data = Dataset::new(x, y, None, None).unwrap();
 
         let model = BoostLss::new(GaussianLss::new())
             .on("mu", |p| p.add(Linear::new(0)))

@@ -180,7 +180,7 @@ mod tests {
         use ndarray::{array, Array2};
         let fam = JSULss::new();
         let y = array![0.0, 1.0, 2.0];
-        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None, None).unwrap();
         let eta = vec![
             array![0.0, 0.0, 0.0],
             array![0.0, 0.0, 0.0],
@@ -197,7 +197,7 @@ mod tests {
         let fam = JSULss::new();
         let y = array![1.0, 2.0, 3.0, 4.0, 5.0];
         let w = array![1.0, 1.0, 1.0, 1.0, 1.0];
-        let ds = Dataset::new(Array2::<f64>::zeros((5, 1)), y, Some(w)).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((5, 1)), y, Some(w), None).unwrap();
 
         let offsets = fam.init_offsets(&ds).unwrap();
         assert_eq!(offsets.len(), 4);
@@ -216,6 +216,7 @@ mod tests {
         let ds = Dataset::new(
             ndarray::Array2::<f64>::zeros((2, 1)),
             ndarray::array![1.0, 3.0],
+            None,
             None,
         )
         .unwrap();

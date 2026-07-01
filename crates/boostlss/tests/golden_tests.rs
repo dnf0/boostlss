@@ -49,7 +49,7 @@ fn test_golden_offsets_match_r() {
     let design = Array2::<f64>::zeros((n, 1));
     let response = Array1::from_vec(data.y);
     let weights = Array1::from_elem(n, 1.0);
-    let dataset = Dataset::new(design, response, Some(weights)).unwrap();
+    let dataset = Dataset::new(design, response, Some(weights), None).unwrap();
 
     // 3. Compute initial offsets in Rust
     let rust_offsets = gaussian.init_offsets(&dataset).unwrap();

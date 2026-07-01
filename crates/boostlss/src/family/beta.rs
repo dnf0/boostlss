@@ -129,7 +129,7 @@ impl Family for BetaLss {
         let y_arr = y.clone();
         let w_arr = w.cloned();
         let dummy_design = Array2::zeros((y.len(), 0));
-        let dummy_dataset = Dataset::new(dummy_design, y_arr.clone(), w_arr).unwrap();
+        let dummy_dataset = Dataset::new(dummy_design, y_arr.clone(), w_arr, None).unwrap();
 
         let opt_phi = minimize_1d(
             |log_phi| {
@@ -156,7 +156,7 @@ mod tests {
     fn test_beta_gradients() {
         let fam = BetaLss::new();
         let y = array![0.2, 0.5, 0.8];
-        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None, None).unwrap();
         let eta = vec![array![-1.0, 0.0, 1.0], array![0.0, 1.0, 2.0]]; // logit(mu), log(phi)
 
         // Compare analytic gradient with finite difference

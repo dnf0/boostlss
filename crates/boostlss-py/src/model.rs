@@ -537,7 +537,7 @@ impl BoostLssModel {
         let n_samples = x_mat.nrows();
         let dummy_response = ndarray::Array1::<f64>::zeros(n_samples);
 
-        let ds = Dataset::new(x_mat, dummy_response, None)
+        let ds = Dataset::new(x_mat, dummy_response, None, None)
             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
 
         if let Some(fitted) = &mut self.fitted {

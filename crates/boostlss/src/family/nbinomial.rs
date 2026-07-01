@@ -99,7 +99,7 @@ mod tests {
         let fam = NBinomialLss::new();
         // y = [1.0, 5.0], mean = 3.0, sd = 2.8284, var = 8.0
         // sigma = (8.0 - 3.0) / 9.0 = 5.0 / 9.0 = 0.5555...
-        let ds = Dataset::new(Array2::<f64>::zeros((2, 1)), array![1.0, 5.0], None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((2, 1)), array![1.0, 5.0], None, None).unwrap();
         let offsets = fam.init_offsets(&ds).unwrap();
 
         assert_relative_eq!(offsets[0], 3.0_f64.ln(), epsilon = 1e-4);
@@ -109,7 +109,7 @@ mod tests {
     #[test]
     fn nbinomial_nll_is_accurate() {
         let fam = NBinomialLss::new();
-        let ds = Dataset::new(Array2::<f64>::zeros((1, 1)), array![5.0], None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((1, 1)), array![5.0], None, None).unwrap();
 
         // Set mu = 3.0, sigma = 0.5
         let eta = vec![array![3.0_f64.ln()], array![0.5_f64.ln()]];

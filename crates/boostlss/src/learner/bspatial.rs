@@ -156,7 +156,7 @@ mod tests {
         design.column_mut(0).assign(&x1);
         design.column_mut(1).assign(&x2);
         let response = Array1::linspace(0., 1., 100);
-        let ds = Dataset::new(design, response, None).unwrap();
+        let ds = Dataset::new(design, response, None, None).unwrap();
 
         let mut learner: BaseLearner = BivariatePSpline::new(0, 1).knots(5).into();
 
@@ -196,7 +196,7 @@ mod tests {
         }
         design_pred.column_mut(0).assign(&x1_pred);
         design_pred.column_mut(1).assign(&x2_pred);
-        let ds_pred = Dataset::new(design_pred, Array1::zeros(100), None).unwrap();
+        let ds_pred = Dataset::new(design_pred, Array1::zeros(100), None, None).unwrap();
 
         let pred_new = fitted.predict(&ds_pred, "mu", Scale::Link).unwrap();
         assert_eq!(pred_new.len(), 100);

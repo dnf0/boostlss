@@ -132,7 +132,7 @@ mod tests {
         let fam = MertonJumpDiffusionLss::new(10);
         let y = array![1.0, 2.0, 3.0, 4.0, 5.0];
         let w = array![1.0, 1.0, 1.0, 1.0, 1.0];
-        let ds = Dataset::new(Array2::<f64>::zeros((5, 1)), y, Some(w)).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((5, 1)), y, Some(w), None).unwrap();
 
         let offsets = fam.init_offsets(&ds).unwrap();
         assert_eq!(offsets.len(), 5);

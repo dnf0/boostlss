@@ -110,7 +110,7 @@ mod tests {
         let mut ps = PSpline::new(0);
         let x = array![[0.0], [0.5], [1.0]];
         let y = array![0.0, 0.0, 0.0];
-        let data = crate::data::Dataset::new(x, y, None).unwrap();
+        let data = crate::data::Dataset::new(x, y, None, None).unwrap();
         let design = ps.build_design(&data).unwrap();
 
         let p = ps.knots + ps.degree + 1;
@@ -122,7 +122,7 @@ mod tests {
         let mut ps = PSpline::new(0).with_knots(5).with_degree(3).cyclic(true);
         let x = array![[0.0], [0.5], [1.0]];
         let y = array![0.0, 0.0, 0.0];
-        let data = crate::data::Dataset::new(x, y, None).unwrap();
+        let data = crate::data::Dataset::new(x, y, None, None).unwrap();
         let design = ps.build_design(&data).unwrap();
 
         // Standard dimension is knots + degree + 1 (5 + 3 + 1 = 9)

@@ -115,6 +115,7 @@ pub struct Dataset {
     design: DesignMatrix,
     response: Array1<f64>,
     weights: Option<Array1<f64>>,
+    censoring: Option<Array1<bool>>,
 }
 
 impl Dataset {
@@ -122,6 +123,7 @@ impl Dataset {
         design: DesignMatrix,
         response: Array1<f64>,
         weights: Option<Array1<f64>>,
+        censoring: Option<Array1<bool>>,
     ) -> Result<Self, BoostlssError> {
         let n = design.nrows();
         if response.len() != n {
@@ -145,10 +147,20 @@ impl Dataset {
                 ));
             }
         }
+        if let Some(c) = &censoring {
+            if c.len() != n {
+                return Err(BoostlssError::DataError(format!(
+                    "Design has {} rows, but censoring has length {}",
+                    n,
+                    c.len()
+                )));
+            }
+        }
         Ok(Self {
             design,
             response,
             weights,
+            censoring,
         })
     }
 
@@ -156,24 +168,27 @@ impl Dataset {
         design: Array2<f64>,
         response: Array1<f64>,
         weights: Option<Array1<f64>>,
+        censoring: Option<Array1<bool>>,
     ) -> Result<Self, BoostlssError> {
-        Self::validate_and_create(DesignMatrix::Dense(design), response, weights)
+        Self::validate_and_create(DesignMatrix::Dense(design), response, weights, censoring)
     }
 
     pub fn new_csr(
         sparse: SparseMatrix,
         response: Array1<f64>,
         weights: Option<Array1<f64>>,
+        censoring: Option<Array1<bool>>,
     ) -> Result<Self, BoostlssError> {
-        Self::validate_and_create(DesignMatrix::Csr(sparse), response, weights)
+        Self::validate_and_create(DesignMatrix::Csr(sparse), response, weights, censoring)
     }
 
     pub fn new_csc(
         sparse: SparseMatrix,
         response: Array1<f64>,
         weights: Option<Array1<f64>>,
+        censoring: Option<Array1<bool>>,
     ) -> Result<Self, BoostlssError> {
-        Self::validate_and_create(DesignMatrix::Csc(sparse), response, weights)
+        Self::validate_and_create(DesignMatrix::Csc(sparse), response, weights, censoring)
     }
 
     pub fn design(&self) -> &DesignMatrix {
@@ -194,6 +209,22 @@ impl Dataset {
 
     pub fn weights(&self) -> Option<&Array1<f64>> {
         self.weights.as_ref()
+    }
+
+    pub fn censoring(&self) -> Option<&Array1<bool>> {
+        self.censoring.as_ref()
+    }
+
+    pub fn set_censoring(&mut self, censoring: Array1<bool>) -> Result<(), BoostlssError> {
+        if censoring.len() != self.n_obs() {
+            return Err(BoostlssError::DataError(format!(
+                "Design has {} rows, but censoring has length {}",
+                self.n_obs(),
+                censoring.len()
+            )));
+        }
+        self.censoring = Some(censoring);
+        Ok(())
     }
 
     pub fn set_weights(&mut self, weights: Array1<f64>) -> Result<(), BoostlssError> {
@@ -238,6 +269,7 @@ impl Dataset {
             design: self.design.clone(),
             response: self.response.clone(),
             weights: Some(combined_weights),
+            censoring: self.censoring.clone(),
         })
     }
 
@@ -251,6 +283,7 @@ impl Dataset {
         let mut new_design = ndarray::Array2::zeros((n, mat.ncols()));
         let mut new_response = ndarray::Array1::zeros(n);
         let mut new_weights = self.weights.as_ref().map(|_| ndarray::Array1::zeros(n));
+        let mut new_censoring = self.censoring.as_ref().map(|_| ndarray::Array1::from_elem(n, false));
 
         for (i, &idx) in indices.iter().enumerate() {
             if idx >= mat.nrows() {
@@ -261,12 +294,16 @@ impl Dataset {
             if let (Some(ref mut w), Some(ref old_w)) = (&mut new_weights, &self.weights) {
                 w[i] = old_w[idx];
             }
+            if let (Some(ref mut c), Some(ref old_c)) = (&mut new_censoring, &self.censoring) {
+                c[i] = old_c[idx];
+            }
         }
 
         Ok(Self {
             design: DesignMatrix::Dense(new_design),
             response: new_response,
             weights: new_weights,
+            censoring: new_censoring,
         })
     }
 }
@@ -280,7 +317,7 @@ mod tests {
     fn dataset_validates_dimensions() {
         let x = Array2::<f64>::zeros((3, 2));
         let y = array![1.0, 2.0];
-        let err = Dataset::new(x.clone(), y, None).unwrap_err();
+        let err = Dataset::new(x.clone(), y, None, None).unwrap_err();
         assert!(matches!(err, BoostlssError::DataError(_)));
     }
 
@@ -289,7 +326,7 @@ mod tests {
         let x = Array2::<f64>::zeros((2, 2));
         let y = array![1.0, 2.0];
         let w = array![1.0, -0.5];
-        let err = Dataset::new(x, y, Some(w)).unwrap_err();
+        let err = Dataset::new(x, y, Some(w), None).unwrap_err();
         assert!(matches!(err, BoostlssError::DataError(_)));
     }
 
@@ -298,7 +335,7 @@ mod tests {
         let x = Array2::<f64>::zeros((2, 2));
         let y = array![1.0, 2.0];
         let w = array![1.0, 1.0];
-        let ds = Dataset::new(x, y, Some(w)).unwrap();
+        let ds = Dataset::new(x, y, Some(w), None).unwrap();
         assert_eq!(ds.n_obs(), 2);
     }
 
@@ -340,5 +377,23 @@ mod tests {
 
         let col1 = dm.get_column(1).unwrap();
         assert_eq!(col1, array![0.0, 2.0, 4.0]);
+    }
+
+    #[test]
+    fn dataset_handles_censoring() {
+        let x = Array2::<f64>::zeros((3, 2));
+        let y = ndarray::array![1.0, 2.0, 3.0];
+        let cens = ndarray::array![true, false, true];
+        let ds = Dataset::new(x, y, None, Some(cens)).unwrap();
+        assert_eq!(ds.censoring().unwrap().len(), 3);
+    }
+
+    #[test]
+    fn dataset_rejects_invalid_censoring_length() {
+        let x = Array2::<f64>::zeros((2, 2));
+        let y = ndarray::array![1.0, 2.0];
+        let cens = ndarray::array![true, false, true];
+        let err = Dataset::new(x, y, None, Some(cens)).unwrap_err();
+        assert!(matches!(err, BoostlssError::DataError(_)));
     }
 }

@@ -127,7 +127,7 @@ mod tests {
     fn gradient_matches_finite_difference() {
         let fam = BinomialLss::new();
         let y = array![0.0, 1.0, 0.3, 0.7, 1.0];
-        let ds = Dataset::new(Array2::<f64>::zeros((5, 1)), y, None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((5, 1)), y, None, None).unwrap();
         let etas = vec![array![-2.0, 0.0, 1.5, 5.0, -10.0]];
 
         let analytical_grad = fam.ngradient(&ds, &etas, 0).unwrap();

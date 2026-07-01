@@ -50,7 +50,7 @@ mod tests {
         let linear = Linear::new(0);
         let x = array![[1.0], [2.0], [3.0]];
         let y = array![0.0, 0.0, 0.0];
-        let data = crate::data::Dataset::new(x, y, None).unwrap();
+        let data = crate::data::Dataset::new(x, y, None, None).unwrap();
         let design = linear.build_design(&data).unwrap();
 
         assert_eq!(design, array![[1.0, 1.0], [1.0, 2.0], [1.0, 3.0]]);
@@ -63,7 +63,7 @@ mod tests {
 
         let x = array![[1.0], [2.0], [3.0]];
         let y = array![0.0, 0.0, 0.0];
-        let data = crate::data::Dataset::new(x, y, None).unwrap();
+        let data = crate::data::Dataset::new(x, y, None, None).unwrap();
         let design = linear.build_design(&data).unwrap();
 
         assert_eq!(design, array![[1.0], [2.0], [3.0]]);
@@ -88,7 +88,7 @@ mod tests_new {
         // Dataset with 2 features
         let x = array![[1.0, 10.0], [2.0, 20.0], [3.0, 30.0]];
         let y = array![0.0, 0.0, 0.0];
-        let data = Dataset::new(x, y, None).unwrap();
+        let data = Dataset::new(x, y, None, None).unwrap();
 
         // Linear learner on feature_idx = 1
         let linear = Linear::new(1).intercept(false);

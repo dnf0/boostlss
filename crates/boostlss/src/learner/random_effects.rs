@@ -92,7 +92,7 @@ mod tests {
         let re = RandomEffects::new(0);
         let x = array![[0.0], [2.0], [1.0], [0.0]];
         let y = array![0.0, 0.0, 0.0, 0.0];
-        let data = crate::data::Dataset::new(x, y, None).unwrap();
+        let data = crate::data::Dataset::new(x, y, None, None).unwrap();
         let design = re.build_design(&data).unwrap();
 
         assert_eq!(design.shape(), &[4, 3]);
@@ -107,12 +107,12 @@ mod tests {
         let re = RandomEffects::new(0);
         let x1 = array![[-1.0], [0.0]];
         let y1 = array![0.0, 0.0];
-        let data1 = crate::data::Dataset::new(x1, y1, None).unwrap();
+        let data1 = crate::data::Dataset::new(x1, y1, None, None).unwrap();
         assert!(re.build_design(&data1).is_err());
 
         let x2 = array![[0.5], [1.0]];
         let y2 = array![0.0, 0.0];
-        let data2 = crate::data::Dataset::new(x2, y2, None).unwrap();
+        let data2 = crate::data::Dataset::new(x2, y2, None, None).unwrap();
         assert!(re.build_design(&data2).is_err());
     }
 
@@ -122,7 +122,7 @@ mod tests {
 
         let x1 = array![[1_000_000.0], [0.0]];
         let y1 = array![0.0, 0.0];
-        let data1 = crate::data::Dataset::new(x1, y1, None).unwrap();
+        let data1 = crate::data::Dataset::new(x1, y1, None, None).unwrap();
         let result = re.build_design(&data1);
         assert!(result.is_err());
         if let Err(e) = result {
@@ -133,7 +133,7 @@ mod tests {
 
         let x2 = ndarray::Array2::from_elem((2000, 1), 59_999.0);
         let y2 = ndarray::Array1::zeros(2000);
-        let data2 = crate::data::Dataset::new(x2, y2, None).unwrap();
+        let data2 = crate::data::Dataset::new(x2, y2, None, None).unwrap();
         let result2 = re.build_design(&data2);
         assert!(result2.is_err());
         if let Err(e) = result2 {

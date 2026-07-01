@@ -131,14 +131,14 @@ mod tests {
         let fam = LogNormalLss::new();
 
         let y_zero = array![1.0, 0.0, 3.0];
-        let ds_zero = Dataset::new(Array2::<f64>::zeros((3, 1)), y_zero, None).unwrap();
+        let ds_zero = Dataset::new(Array2::<f64>::zeros((3, 1)), y_zero, None, None).unwrap();
         assert!(matches!(
             fam.init_offsets(&ds_zero),
             Err(BoostlssError::DataError(_))
         ));
 
         let y_neg = array![1.0, -1.0, 3.0];
-        let ds_neg = Dataset::new(Array2::<f64>::zeros((3, 1)), y_neg, None).unwrap();
+        let ds_neg = Dataset::new(Array2::<f64>::zeros((3, 1)), y_neg, None, None).unwrap();
         assert!(matches!(
             fam.init_offsets(&ds_neg),
             Err(BoostlssError::DataError(_))
@@ -149,7 +149,7 @@ mod tests {
     fn test_log_normal_gradients() {
         let fam = LogNormalLss::new();
         let y = array![1.0, std::f64::consts::E, 7.389];
-        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None, None).unwrap();
         let eta = vec![array![0.0, 1.0, 2.0], array![-0.5, 0.0, 0.5]];
 
         let grad_mu = fam.ngradient(&ds, &eta, 0).unwrap();

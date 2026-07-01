@@ -170,7 +170,7 @@ impl Family for GEVLss {
                 ))
             }
         };
-        let ds = Dataset::new(dense_design, y_arr.clone(), w_arr.clone()).unwrap();
+        let ds = Dataset::new(dense_design, y_arr.clone(), w_arr.clone(), None).unwrap();
 
         let mut eta = vec![
             Array1::from_elem(y_arr.len(), self.params[0].link.link(mu_val)),
@@ -233,7 +233,7 @@ mod tests {
     fn test_gev_init() {
         let fam = GEVLss::new();
         let y = array![1.0, 2.0, 3.0];
-        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None, None).unwrap();
         assert!(fam.init_offsets(&ds).is_ok());
     }
 
@@ -241,7 +241,7 @@ mod tests {
     fn test_gev_gradients() {
         let fam = GEVLss::new();
         let y = array![1.0, 2.0, 3.0];
-        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None, None).unwrap();
         let eta = vec![
             array![0.0, 0.0, 0.0],
             array![0.0, 0.0, 0.0], // log(sigma) = 0 => sigma = 1
@@ -307,7 +307,7 @@ mod tests {
     fn test_gev_gumbel_gradients() {
         let fam = GEVLss::new();
         let y = array![1.0, 2.0, 3.0];
-        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((3, 1)), y, None, None).unwrap();
         let eta = vec![
             array![0.0, 0.0, 0.0],
             array![0.0, 0.0, 0.0],

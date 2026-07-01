@@ -96,7 +96,7 @@ mod tests {
     #[test]
     fn student_t_init_offsets() {
         let fam = StudentTLss::new();
-        let ds = Dataset::new(Array2::<f64>::zeros((2, 1)), array![1.0, 3.0], None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((2, 1)), array![1.0, 3.0], None, None).unwrap();
         let offsets = fam.init_offsets(&ds).unwrap();
 
         assert_relative_eq!(offsets[0], 2.0, epsilon = 1e-4);

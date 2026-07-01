@@ -225,7 +225,7 @@ mod tests {
         let mut ps = ConstrainedPSpline::new(0, Constraint::MonotonicIncreasing);
         let x = array![[0.0], [0.5], [1.0]];
         let y = array![0.0, 0.0, 0.0];
-        let data = crate::data::Dataset::new(x, y, None).unwrap();
+        let data = crate::data::Dataset::new(x, y, None, None).unwrap();
         let design = ps.build_design(&data).unwrap();
         let p = ps.knots + ps.degree + 1;
         assert_eq!(design.shape(), &[3, p]);

@@ -49,9 +49,9 @@ pub fn extract_dataset<'py>(
         let y = optional_y.unwrap_or_else(|| ndarray::Array1::zeros(n_obs));
 
         match format.as_str() {
-            "csr" => boostlss::data::Dataset::new_csr(sparse_mat, y, None)
+            "csr" => boostlss::data::Dataset::new_csr(sparse_mat, y, None, None)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
-            "csc" => boostlss::data::Dataset::new_csc(sparse_mat, y, None)
+            "csc" => boostlss::data::Dataset::new_csc(sparse_mat, y, None, None)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
             _ => Err(pyo3::exceptions::PyTypeError::new_err(
                 "Only CSR and CSC formats are supported",
@@ -66,7 +66,7 @@ pub fn extract_dataset<'py>(
         )
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
         let y = optional_y.unwrap_or_else(|| ndarray::Array1::zeros(x_mat.nrows()));
-        boostlss::data::Dataset::new(x_mat, y, None)
+        boostlss::data::Dataset::new(x_mat, y, None, None)
             .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))
     }
 }

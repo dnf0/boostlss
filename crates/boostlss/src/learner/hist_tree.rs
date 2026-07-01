@@ -278,7 +278,7 @@ mod tests {
     fn test_hist_tree_initialization() {
         let x = array![[1.0], [2.0], [3.0], [4.0], [5.0]];
         let y = array![1.0, 2.0, 3.0, 4.0, 5.0];
-        let data = Dataset::new(x, y.clone(), None).unwrap();
+        let data = Dataset::new(x, y.clone(), None, None).unwrap();
 
         let hist_tree = HistTree::new(vec![0]).max_bins(3);
         let state = hist_tree.build_fit_state(&data).unwrap();
@@ -293,7 +293,7 @@ mod tests {
     fn test_hist_tree_fit() {
         let x = array![[1.0], [2.0], [3.0], [4.0], [5.0]];
         let y = array![1.0, 2.0, 3.0, 4.0, 5.0];
-        let data = crate::data::Dataset::new(x, y.clone(), None).unwrap();
+        let data = crate::data::Dataset::new(x, y.clone(), None, None).unwrap();
 
         let hist_tree = HistTree::new(vec![0]).max_bins(5).max_depth(1);
         let state = hist_tree.build_fit_state(&data).unwrap();

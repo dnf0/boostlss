@@ -120,7 +120,7 @@ mod tests {
     fn gaussian_lss_init_offsets() {
         let fam = GaussianLss::new();
         // y = [1.0, 3.0], mean = 2.0, sd = 1.4142...
-        let ds = Dataset::new(Array2::<f64>::zeros((2, 1)), array![1.0, 3.0], None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((2, 1)), array![1.0, 3.0], None, None).unwrap();
         let offsets = fam.init_offsets(&ds).unwrap();
 
         assert_relative_eq!(offsets[0], 2.0, epsilon = 1e-4);
@@ -130,7 +130,7 @@ mod tests {
     #[test]
     fn gaussian_lss_ngradient_matches_finite_diff() {
         let fam = GaussianLss::new();
-        let ds = Dataset::new(Array2::<f64>::zeros((2, 1)), array![1.0, 3.0], None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((2, 1)), array![1.0, 3.0], None, None).unwrap();
         let eta = vec![array![0.5, 2.5], array![0.1, -0.2]]; // [mu_eta, sigma_eta]
 
         let eps = 1e-5;

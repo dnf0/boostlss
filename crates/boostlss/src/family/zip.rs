@@ -122,6 +122,7 @@ impl Family for ZIPLss {
             ndarray::Array2::<f64>::zeros((y_len, 1)),
             y_arr,
             data.weights().cloned(),
+            None,
         )?;
 
         let mut mu_val = 1.0;
@@ -171,7 +172,7 @@ mod tests {
     fn test_zip_gradients() {
         let fam = ZIPLss::new();
         let y = array![0.0, 0.0, 2.0, 5.0];
-        let ds = Dataset::new(Array2::<f64>::zeros((4, 1)), y, None).unwrap();
+        let ds = Dataset::new(Array2::<f64>::zeros((4, 1)), y, None, None).unwrap();
         let eta = vec![array![0.0, 0.0, 1.0, 2.0], array![-1.0, 0.0, 1.0, 2.0]];
 
         let grad_mu = fam.ngradient(&ds, &eta, 0).unwrap();

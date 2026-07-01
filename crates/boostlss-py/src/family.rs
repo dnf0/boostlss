@@ -34,6 +34,16 @@ pub enum PyFamily {
     Zip,
     Gev,
     Jsu,
+    Burr12,
+    Gamma,
+    Ged,
+    Gpd,
+    InverseGaussian,
+    LogLogistic,
+    NBinomial,
+    Nig,
+    Poisson,
+    StudentT,
 }
 
 #[pymethods]
@@ -49,6 +59,16 @@ impl PyFamily {
             "ZIPLSS" | "ZIPLss" | "ZipLss" => Ok(PyFamily::Zip),
             "GEVLSS" | "GEVLss" | "GevLss" => Ok(PyFamily::Gev),
             "JSULSS" | "JSULss" | "JsuLss" => Ok(PyFamily::Jsu),
+            "BURR12LSS" | "Burr12Lss" => Ok(PyFamily::Burr12),
+            "GAMMALSS" | "GammaLss" => Ok(PyFamily::Gamma),
+            "GEDLSS" | "GedLss" => Ok(PyFamily::Ged),
+            "GPDLSS" | "GpdLss" => Ok(PyFamily::Gpd),
+            "INVERSEGAUSSIANLSS" | "InverseGaussianLss" => Ok(PyFamily::InverseGaussian),
+            "LOGLOGISTICLSS" | "LogLogisticLss" => Ok(PyFamily::LogLogistic),
+            "NBINOMIALLSS" | "NBinomialLss" => Ok(PyFamily::NBinomial),
+            "NIGLSS" | "NigLss" => Ok(PyFamily::Nig),
+            "POISSONLSS" | "PoissonLss" => Ok(PyFamily::Poisson),
+            "STUDENTTLSS" | "StudentTLss" => Ok(PyFamily::StudentT),
             _ => Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "Unknown family: {}",
                 name
@@ -66,6 +86,16 @@ impl PyFamily {
             PyFamily::Zip => ("ZIPLSS",),
             PyFamily::Gev => ("GEVLSS",),
             PyFamily::Jsu => ("JSULSS",),
+            PyFamily::Burr12 => ("Burr12Lss",),
+            PyFamily::Gamma => ("GammaLss",),
+            PyFamily::Ged => ("GedLss",),
+            PyFamily::Gpd => ("GpdLss",),
+            PyFamily::InverseGaussian => ("InverseGaussianLss",),
+            PyFamily::LogLogistic => ("LogLogisticLss",),
+            PyFamily::NBinomial => ("NBinomialLss",),
+            PyFamily::Nig => ("NigLss",),
+            PyFamily::Poisson => ("PoissonLss",),
+            PyFamily::StudentT => ("StudentTLss",),
         }
     }
 }

@@ -7,7 +7,9 @@ use boostlss::engine::cyclical::fit_cyclical;
 use boostlss::engine::noncyclical::{fit_noncyclical, fit_noncyclical_outer};
 use boostlss::engine::{Algorithm, Mstop};
 use boostlss::family::{
-    BetaLss, BinomialLss, GEVLss, GaussianLss, JSULss, LaplaceLss, LogNormalLss, WeibullLss, ZIPLss,
+    BetaLss, BinomialLss, Burr12Lss, GEVLss, GammaLss, GaussianLss, GedLss, GpdLss,
+    InverseGaussianLss, JSULss, LaplaceLss, LogLogisticLss, LogNormalLss, NBinomialLss, NigLss,
+    PoissonLss, StudentTLss, WeibullLss, ZIPLss,
 };
 use boostlss::family::{MertonJumpDiffusionLss, SHASHLss, TweedieLss, ZINBLss};
 use boostlss::learner::{BaseLearner, RandomEffects};
@@ -114,6 +116,16 @@ pub enum InternalFamily {
     Zip,
     Gev,
     Jsu,
+    Burr12,
+    Gamma,
+    Ged,
+    Gpd,
+    InverseGaussian,
+    LogLogistic,
+    NBinomial,
+    Nig,
+    Poisson,
+    StudentT,
     Tweedie(TweedieLss),
     Logistic,
     Zinb(ZINBLss),
@@ -131,6 +143,16 @@ enum FittedModel {
     Zip(Fitted<ZIPLss>),
     Gev(Fitted<GEVLss>),
     Jsu(Fitted<JSULss>),
+    Burr12(Fitted<Burr12Lss>),
+    Gamma(Fitted<GammaLss>),
+    Ged(Fitted<GedLss>),
+    Gpd(Fitted<GpdLss>),
+    InverseGaussian(Fitted<InverseGaussianLss>),
+    LogLogistic(Fitted<LogLogisticLss>),
+    NBinomial(Fitted<NBinomialLss>),
+    Nig(Fitted<NigLss>),
+    Poisson(Fitted<PoissonLss>),
+    StudentT(Fitted<StudentTLss>),
     Tweedie(Fitted<TweedieLss>),
     Logistic(Fitted<boostlss::family::LogisticLss>),
     Zinb(Fitted<ZINBLss>),
@@ -171,6 +193,36 @@ impl FittedModel {
             Self::Jsu(fitted) => fitted
                 .predict(dataset, param, scale)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Burr12(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Gamma(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Ged(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Gpd(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::InverseGaussian(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::LogLogistic(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::NBinomial(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Nig(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Poisson(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::StudentT(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
             Self::Logistic(fitted) => fitted
                 .predict(dataset, param, scale)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
@@ -202,6 +254,16 @@ impl FittedModel {
             Self::Zip(fitted) => fitted.feature_importance(),
             Self::Gev(fitted) => fitted.feature_importance(),
             Self::Jsu(fitted) => fitted.feature_importance(),
+            Self::Burr12(fitted) => fitted.feature_importance(),
+            Self::Gamma(fitted) => fitted.feature_importance(),
+            Self::Ged(fitted) => fitted.feature_importance(),
+            Self::Gpd(fitted) => fitted.feature_importance(),
+            Self::InverseGaussian(fitted) => fitted.feature_importance(),
+            Self::LogLogistic(fitted) => fitted.feature_importance(),
+            Self::NBinomial(fitted) => fitted.feature_importance(),
+            Self::Nig(fitted) => fitted.feature_importance(),
+            Self::Poisson(fitted) => fitted.feature_importance(),
+            Self::StudentT(fitted) => fitted.feature_importance(),
             Self::Logistic(fitted) => fitted.feature_importance(),
             Self::Tweedie(fitted) => fitted.feature_importance(),
             Self::Zinb(fitted) => fitted.feature_importance(),
@@ -241,6 +303,36 @@ impl FittedModel {
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
             Self::Jsu(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Burr12(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Gamma(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Ged(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Gpd(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::InverseGaussian(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::LogLogistic(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::NBinomial(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Nig(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Poisson(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::StudentT(fitted) => fitted
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
             Self::Logistic(fitted) => fitted
@@ -323,6 +415,16 @@ impl BoostLssModel {
                 PyFamily::Zip => InternalFamily::Zip,
                 PyFamily::Gev => InternalFamily::Gev,
                 PyFamily::Jsu => InternalFamily::Jsu,
+                PyFamily::Burr12 => InternalFamily::Burr12,
+                PyFamily::Gamma => InternalFamily::Gamma,
+                PyFamily::Ged => InternalFamily::Ged,
+                PyFamily::Gpd => InternalFamily::Gpd,
+                PyFamily::InverseGaussian => InternalFamily::InverseGaussian,
+                PyFamily::LogLogistic => InternalFamily::LogLogistic,
+                PyFamily::NBinomial => InternalFamily::NBinomial,
+                PyFamily::Nig => InternalFamily::Nig,
+                PyFamily::Poisson => InternalFamily::Poisson,
+                PyFamily::StudentT => InternalFamily::StudentT,
             }
         } else if family.extract::<crate::family::PyLogisticLss>().is_ok() {
             InternalFamily::Logistic
@@ -410,6 +512,36 @@ impl BoostLssModel {
             InternalFamily::Zip => fit_family!(self, &dataset, ZIPLss::new(), FittedModel::Zip),
             InternalFamily::Gev => fit_family!(self, &dataset, GEVLss::new(), FittedModel::Gev),
             InternalFamily::Jsu => fit_family!(self, &dataset, JSULss::new(), FittedModel::Jsu),
+            InternalFamily::Burr12 => {
+                fit_family!(self, &dataset, Burr12Lss::new(), FittedModel::Burr12)
+            }
+            InternalFamily::Gamma => {
+                fit_family!(self, &dataset, GammaLss::new(), FittedModel::Gamma)
+            }
+            InternalFamily::Ged => fit_family!(self, &dataset, GedLss::new(), FittedModel::Ged),
+            InternalFamily::Gpd => fit_family!(self, &dataset, GpdLss::new(), FittedModel::Gpd),
+            InternalFamily::InverseGaussian => fit_family!(
+                self,
+                &dataset,
+                InverseGaussianLss::new(),
+                FittedModel::InverseGaussian
+            ),
+            InternalFamily::LogLogistic => fit_family!(
+                self,
+                &dataset,
+                LogLogisticLss::new(),
+                FittedModel::LogLogistic
+            ),
+            InternalFamily::NBinomial => {
+                fit_family!(self, &dataset, NBinomialLss::new(), FittedModel::NBinomial)
+            }
+            InternalFamily::Nig => fit_family!(self, &dataset, NigLss::new(), FittedModel::Nig),
+            InternalFamily::Poisson => {
+                fit_family!(self, &dataset, PoissonLss::new(), FittedModel::Poisson)
+            }
+            InternalFamily::StudentT => {
+                fit_family!(self, &dataset, StudentTLss::new(), FittedModel::StudentT)
+            }
             InternalFamily::Logistic => fit_family!(
                 self,
                 &dataset,
@@ -493,6 +625,28 @@ impl BoostLssModel {
                 InternalFamily::Zip => cvrisk_family!(self, &dataset, ZIPLss::new(), folds, py),
                 InternalFamily::Gev => cvrisk_family!(self, &dataset, GEVLss::new(), folds, py),
                 InternalFamily::Jsu => cvrisk_family!(self, &dataset, JSULss::new(), folds, py),
+                InternalFamily::Burr12 => {
+                    cvrisk_family!(self, &dataset, Burr12Lss::new(), folds, py)
+                }
+                InternalFamily::Gamma => cvrisk_family!(self, &dataset, GammaLss::new(), folds, py),
+                InternalFamily::Ged => cvrisk_family!(self, &dataset, GedLss::new(), folds, py),
+                InternalFamily::Gpd => cvrisk_family!(self, &dataset, GpdLss::new(), folds, py),
+                InternalFamily::InverseGaussian => {
+                    cvrisk_family!(self, &dataset, InverseGaussianLss::new(), folds, py)
+                }
+                InternalFamily::LogLogistic => {
+                    cvrisk_family!(self, &dataset, LogLogisticLss::new(), folds, py)
+                }
+                InternalFamily::NBinomial => {
+                    cvrisk_family!(self, &dataset, NBinomialLss::new(), folds, py)
+                }
+                InternalFamily::Nig => cvrisk_family!(self, &dataset, NigLss::new(), folds, py),
+                InternalFamily::Poisson => {
+                    cvrisk_family!(self, &dataset, PoissonLss::new(), folds, py)
+                }
+                InternalFamily::StudentT => {
+                    cvrisk_family!(self, &dataset, StudentTLss::new(), folds, py)
+                }
                 InternalFamily::Merton(ref m_fam) => {
                     cvrisk_family!(self, &dataset, m_fam.clone(), folds, py)
                 }
@@ -599,6 +753,24 @@ impl BoostLssModel {
             InternalFamily::Zip => stabsel_family!(self, &dataset, ZIPLss::new(), &config),
             InternalFamily::Gev => stabsel_family!(self, &dataset, GEVLss::new(), &config),
             InternalFamily::Jsu => stabsel_family!(self, &dataset, JSULss::new(), &config),
+            InternalFamily::Burr12 => stabsel_family!(self, &dataset, Burr12Lss::new(), &config),
+            InternalFamily::Gamma => stabsel_family!(self, &dataset, GammaLss::new(), &config),
+            InternalFamily::Ged => stabsel_family!(self, &dataset, GedLss::new(), &config),
+            InternalFamily::Gpd => stabsel_family!(self, &dataset, GpdLss::new(), &config),
+            InternalFamily::InverseGaussian => {
+                stabsel_family!(self, &dataset, InverseGaussianLss::new(), &config)
+            }
+            InternalFamily::LogLogistic => {
+                stabsel_family!(self, &dataset, LogLogisticLss::new(), &config)
+            }
+            InternalFamily::NBinomial => {
+                stabsel_family!(self, &dataset, NBinomialLss::new(), &config)
+            }
+            InternalFamily::Nig => stabsel_family!(self, &dataset, NigLss::new(), &config),
+            InternalFamily::Poisson => stabsel_family!(self, &dataset, PoissonLss::new(), &config),
+            InternalFamily::StudentT => {
+                stabsel_family!(self, &dataset, StudentTLss::new(), &config)
+            }
             InternalFamily::Logistic => stabsel_family!(
                 self,
                 &dataset,
@@ -690,6 +862,16 @@ impl BoostLssModel {
                         InternalFamily::Zip => PyFamily::Zip,
                         InternalFamily::Gev => PyFamily::Gev,
                         InternalFamily::Jsu => PyFamily::Jsu,
+                        InternalFamily::Burr12 => PyFamily::Burr12,
+                        InternalFamily::Gamma => PyFamily::Gamma,
+                        InternalFamily::Ged => PyFamily::Ged,
+                        InternalFamily::Gpd => PyFamily::Gpd,
+                        InternalFamily::InverseGaussian => PyFamily::InverseGaussian,
+                        InternalFamily::LogLogistic => PyFamily::LogLogistic,
+                        InternalFamily::NBinomial => PyFamily::NBinomial,
+                        InternalFamily::Nig => PyFamily::Nig,
+                        InternalFamily::Poisson => PyFamily::Poisson,
+                        InternalFamily::StudentT => PyFamily::StudentT,
                         InternalFamily::Logistic => unreachable!(),
                         InternalFamily::Tweedie(_) => unreachable!(),
                         InternalFamily::Zinb(_) => unreachable!(),
@@ -716,6 +898,16 @@ impl BoostLssModel {
             InternalFamily::Zip => "ZIPLss",
             InternalFamily::Gev => "GEVLss",
             InternalFamily::Jsu => "JSULss",
+            InternalFamily::Burr12 => "Burr12Lss",
+            InternalFamily::Gamma => "GammaLss",
+            InternalFamily::Ged => "GedLss",
+            InternalFamily::Gpd => "GpdLss",
+            InternalFamily::InverseGaussian => "InverseGaussianLss",
+            InternalFamily::LogLogistic => "LogLogisticLss",
+            InternalFamily::NBinomial => "NBinomialLss",
+            InternalFamily::Nig => "NigLss",
+            InternalFamily::Poisson => "PoissonLss",
+            InternalFamily::StudentT => "StudentTLss",
             InternalFamily::Logistic => "LogisticLss",
             InternalFamily::Tweedie(t) => {
                 dict.set_item("tweedie_p", t.p)?;
@@ -750,6 +942,16 @@ impl BoostLssModel {
                 FittedModel::Zip(f) => bincode::serialize(f),
                 FittedModel::Gev(f) => bincode::serialize(f),
                 FittedModel::Jsu(f) => bincode::serialize(f),
+                FittedModel::Burr12(f) => bincode::serialize(f),
+                FittedModel::Gamma(f) => bincode::serialize(f),
+                FittedModel::Ged(f) => bincode::serialize(f),
+                FittedModel::Gpd(f) => bincode::serialize(f),
+                FittedModel::InverseGaussian(f) => bincode::serialize(f),
+                FittedModel::LogLogistic(f) => bincode::serialize(f),
+                FittedModel::NBinomial(f) => bincode::serialize(f),
+                FittedModel::Nig(f) => bincode::serialize(f),
+                FittedModel::Poisson(f) => bincode::serialize(f),
+                FittedModel::StudentT(f) => bincode::serialize(f),
                 FittedModel::Logistic(f) => bincode::serialize(f),
                 FittedModel::Tweedie(f) => bincode::serialize(f),
                 FittedModel::Zinb(f) => bincode::serialize(f),
@@ -783,6 +985,16 @@ impl BoostLssModel {
             "ZIPLss" => InternalFamily::Zip,
             "GEVLss" => InternalFamily::Gev,
             "JSULss" => InternalFamily::Jsu,
+            "Burr12Lss" => InternalFamily::Burr12,
+            "GammaLss" => InternalFamily::Gamma,
+            "GedLss" => InternalFamily::Ged,
+            "GpdLss" => InternalFamily::Gpd,
+            "InverseGaussianLss" => InternalFamily::InverseGaussian,
+            "LogLogisticLss" => InternalFamily::LogLogistic,
+            "NBinomialLss" => InternalFamily::NBinomial,
+            "NigLss" => InternalFamily::Nig,
+            "PoissonLss" => InternalFamily::Poisson,
+            "StudentTLss" => InternalFamily::StudentT,
             "TweedieLss" => {
                 let p: f64 = state
                     .get_item("tweedie_p")?
@@ -859,6 +1071,46 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),
                 InternalFamily::Jsu => FittedModel::Jsu(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::Burr12 => FittedModel::Burr12(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::Gamma => FittedModel::Gamma(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::Ged => FittedModel::Ged(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::Gpd => FittedModel::Gpd(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::InverseGaussian => FittedModel::InverseGaussian(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::LogLogistic => FittedModel::LogLogistic(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::NBinomial => FittedModel::NBinomial(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::Nig => FittedModel::Nig(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::Poisson => FittedModel::Poisson(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::StudentT => FittedModel::StudentT(
                     bincode::deserialize(bytes)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),

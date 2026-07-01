@@ -19,10 +19,11 @@ use pyo3::prelude::*;
 use pyo3::types::{PyBytes, PyDict, PyType};
 
 macro_rules! fit_family {
-    ($self:expr, $dataset:expr, $family:expr, $fitted_variant:path) => {{
+    ($self:expr, $dataset:expr, $eval_data:expr, $early_stopping:expr, $family:expr, $fitted_variant:path) => {{
         let mut model = BoostLss::new($family)
             .step_length($self.step_length)
-            .mstop(Mstop::Scalar($self.mstop));
+            .mstop(Mstop::Scalar($self.mstop))
+            .algorithm($self.algorithm.clone());
 
         for (param, learner) in &$self.learners {
             model = model
@@ -30,21 +31,9 @@ macro_rules! fit_family {
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
         }
 
-        let fitted = match $self.algorithm {
-            Algorithm::NonCyclicOuter => {
-                let model = model.algorithm(Algorithm::NonCyclicOuter);
-                fit_noncyclical_outer(model, $dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-            }
-            Algorithm::Cyclic => fit_cyclical(model, $dataset)
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
-
-            Algorithm::NonCyclic => {
-                let model = model.algorithm(Algorithm::NonCyclic);
-                fit_noncyclical(model, $dataset)
-                    .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?
-            }
-        };
+        let fitted = model
+            .fit($dataset, $eval_data, $early_stopping)
+            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
 
         $self.fitted = Some($fitted_variant(fitted));
     }};
@@ -507,56 +496,144 @@ impl BoostLssModel {
 
         match &self.family {
             InternalFamily::Gaussian => {
-                fit_family!(self, &dataset, GaussianLss::new(), FittedModel::Gaussian)
+                fit_family!(
+                    self,
+                    &dataset,
+                    None,
+                    None,
+                    GaussianLss::new(),
+                    FittedModel::Gaussian
+                )
             }
             InternalFamily::Binomial => {
-                fit_family!(self, &dataset, BinomialLss::new(), FittedModel::Binomial)
+                fit_family!(
+                    self,
+                    &dataset,
+                    None,
+                    None,
+                    BinomialLss::new(),
+                    FittedModel::Binomial
+                )
             }
-            InternalFamily::Beta => fit_family!(self, &dataset, BetaLss::new(), FittedModel::Beta),
+            InternalFamily::Beta => fit_family!(
+                self,
+                &dataset,
+                None,
+                None,
+                BetaLss::new(),
+                FittedModel::Beta
+            ),
             InternalFamily::Weibull => {
-                fit_family!(self, &dataset, WeibullLss::new(), FittedModel::Weibull)
+                fit_family!(
+                    self,
+                    &dataset,
+                    None,
+                    None,
+                    WeibullLss::new(),
+                    FittedModel::Weibull
+                )
             }
             InternalFamily::LogNormal => {
-                fit_family!(self, &dataset, LogNormalLss::new(), FittedModel::LogNormal)
+                fit_family!(
+                    self,
+                    &dataset,
+                    None,
+                    None,
+                    LogNormalLss::new(),
+                    FittedModel::LogNormal
+                )
             }
-            InternalFamily::Zip => fit_family!(self, &dataset, ZIPLss::new(), FittedModel::Zip),
-            InternalFamily::Gev => fit_family!(self, &dataset, GEVLss::new(), FittedModel::Gev),
-            InternalFamily::Jsu => fit_family!(self, &dataset, JSULss::new(), FittedModel::Jsu),
+            InternalFamily::Zip => {
+                fit_family!(self, &dataset, None, None, ZIPLss::new(), FittedModel::Zip)
+            }
+            InternalFamily::Gev => {
+                fit_family!(self, &dataset, None, None, GEVLss::new(), FittedModel::Gev)
+            }
+            InternalFamily::Jsu => {
+                fit_family!(self, &dataset, None, None, JSULss::new(), FittedModel::Jsu)
+            }
             InternalFamily::Burr12 => {
-                fit_family!(self, &dataset, Burr12Lss::new(), FittedModel::Burr12)
+                fit_family!(
+                    self,
+                    &dataset,
+                    None,
+                    None,
+                    Burr12Lss::new(),
+                    FittedModel::Burr12
+                )
             }
             InternalFamily::Gamma => {
-                fit_family!(self, &dataset, GammaLss::new(), FittedModel::Gamma)
+                fit_family!(
+                    self,
+                    &dataset,
+                    None,
+                    None,
+                    GammaLss::new(),
+                    FittedModel::Gamma
+                )
             }
-            InternalFamily::Ged => fit_family!(self, &dataset, GedLss::new(), FittedModel::Ged),
-            InternalFamily::Gpd => fit_family!(self, &dataset, GpdLss::new(), FittedModel::Gpd),
+            InternalFamily::Ged => {
+                fit_family!(self, &dataset, None, None, GedLss::new(), FittedModel::Ged)
+            }
+            InternalFamily::Gpd => {
+                fit_family!(self, &dataset, None, None, GpdLss::new(), FittedModel::Gpd)
+            }
             InternalFamily::InverseGaussian => fit_family!(
                 self,
                 &dataset,
+                None,
+                None,
                 InverseGaussianLss::new(),
                 FittedModel::InverseGaussian
             ),
             InternalFamily::LogLogistic => fit_family!(
                 self,
                 &dataset,
+                None,
+                None,
                 LogLogisticLss::new(),
                 FittedModel::LogLogistic
             ),
             InternalFamily::NBinomial => {
-                fit_family!(self, &dataset, NBinomialLss::new(), FittedModel::NBinomial)
+                fit_family!(
+                    self,
+                    &dataset,
+                    None,
+                    None,
+                    NBinomialLss::new(),
+                    FittedModel::NBinomial
+                )
             }
-            InternalFamily::Nig => fit_family!(self, &dataset, NigLss::new(), FittedModel::Nig),
+            InternalFamily::Nig => {
+                fit_family!(self, &dataset, None, None, NigLss::new(), FittedModel::Nig)
+            }
             InternalFamily::Poisson => {
-                fit_family!(self, &dataset, PoissonLss::new(), FittedModel::Poisson)
+                fit_family!(
+                    self,
+                    &dataset,
+                    None,
+                    None,
+                    PoissonLss::new(),
+                    FittedModel::Poisson
+                )
             }
             InternalFamily::StudentT => {
-                fit_family!(self, &dataset, StudentTLss::new(), FittedModel::StudentT)
+                fit_family!(
+                    self,
+                    &dataset,
+                    None,
+                    None,
+                    StudentTLss::new(),
+                    FittedModel::StudentT
+                )
             }
             InternalFamily::Multinomial => {
                 let k = dataset.response().iter().fold(0.0_f64, |m, &x| m.max(x)) as usize + 1;
                 fit_family!(
                     self,
                     &dataset,
+                    None,
+                    None,
                     MultinomialLss::new(k),
                     FittedModel::Multinomial
                 )
@@ -564,23 +641,53 @@ impl BoostLssModel {
             InternalFamily::Logistic => fit_family!(
                 self,
                 &dataset,
+                None,
+                None,
                 boostlss::family::LogisticLss::new(),
                 FittedModel::Logistic
             ),
             InternalFamily::Tweedie(ref t_fam) => {
-                fit_family!(self, &dataset, t_fam.clone(), FittedModel::Tweedie)
+                fit_family!(
+                    self,
+                    &dataset,
+                    None,
+                    None,
+                    t_fam.clone(),
+                    FittedModel::Tweedie
+                )
             }
             InternalFamily::Zinb(ref z_fam) => {
-                fit_family!(self, &dataset, z_fam.clone(), FittedModel::Zinb)
+                fit_family!(self, &dataset, None, None, z_fam.clone(), FittedModel::Zinb)
             }
             InternalFamily::Laplace(ref l_fam) => {
-                fit_family!(self, &dataset, l_fam.clone(), FittedModel::Laplace)
+                fit_family!(
+                    self,
+                    &dataset,
+                    None,
+                    None,
+                    l_fam.clone(),
+                    FittedModel::Laplace
+                )
             }
             InternalFamily::Merton(ref m_fam) => {
-                fit_family!(self, &dataset, m_fam.clone(), FittedModel::Merton)
+                fit_family!(
+                    self,
+                    &dataset,
+                    None,
+                    None,
+                    m_fam.clone(),
+                    FittedModel::Merton
+                )
             }
             InternalFamily::Shash(ref s_fam) => {
-                fit_family!(self, &dataset, s_fam.clone(), FittedModel::Shash)
+                fit_family!(
+                    self,
+                    &dataset,
+                    None,
+                    None,
+                    s_fam.clone(),
+                    FittedModel::Shash
+                )
             }
         }
         Ok(())

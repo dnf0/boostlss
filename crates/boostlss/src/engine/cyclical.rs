@@ -15,6 +15,8 @@ struct CachedLearner {
 pub fn fit_cyclical<F: Family + Clone>(
     model: BoostLss<F>,
     data: &Dataset,
+    eval_data: Option<&Dataset>,
+    early_stopping_rounds: Option<usize>,
 ) -> Result<Fitted<F>, BoostlssError> {
     let mut current_predictions = Vec::new();
 
@@ -111,6 +113,11 @@ pub fn fit_cyclical<F: Family + Clone>(
 
     let mut fitted = Fitted::new(family, offsets, learners);
     fitted.updates = updates;
+    fitted.eval_results = crate::model::EvalResults {
+        train_loss: vec![],
+        val_loss: None,
+    };
+    fitted.best_iteration = max_mstop;
     Ok(fitted)
 }
 
@@ -137,7 +144,7 @@ mod tests {
             .algorithm(crate::engine::Algorithm::Cyclic)
             .mstop(Mstop::PerParam(vec![2, 2]));
 
-        let mut fitted = fit_cyclical(model, &data).unwrap();
+        let mut fitted = fit_cyclical(model, &data, None, None).unwrap();
 
         let pred_mu = fitted.predict(&data, "mu", Scale::Response).unwrap();
         // Since it's a perfect relationship, predictions should move towards y
@@ -156,7 +163,7 @@ mod tests {
             .algorithm(crate::engine::Algorithm::Cyclic)
             .mstop(Mstop::Scalar(1));
 
-        let fitted = fit_cyclical(model, &data).unwrap();
+        let fitted = fit_cyclical(model, &data, None, None).unwrap();
 
         assert_eq!(fitted.updates.len(), 1);
         assert!(fitted.updates[0].risk_reduction > 0.0);

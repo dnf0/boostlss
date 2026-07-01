@@ -15,6 +15,8 @@ struct CachedLearner {
 pub fn fit_noncyclical<F: Family + Clone>(
     model: BoostLss<F>,
     data: &Dataset,
+    eval_data: Option<&Dataset>,
+    early_stopping_rounds: Option<usize>,
 ) -> Result<Fitted<F>, BoostlssError> {
     let mut current_predictions = Vec::new();
 
@@ -139,12 +141,19 @@ pub fn fit_noncyclical<F: Family + Clone>(
 
     let mut fitted = Fitted::new(family, offsets, learners);
     fitted.updates = updates;
+    fitted.eval_results = crate::model::EvalResults {
+        train_loss: vec![],
+        val_loss: None,
+    };
+    fitted.best_iteration = max_mstop;
     Ok(fitted)
 }
 
 pub fn fit_noncyclical_outer<F: Family + Clone>(
     model: BoostLss<F>,
     data: &Dataset,
+    eval_data: Option<&Dataset>,
+    early_stopping_rounds: Option<usize>,
 ) -> Result<Fitted<F>, BoostlssError> {
     let mut current_predictions = Vec::new();
     let offsets = model.family().init_offsets(data)?;
@@ -224,6 +233,11 @@ pub fn fit_noncyclical_outer<F: Family + Clone>(
 
     let mut fitted = Fitted::new(family, offsets, learners);
     fitted.updates = updates;
+    fitted.eval_results = crate::model::EvalResults {
+        train_loss: vec![],
+        val_loss: None,
+    };
+    fitted.best_iteration = max_mstop;
     Ok(fitted)
 }
 
@@ -251,7 +265,7 @@ mod tests {
             .algorithm(Algorithm::NonCyclic)
             .mstop(Mstop::Scalar(1));
 
-        let fitted = fit_noncyclical(model, &data).unwrap();
+        let fitted = fit_noncyclical(model, &data, None, None).unwrap();
 
         // There should be exactly 1 update since mstop=1
         assert_eq!(fitted.updates.len(), 1);
@@ -284,7 +298,7 @@ mod tests {
             .mstop(Mstop::Scalar(1));
 
         // fit_noncyclical_outer should only generate 1 update and it should reduce NLL
-        let fitted = fit_noncyclical_outer(model, &data).unwrap();
+        let fitted = fit_noncyclical_outer(model, &data, None, None).unwrap();
         assert_eq!(fitted.updates.len(), 1);
         assert!(fitted.updates[0].risk_reduction > 0.0);
     }

@@ -112,16 +112,28 @@ impl<F: Family + Clone> BoostLss<F> {
         (self.family, self.config, self.learners)
     }
 
-    pub fn fit(self, data: &Dataset) -> Result<Fitted<F>, BoostlssError> {
+    pub fn fit(
+        self,
+        data: &Dataset,
+        eval_data: Option<&Dataset>,
+        early_stopping_rounds: Option<usize>,
+    ) -> Result<Fitted<F>, BoostlssError> {
         match self.config.algorithm {
-            Algorithm::Cyclic => crate::engine::cyclical::fit_cyclical(self, data),
+            Algorithm::Cyclic => {
+                crate::engine::cyclical::fit_cyclical(self, data, eval_data, early_stopping_rounds)
+            }
             Algorithm::NonCyclic => {
                 if matches!(self.config.mstop, Mstop::PerParam(_)) {
                     return Err(BoostlssError::InvalidConfig(
                         "NonCyclic algorithm requires a Scalar Mstop".into(),
                     ));
                 }
-                crate::engine::noncyclical::fit_noncyclical(self, data)
+                crate::engine::noncyclical::fit_noncyclical(
+                    self,
+                    data,
+                    eval_data,
+                    early_stopping_rounds,
+                )
             }
             Algorithm::NonCyclicOuter => {
                 if matches!(self.config.mstop, Mstop::PerParam(_)) {
@@ -129,7 +141,12 @@ impl<F: Family + Clone> BoostLss<F> {
                         "NonCyclic algorithm requires a Scalar Mstop".into(),
                     ));
                 }
-                crate::engine::noncyclical::fit_noncyclical_outer(self, data)
+                crate::engine::noncyclical::fit_noncyclical_outer(
+                    self,
+                    data,
+                    eval_data,
+                    early_stopping_rounds,
+                )
             }
         }
     }
@@ -158,7 +175,9 @@ pub struct Fitted<F: Family> {
     /// Will store the selected sequence of updates.
     pub updates: Vec<UpdateStep>,
     /// The base learners used during fitting, needed for prediction
-    learners: Vec<(usize, BaseLearner)>,
+    pub learners: Vec<(usize, BaseLearner)>,
+    pub eval_results: EvalResults,
+    pub best_iteration: usize,
 }
 
 impl<F: Family> Fitted<F> {
@@ -168,6 +187,11 @@ impl<F: Family> Fitted<F> {
             offsets,
             updates: Vec::new(),
             learners,
+            eval_results: EvalResults {
+                train_loss: vec![],
+                val_loss: None,
+            },
+            best_iteration: 0,
         }
     }
 
@@ -508,7 +532,7 @@ mod tests {
         )
         .unwrap();
 
-        let mut fitted = model.fit(&ds_train).unwrap();
+        let mut fitted = model.fit(&ds_train, None, None).unwrap();
 
         // Predict on unseen group index (2.0) and negative index (-1.0)
         let x_test = ndarray::array![0.0, 2.0, -1.0];
@@ -550,7 +574,13 @@ mod tests {
             .algorithm(crate::engine::Algorithm::NonCyclic)
             .mstop(Mstop::PerParam(vec![10, 10])); // Invalid for NonCyclic
 
-        let result = model.fit(&data);
+        let result = model.fit(&data, None, None);
         assert!(matches!(result, Err(BoostlssError::InvalidConfig(_))));
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EvalResults {
+    pub train_loss: Vec<f64>,
+    pub val_loss: Option<Vec<f64>>,
 }

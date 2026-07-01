@@ -213,7 +213,7 @@ impl<F: FamilyBound> CvRisk<F> {
 
                 for (m_idx, m) in grid.iter().enumerate() {
                     let model = self.model.clone().mstop(m.clone());
-                    let mut fitted = model.fit(&train_data)?;
+                    let mut fitted = model.fit(&train_data, None, None)?;
 
                     let mut eta = Vec::with_capacity(params_count);
                     for param in self.model.family().params() {

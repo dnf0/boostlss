@@ -1,6 +1,7 @@
 # Zero-Inflated Poisson (ZIP) Regression
 
 When modeling count data (e.g., number of hospital visits, insurance claims, or product defects), standard Poisson regression is often inadequate if the dataset contains an excess of structural zeros. The **Zero-Inflated Poisson (ZIP)** model addresses this by blending two processes:
+
 1. A logistic regression process that predicts whether an observation is a "structural zero".
 2. A standard Poisson process that predicts the counts for the non-structural zeros.
 
@@ -88,6 +89,7 @@ plt.show()
 ```
 
 ### Key Takeaways
+
 - Using `ZIPLSS` automatically instantiates two link functions: an exponential link to ensure the Poisson mean (`mu`) is strictly positive, and a logit link to ensure the zero-inflation probability (`sigma`) is between 0 and 1.
 - We successfully identified the spike at $0$ counts without dragging the expected lambda of the non-zero counts downwards.
 - The `boostlss` engine was able to fit this dual-process model directly on an out-of-core sparse matrix representation, avoiding memory blowouts on large-scale categorical data.

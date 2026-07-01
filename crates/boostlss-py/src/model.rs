@@ -304,7 +304,7 @@ impl BoostLssModel {
                 PyFamily::Gev => InternalFamily::Gev,
                 PyFamily::Jsu => InternalFamily::Jsu,
             }
-        } else if let Ok(_) = family.extract::<crate::family::PyLogisticLss>() {
+        } else if family.extract::<crate::family::PyLogisticLss>().is_ok() {
             InternalFamily::Logistic
         } else if let Ok(t) = family.extract::<PyTweedieLss>() {
             InternalFamily::Tweedie(t.inner.clone())

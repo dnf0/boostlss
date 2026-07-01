@@ -9,6 +9,7 @@ Unlike standard Machine Learning where base learners are solely regularized by l
 Base learners such as P-Splines, Spatial Splines, and Random Effects are regularized by a penalty matrix $\mathbf{K}$ and a smoothing parameter $\lambda$. To make this interpretable, `boostlss` parameterizes this via the **Degrees of Freedom (`df`)**.
 
 The target `df` implicitly dictates how smooth or flexible the fit should be:
+
 - **Low `df` (e.g., 1 or 2):** Strong penalty, highly smoothed, approaches a simple linear fit.
 - **High `df` (e.g., 10 or 15):** Weak penalty, highly flexible, tracks data closely (can overfit).
 
@@ -22,7 +23,8 @@ During the fitting step, `boostlss` automatically computes the exact $\lambda$ v
 PyLinearLearner(feature_idx: int, intercept: bool = True)
 ```
 
-Fits an unpenalized simple linear regression $y = \beta_0 + \beta_1 x$. 
+Fits an unpenalized simple linear regression $y = \beta_0 + \beta_1 x$.
+
 - If `intercept=True` (default), the design matrix is expanded to include a column of ones.
 - Linear learners have $df = 1$ (or $2$ with an intercept).
 
@@ -59,7 +61,8 @@ Used to model spatial data (e.g., Latitude and Longitude) or complex continuous 
 constrained_pspline(feature_idx: int, constraint: str, df: float = 4.0)
 ```
 
-When domain knowledge dictates the shape of the effect, you can enforce shape constraints on the P-Spline using an asymmetric L2 penalty. 
+When domain knowledge dictates the shape of the effect, you can enforce shape constraints on the P-Spline using an asymmetric L2 penalty.
+
 - `"monotonic_increasing"`: Enforces $f(x) \geq f(x - \epsilon)$.
 - `"monotonic_decreasing"`: Enforces $f(x) \leq f(x - \epsilon)$.
 - `"convex"`: Enforces a positive second derivative (U-shape).
@@ -86,7 +89,8 @@ PyStumpLearner(feature_idx: int)
 ```
 
 While traditional GAMLSS relies on additive component models (splines/linear), `boostlss` also supports regression trees.
+
 - A **Stump** is a tree with exactly one split (depth 1), looking at a single feature.
 - A **Tree** can model deep interactions across multiple features.
 
-*Note: Trees do not use the `df` penalty system. They are regularized by `max_depth` and `min_samples_leaf`.*
+_Note: Trees do not use the `df` penalty system. They are regularized by `max_depth` and `min_samples_leaf`._

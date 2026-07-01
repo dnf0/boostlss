@@ -16,7 +16,7 @@ The standard 4-parameter JSU distribution (as per `gamlss.dist`) uses:
 
 ### Implementation Details
 1. **NLL (Negative Log-Likelihood)**:
-   Evaluate the JSU NLL for each observation $y$. Let $z = \frac{y - \mu}{\sigma}$. 
+   Evaluate the JSU NLL for each observation $y$. Let $z = \frac{y - \mu}{\sigma}$.
    $r = -\nu + \tau \sinh^{-1}(z)$
    $\log(PDF) = \log(\tau) - \log(\sigma) - 0.5 \log(z^2 + 1) - 0.5 \log(2\pi) - 0.5 r^2$
    NLL is the negative sum of weighted log PDFs over the dataset.

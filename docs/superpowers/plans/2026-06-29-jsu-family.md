@@ -168,7 +168,7 @@ Update `nll` in `crates/boostlss/src/family/jsu.rs`:
         for i in 0..data.n_obs() {
             let sig = sigma[i];
             let z = (y[i] - mu[i]) / sig;
-            
+
             // r = -nu + tau * asinh(z)
             let asinh_z = z.asinh();
             let r = -nu[i] + tau[i] * asinh_z;
@@ -254,7 +254,7 @@ Update `init_offsets` in `crates/boostlss/src/family/jsu.rs`:
 
         let y_arr = data.response().clone();
         let w_arr = data.weights().cloned();
-        
+
         let dense_design = match data.design() {
             crate::data::DesignMatrix::Dense(mat) => mat.clone(),
             _ => {

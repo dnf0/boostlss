@@ -10,19 +10,19 @@ n_samples = 4000
 
 # Predictors
 temperature = np.random.uniform(10, 40, n_samples)
-pressure_drop = np.random.uniform(0, 50, n_samples) # e.g. hPa drop over 24h
+pressure_drop = np.random.uniform(0, 50, n_samples)  # e.g. hPa drop over 24h
 
 # The location parameter (mu) varies linearly with temperature and pressure drop
 mu_true = 20.0 + 0.5 * temperature + 0.3 * pressure_drop
 
 # The scale parameter (sigma) varies non-linearly with pressure drop
-sigma_true = 2.0 + 5.0 * np.exp(-((pressure_drop - 30) / 10)**2)
+sigma_true = 2.0 + 5.0 * np.exp(-(((pressure_drop - 30) / 10) ** 2))
 
 # The shape parameter (nu) is constant but non-zero (Frechet domain vs Weibull)
 nu_true = np.full(n_samples, 0.1)
 
 # Generate max wind speed from GEV
-# Scipy genextreme uses c = -nu. 
+# Scipy genextreme uses c = -nu.
 # BoostLSS parameterization: if nu > 0, it's Frechet-like (heavy tail)
 max_wind_speed = genextreme.rvs(c=-0.1, loc=mu_true, scale=sigma_true)
 
@@ -53,8 +53,17 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
 # Plot True vs Predicted mu (Location)
 idx_temp = np.argsort(temperature)
-ax1.plot(temperature[idx_temp], mu_true[idx_temp], 'k--', label=r"True $\mu$", linewidth=2)
-ax1.scatter(temperature[idx_temp], mu_pred[idx_temp], c='blue', alpha=0.1, label=r"Predicted $\mu$", s=5)
+ax1.plot(
+    temperature[idx_temp], mu_true[idx_temp], "k--", label=r"True $\mu$", linewidth=2
+)
+ax1.scatter(
+    temperature[idx_temp],
+    mu_pred[idx_temp],
+    c="blue",
+    alpha=0.1,
+    label=r"Predicted $\mu$",
+    s=5,
+)
 ax1.set_xlabel("Temperature")
 ax1.set_ylabel(r"$\mu$")
 ax1.set_title(r"Location Parameter ($\mu$) vs Temperature")
@@ -62,13 +71,26 @@ ax1.legend()
 
 # Plot True vs Predicted sigma (Scale)
 idx_pres = np.argsort(pressure_drop)
-ax2.plot(pressure_drop[idx_pres], sigma_true[idx_pres], 'k--', label=r"True $\sigma$", linewidth=2)
-ax2.scatter(pressure_drop[idx_pres], sigma_pred[idx_pres], c='red', alpha=0.3, label=r"Predicted $\sigma$", s=10)
+ax2.plot(
+    pressure_drop[idx_pres],
+    sigma_true[idx_pres],
+    "k--",
+    label=r"True $\sigma$",
+    linewidth=2,
+)
+ax2.scatter(
+    pressure_drop[idx_pres],
+    sigma_pred[idx_pres],
+    c="red",
+    alpha=0.3,
+    label=r"Predicted $\sigma$",
+    s=10,
+)
 ax2.set_xlabel("Pressure Drop")
 ax2.set_ylabel(r"$\sigma$")
 ax2.set_title(r"Scale Parameter ($\sigma$) vs Pressure Drop")
 ax2.legend()
 
 plt.tight_layout()
-plt.savefig("docs/assets/gev_extreme_weather.png", dpi=300, bbox_inches='tight')
+plt.savefig("docs/assets/gev_extreme_weather.png", dpi=300, bbox_inches="tight")
 print("Saved docs/assets/gev_extreme_weather.png")

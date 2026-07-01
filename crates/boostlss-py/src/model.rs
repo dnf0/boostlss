@@ -8,8 +8,8 @@ use boostlss::engine::noncyclical::{fit_noncyclical, fit_noncyclical_outer};
 use boostlss::engine::{Algorithm, Mstop};
 use boostlss::family::{
     BetaLss, BinomialLss, Burr12Lss, GEVLss, GammaLss, GaussianLss, GedLss, GpdLss,
-    InverseGaussianLss, JSULss, LaplaceLss, LogLogisticLss, LogNormalLss, NBinomialLss, NigLss,
-    PoissonLss, StudentTLss, WeibullLss, ZIPLss,
+    InverseGaussianLss, JSULss, LaplaceLss, LogLogisticLss, LogNormalLss, MultinomialLss,
+    NBinomialLss, NigLss, PoissonLss, StudentTLss, WeibullLss, ZIPLss,
 };
 use boostlss::family::{MertonJumpDiffusionLss, SHASHLss, TweedieLss, ZINBLss};
 use boostlss::learner::{BaseLearner, RandomEffects};
@@ -126,6 +126,7 @@ pub enum InternalFamily {
     Nig,
     Poisson,
     StudentT,
+    Multinomial,
     Tweedie(TweedieLss),
     Logistic,
     Zinb(ZINBLss),
@@ -153,6 +154,7 @@ enum FittedModel {
     Nig(Fitted<NigLss>),
     Poisson(Fitted<PoissonLss>),
     StudentT(Fitted<StudentTLss>),
+    Multinomial(Fitted<MultinomialLss>),
     Tweedie(Fitted<TweedieLss>),
     Logistic(Fitted<boostlss::family::LogisticLss>),
     Zinb(Fitted<ZINBLss>),
@@ -223,6 +225,9 @@ impl FittedModel {
             Self::StudentT(fitted) => fitted
                 .predict(dataset, param, scale)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Multinomial(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
             Self::Logistic(fitted) => fitted
                 .predict(dataset, param, scale)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
@@ -264,6 +269,7 @@ impl FittedModel {
             Self::Nig(fitted) => fitted.feature_importance(),
             Self::Poisson(fitted) => fitted.feature_importance(),
             Self::StudentT(fitted) => fitted.feature_importance(),
+            Self::Multinomial(fitted) => fitted.feature_importance(),
             Self::Logistic(fitted) => fitted.feature_importance(),
             Self::Tweedie(fitted) => fitted.feature_importance(),
             Self::Zinb(fitted) => fitted.feature_importance(),
@@ -333,6 +339,9 @@ impl FittedModel {
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
             Self::StudentT(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Multinomial(fitted) => fitted
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
             Self::Logistic(fitted) => fitted
@@ -425,6 +434,7 @@ impl BoostLssModel {
                 PyFamily::Nig => InternalFamily::Nig,
                 PyFamily::Poisson => InternalFamily::Poisson,
                 PyFamily::StudentT => InternalFamily::StudentT,
+                PyFamily::Multinomial => InternalFamily::Multinomial,
             }
         } else if family.extract::<crate::family::PyLogisticLss>().is_ok() {
             InternalFamily::Logistic
@@ -542,6 +552,15 @@ impl BoostLssModel {
             InternalFamily::StudentT => {
                 fit_family!(self, &dataset, StudentTLss::new(), FittedModel::StudentT)
             }
+            InternalFamily::Multinomial => {
+                let k = dataset.response().iter().fold(0.0_f64, |m, &x| m.max(x)) as usize + 1;
+                fit_family!(
+                    self,
+                    &dataset,
+                    MultinomialLss::new(k),
+                    FittedModel::Multinomial
+                )
+            }
             InternalFamily::Logistic => fit_family!(
                 self,
                 &dataset,
@@ -646,6 +665,10 @@ impl BoostLssModel {
                 }
                 InternalFamily::StudentT => {
                     cvrisk_family!(self, &dataset, StudentTLss::new(), folds, py)
+                }
+                InternalFamily::Multinomial => {
+                    let k = dataset.response().iter().fold(0.0_f64, |m, &x| m.max(x)) as usize + 1;
+                    cvrisk_family!(self, &dataset, MultinomialLss::new(k), folds, py)
                 }
                 InternalFamily::Merton(ref m_fam) => {
                     cvrisk_family!(self, &dataset, m_fam.clone(), folds, py)
@@ -771,6 +794,10 @@ impl BoostLssModel {
             InternalFamily::StudentT => {
                 stabsel_family!(self, &dataset, StudentTLss::new(), &config)
             }
+            InternalFamily::Multinomial => {
+                let k = dataset.response().iter().fold(0.0_f64, |m, &x| m.max(x)) as usize + 1;
+                stabsel_family!(self, &dataset, MultinomialLss::new(k), &config)
+            }
             InternalFamily::Logistic => stabsel_family!(
                 self,
                 &dataset,
@@ -872,6 +899,7 @@ impl BoostLssModel {
                         InternalFamily::Nig => PyFamily::Nig,
                         InternalFamily::Poisson => PyFamily::Poisson,
                         InternalFamily::StudentT => PyFamily::StudentT,
+                        InternalFamily::Multinomial => PyFamily::Multinomial,
                         InternalFamily::Logistic => unreachable!(),
                         InternalFamily::Tweedie(_) => unreachable!(),
                         InternalFamily::Zinb(_) => unreachable!(),
@@ -908,6 +936,7 @@ impl BoostLssModel {
             InternalFamily::Nig => "NigLss",
             InternalFamily::Poisson => "PoissonLss",
             InternalFamily::StudentT => "StudentTLss",
+            InternalFamily::Multinomial => "MultinomialLss",
             InternalFamily::Logistic => "LogisticLss",
             InternalFamily::Tweedie(t) => {
                 dict.set_item("tweedie_p", t.p)?;
@@ -952,6 +981,7 @@ impl BoostLssModel {
                 FittedModel::Nig(f) => bincode::serialize(f),
                 FittedModel::Poisson(f) => bincode::serialize(f),
                 FittedModel::StudentT(f) => bincode::serialize(f),
+                FittedModel::Multinomial(f) => bincode::serialize(f),
                 FittedModel::Logistic(f) => bincode::serialize(f),
                 FittedModel::Tweedie(f) => bincode::serialize(f),
                 FittedModel::Zinb(f) => bincode::serialize(f),
@@ -994,7 +1024,8 @@ impl BoostLssModel {
             "NBinomialLss" => InternalFamily::NBinomial,
             "NigLss" => InternalFamily::Nig,
             "PoissonLss" => InternalFamily::Poisson,
-            "StudentTLss" => InternalFamily::StudentT,
+            "StudentTLss" | "STUDENTT" => InternalFamily::StudentT,
+            "MultinomialLss" | "MULTINOMIAL" => InternalFamily::Multinomial,
             "TweedieLss" => {
                 let p: f64 = state
                     .get_item("tweedie_p")?
@@ -1111,6 +1142,10 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),
                 InternalFamily::StudentT => FittedModel::StudentT(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::Multinomial => FittedModel::Multinomial(
                     bincode::deserialize(bytes)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),

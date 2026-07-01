@@ -378,8 +378,13 @@ mod tests {
         use ndarray::{Array1, Array2};
         let family = GaussianLss::new();
         let mut fitted = Fitted::new(family, vec![0.0, 0.0], vec![]);
-        let data =
-            Dataset::new(Array2::<f64>::zeros((5, 2)), Array1::<f64>::zeros(5), None, None).unwrap();
+        let data = Dataset::new(
+            Array2::<f64>::zeros((5, 2)),
+            Array1::<f64>::zeros(5),
+            None,
+            None,
+        )
+        .unwrap();
 
         let pred = fitted.predict(&data, "mu", Scale::Link).unwrap();
         assert_eq!(pred.len(), 5);
@@ -446,8 +451,13 @@ mod tests {
             risk_reduction: 0.0,
         });
 
-        let data =
-            Dataset::new(Array2::<f64>::zeros((5, 2)), Array1::<f64>::zeros(5), None, None).unwrap();
+        let data = Dataset::new(
+            Array2::<f64>::zeros((5, 2)),
+            Array1::<f64>::zeros(5),
+            None,
+            None,
+        )
+        .unwrap();
         let grid = vec![1.0, 2.0, 3.0];
 
         // We evaluate feature_idx 1 (the 'x' column in the design matrix, since 0 is intercept for Linear usually, but let's test feature_idx=0 here)
@@ -465,8 +475,13 @@ mod tests {
         use ndarray::{Array1, Array2};
         let family = GaussianLss::new();
         let mut fitted = Fitted::new(family, vec![0.0, 0.0], vec![]);
-        let data =
-            Dataset::new(Array2::<f64>::zeros((5, 2)), Array1::<f64>::zeros(5), None, None).unwrap();
+        let data = Dataset::new(
+            Array2::<f64>::zeros((5, 2)),
+            Array1::<f64>::zeros(5),
+            None,
+            None,
+        )
+        .unwrap();
         let grid = vec![1.0, 2.0];
 
         let result = fitted.partial_dependence(&data, "mu", 999, &grid);

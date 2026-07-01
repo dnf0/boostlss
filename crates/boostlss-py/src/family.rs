@@ -44,6 +44,7 @@ pub enum PyFamily {
     Nig,
     Poisson,
     StudentT,
+    Multinomial,
 }
 
 #[pymethods]
@@ -69,6 +70,7 @@ impl PyFamily {
             "NIGLSS" | "NigLss" => Ok(PyFamily::Nig),
             "POISSONLSS" | "PoissonLss" => Ok(PyFamily::Poisson),
             "STUDENTTLSS" | "StudentTLss" => Ok(PyFamily::StudentT),
+            "MULTINOMIAL" | "Multinomial" => Ok(PyFamily::Multinomial),
             _ => Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "Unknown family: {}",
                 name
@@ -96,6 +98,7 @@ impl PyFamily {
             PyFamily::Nig => ("NigLss",),
             PyFamily::Poisson => ("PoissonLss",),
             PyFamily::StudentT => ("StudentTLss",),
+            PyFamily::Multinomial => ("MultinomialLss",),
         }
     }
 }

@@ -283,7 +283,10 @@ impl Dataset {
         let mut new_design = ndarray::Array2::zeros((n, mat.ncols()));
         let mut new_response = ndarray::Array1::zeros(n);
         let mut new_weights = self.weights.as_ref().map(|_| ndarray::Array1::zeros(n));
-        let mut new_censoring = self.censoring.as_ref().map(|_| ndarray::Array1::from_elem(n, false));
+        let mut new_censoring = self
+            .censoring
+            .as_ref()
+            .map(|_| ndarray::Array1::from_elem(n, false));
 
         for (i, &idx) in indices.iter().enumerate() {
             if idx >= mat.nrows() {

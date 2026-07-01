@@ -478,12 +478,14 @@ impl BoostLssModel {
         Ok(())
     }
 
-    #[pyo3(signature = (x, y))]
+    #[pyo3(signature = (x, y, eval_set=None, early_stopping_rounds=None))]
     fn fit<'py>(
         &mut self,
         py: Python<'py>,
         x: &Bound<'py, PyAny>,
         y: PyReadonlyArray1<'py, f64>,
+        eval_set: Option<(Bound<'py, PyAny>, PyReadonlyArray1<'py, f64>)>,
+        early_stopping_rounds: Option<usize>,
     ) -> PyResult<()> {
         let y_view = y.as_array();
         let y_vec =
@@ -494,13 +496,26 @@ impl BoostLssModel {
 
         self.train_data = Some(dataset.clone());
 
+        let eval_dataset = if let Some((e_x, e_y)) = eval_set {
+            let e_y_view = e_y.as_array();
+            let e_y_vec = ndarray::Array1::from_shape_vec(
+                (e_y_view.len(),),
+                e_y_view.to_owned().into_raw_vec(),
+            )
+            .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+            Some(crate::data::extract_dataset(py, &e_x, Some(e_y_vec))?)
+        } else {
+            None
+        };
+        let eval_data_ref = eval_dataset.as_ref();
+
         match &self.family {
             InternalFamily::Gaussian => {
                 fit_family!(
                     self,
                     &dataset,
-                    None,
-                    None,
+                    eval_data_ref,
+                    early_stopping_rounds,
                     GaussianLss::new(),
                     FittedModel::Gaussian
                 )
@@ -509,8 +524,8 @@ impl BoostLssModel {
                 fit_family!(
                     self,
                     &dataset,
-                    None,
-                    None,
+                    eval_data_ref,
+                    early_stopping_rounds,
                     BinomialLss::new(),
                     FittedModel::Binomial
                 )
@@ -518,8 +533,8 @@ impl BoostLssModel {
             InternalFamily::Beta => fit_family!(
                 self,
                 &dataset,
-                None,
-                None,
+                eval_data_ref,
+                early_stopping_rounds,
                 BetaLss::new(),
                 FittedModel::Beta
             ),
@@ -527,8 +542,8 @@ impl BoostLssModel {
                 fit_family!(
                     self,
                     &dataset,
-                    None,
-                    None,
+                    eval_data_ref,
+                    early_stopping_rounds,
                     WeibullLss::new(),
                     FittedModel::Weibull
                 )
@@ -537,27 +552,48 @@ impl BoostLssModel {
                 fit_family!(
                     self,
                     &dataset,
-                    None,
-                    None,
+                    eval_data_ref,
+                    early_stopping_rounds,
                     LogNormalLss::new(),
                     FittedModel::LogNormal
                 )
             }
             InternalFamily::Zip => {
-                fit_family!(self, &dataset, None, None, ZIPLss::new(), FittedModel::Zip)
+                fit_family!(
+                    self,
+                    &dataset,
+                    eval_data_ref,
+                    early_stopping_rounds,
+                    ZIPLss::new(),
+                    FittedModel::Zip
+                )
             }
             InternalFamily::Gev => {
-                fit_family!(self, &dataset, None, None, GEVLss::new(), FittedModel::Gev)
+                fit_family!(
+                    self,
+                    &dataset,
+                    eval_data_ref,
+                    early_stopping_rounds,
+                    GEVLss::new(),
+                    FittedModel::Gev
+                )
             }
             InternalFamily::Jsu => {
-                fit_family!(self, &dataset, None, None, JSULss::new(), FittedModel::Jsu)
+                fit_family!(
+                    self,
+                    &dataset,
+                    eval_data_ref,
+                    early_stopping_rounds,
+                    JSULss::new(),
+                    FittedModel::Jsu
+                )
             }
             InternalFamily::Burr12 => {
                 fit_family!(
                     self,
                     &dataset,
-                    None,
-                    None,
+                    eval_data_ref,
+                    early_stopping_rounds,
                     Burr12Lss::new(),
                     FittedModel::Burr12
                 )
@@ -566,31 +602,45 @@ impl BoostLssModel {
                 fit_family!(
                     self,
                     &dataset,
-                    None,
-                    None,
+                    eval_data_ref,
+                    early_stopping_rounds,
                     GammaLss::new(),
                     FittedModel::Gamma
                 )
             }
             InternalFamily::Ged => {
-                fit_family!(self, &dataset, None, None, GedLss::new(), FittedModel::Ged)
+                fit_family!(
+                    self,
+                    &dataset,
+                    eval_data_ref,
+                    early_stopping_rounds,
+                    GedLss::new(),
+                    FittedModel::Ged
+                )
             }
             InternalFamily::Gpd => {
-                fit_family!(self, &dataset, None, None, GpdLss::new(), FittedModel::Gpd)
+                fit_family!(
+                    self,
+                    &dataset,
+                    eval_data_ref,
+                    early_stopping_rounds,
+                    GpdLss::new(),
+                    FittedModel::Gpd
+                )
             }
             InternalFamily::InverseGaussian => fit_family!(
                 self,
                 &dataset,
-                None,
-                None,
+                eval_data_ref,
+                early_stopping_rounds,
                 InverseGaussianLss::new(),
                 FittedModel::InverseGaussian
             ),
             InternalFamily::LogLogistic => fit_family!(
                 self,
                 &dataset,
-                None,
-                None,
+                eval_data_ref,
+                early_stopping_rounds,
                 LogLogisticLss::new(),
                 FittedModel::LogLogistic
             ),
@@ -598,21 +648,28 @@ impl BoostLssModel {
                 fit_family!(
                     self,
                     &dataset,
-                    None,
-                    None,
+                    eval_data_ref,
+                    early_stopping_rounds,
                     NBinomialLss::new(),
                     FittedModel::NBinomial
                 )
             }
             InternalFamily::Nig => {
-                fit_family!(self, &dataset, None, None, NigLss::new(), FittedModel::Nig)
+                fit_family!(
+                    self,
+                    &dataset,
+                    eval_data_ref,
+                    early_stopping_rounds,
+                    NigLss::new(),
+                    FittedModel::Nig
+                )
             }
             InternalFamily::Poisson => {
                 fit_family!(
                     self,
                     &dataset,
-                    None,
-                    None,
+                    eval_data_ref,
+                    early_stopping_rounds,
                     PoissonLss::new(),
                     FittedModel::Poisson
                 )
@@ -621,8 +678,8 @@ impl BoostLssModel {
                 fit_family!(
                     self,
                     &dataset,
-                    None,
-                    None,
+                    eval_data_ref,
+                    early_stopping_rounds,
                     StudentTLss::new(),
                     FittedModel::StudentT
                 )
@@ -632,8 +689,8 @@ impl BoostLssModel {
                 fit_family!(
                     self,
                     &dataset,
-                    None,
-                    None,
+                    eval_data_ref,
+                    early_stopping_rounds,
                     MultinomialLss::new(k),
                     FittedModel::Multinomial
                 )
@@ -641,8 +698,8 @@ impl BoostLssModel {
             InternalFamily::Logistic => fit_family!(
                 self,
                 &dataset,
-                None,
-                None,
+                eval_data_ref,
+                early_stopping_rounds,
                 boostlss::family::LogisticLss::new(),
                 FittedModel::Logistic
             ),
@@ -650,21 +707,28 @@ impl BoostLssModel {
                 fit_family!(
                     self,
                     &dataset,
-                    None,
-                    None,
+                    eval_data_ref,
+                    early_stopping_rounds,
                     t_fam.clone(),
                     FittedModel::Tweedie
                 )
             }
             InternalFamily::Zinb(ref z_fam) => {
-                fit_family!(self, &dataset, None, None, z_fam.clone(), FittedModel::Zinb)
+                fit_family!(
+                    self,
+                    &dataset,
+                    eval_data_ref,
+                    early_stopping_rounds,
+                    z_fam.clone(),
+                    FittedModel::Zinb
+                )
             }
             InternalFamily::Laplace(ref l_fam) => {
                 fit_family!(
                     self,
                     &dataset,
-                    None,
-                    None,
+                    eval_data_ref,
+                    early_stopping_rounds,
                     l_fam.clone(),
                     FittedModel::Laplace
                 )
@@ -673,8 +737,8 @@ impl BoostLssModel {
                 fit_family!(
                     self,
                     &dataset,
-                    None,
-                    None,
+                    eval_data_ref,
+                    early_stopping_rounds,
                     m_fam.clone(),
                     FittedModel::Merton
                 )
@@ -683,8 +747,8 @@ impl BoostLssModel {
                 fit_family!(
                     self,
                     &dataset,
-                    None,
-                    None,
+                    eval_data_ref,
+                    early_stopping_rounds,
                     s_fam.clone(),
                     FittedModel::Shash
                 )
@@ -1306,6 +1370,101 @@ impl BoostLssModel {
 
         self.train_data = None; // Reset train_data
         Ok(())
+    }
+
+    #[getter]
+    pub fn evals_result_(&self, py: Python) -> PyResult<PyObject> {
+        let fitted = self
+            .fitted
+            .as_ref()
+            .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("Model not fitted"))?;
+
+        macro_rules! get_evals {
+            ($fitted_model:expr) => {
+                match $fitted_model {
+                    FittedModel::Gaussian(f) => &f.eval_results,
+                    FittedModel::Binomial(f) => &f.eval_results,
+                    FittedModel::StudentT(f) => &f.eval_results,
+                    FittedModel::Poisson(f) => &f.eval_results,
+                    FittedModel::Beta(f) => &f.eval_results,
+                    FittedModel::Weibull(f) => &f.eval_results,
+                    FittedModel::LogNormal(f) => &f.eval_results,
+                    FittedModel::Zip(f) => &f.eval_results,
+                    FittedModel::Gev(f) => &f.eval_results,
+                    FittedModel::Jsu(f) => &f.eval_results,
+                    FittedModel::Burr12(f) => &f.eval_results,
+                    FittedModel::Gamma(f) => &f.eval_results,
+                    FittedModel::Ged(f) => &f.eval_results,
+                    FittedModel::Gpd(f) => &f.eval_results,
+                    FittedModel::InverseGaussian(f) => &f.eval_results,
+                    FittedModel::LogLogistic(f) => &f.eval_results,
+                    FittedModel::NBinomial(f) => &f.eval_results,
+                    FittedModel::Nig(f) => &f.eval_results,
+                    FittedModel::Logistic(f) => &f.eval_results,
+                    FittedModel::Multinomial(f) => &f.eval_results,
+                    FittedModel::Tweedie(f) => &f.eval_results,
+                    FittedModel::Zinb(f) => &f.eval_results,
+                    FittedModel::Laplace(f) => &f.eval_results,
+                    FittedModel::Merton(f) => &f.eval_results,
+                    FittedModel::Shash(f) => &f.eval_results,
+                }
+            };
+        }
+        let results = get_evals!(fitted);
+
+        let dict = pyo3::types::PyDict::new_bound(py);
+        let train_dict = pyo3::types::PyDict::new_bound(py);
+        train_dict.set_item("loss", results.train_loss.clone())?;
+        dict.set_item("train", train_dict)?;
+
+        if let Some(val_loss) = &results.val_loss {
+            let val_dict = pyo3::types::PyDict::new_bound(py);
+            val_dict.set_item("loss", val_loss.clone())?;
+            dict.set_item("valid", val_dict)?;
+        }
+
+        Ok(dict.into())
+    }
+
+    #[getter]
+    pub fn best_iteration_(&self) -> PyResult<usize> {
+        let fitted = self
+            .fitted
+            .as_ref()
+            .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("Model not fitted"))?;
+
+        macro_rules! get_best_iter {
+            ($fitted_model:expr) => {
+                match $fitted_model {
+                    FittedModel::Gaussian(f) => f.best_iteration,
+                    FittedModel::Binomial(f) => f.best_iteration,
+                    FittedModel::StudentT(f) => f.best_iteration,
+                    FittedModel::Poisson(f) => f.best_iteration,
+                    FittedModel::Beta(f) => f.best_iteration,
+                    FittedModel::Weibull(f) => f.best_iteration,
+                    FittedModel::LogNormal(f) => f.best_iteration,
+                    FittedModel::Zip(f) => f.best_iteration,
+                    FittedModel::Gev(f) => f.best_iteration,
+                    FittedModel::Jsu(f) => f.best_iteration,
+                    FittedModel::Burr12(f) => f.best_iteration,
+                    FittedModel::Gamma(f) => f.best_iteration,
+                    FittedModel::Ged(f) => f.best_iteration,
+                    FittedModel::Gpd(f) => f.best_iteration,
+                    FittedModel::InverseGaussian(f) => f.best_iteration,
+                    FittedModel::LogLogistic(f) => f.best_iteration,
+                    FittedModel::NBinomial(f) => f.best_iteration,
+                    FittedModel::Nig(f) => f.best_iteration,
+                    FittedModel::Logistic(f) => f.best_iteration,
+                    FittedModel::Multinomial(f) => f.best_iteration,
+                    FittedModel::Tweedie(f) => f.best_iteration,
+                    FittedModel::Zinb(f) => f.best_iteration,
+                    FittedModel::Laplace(f) => f.best_iteration,
+                    FittedModel::Merton(f) => f.best_iteration,
+                    FittedModel::Shash(f) => f.best_iteration,
+                }
+            };
+        }
+        Ok(get_best_iter!(fitted))
     }
 
     fn save(&self, py: Python<'_>, path: &str) -> PyResult<()> {

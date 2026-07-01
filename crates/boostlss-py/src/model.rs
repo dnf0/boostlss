@@ -1,4 +1,6 @@
-use crate::family::{PyFamily, PyLaplaceLss, PyTweedieLss, PyZINBLss};
+use crate::family::{
+    PyFamily, PyLaplaceLss, PyMertonJumpDiffusionLss, PySHASHLss, PyTweedieLss, PyZINBLss,
+};
 use boostlss::cv::{CvRisk, Resampling};
 use boostlss::data::Dataset;
 use boostlss::engine::cyclical::fit_cyclical;
@@ -7,7 +9,7 @@ use boostlss::engine::{Algorithm, Mstop};
 use boostlss::family::{
     BetaLss, BinomialLss, GEVLss, GaussianLss, JSULss, LaplaceLss, LogNormalLss, WeibullLss, ZIPLss,
 };
-use boostlss::family::{TweedieLss, ZINBLss};
+use boostlss::family::{MertonJumpDiffusionLss, SHASHLss, TweedieLss, ZINBLss};
 use boostlss::learner::{BaseLearner, RandomEffects};
 use boostlss::model::{BoostLss, Fitted, Scale};
 use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
@@ -116,6 +118,8 @@ pub enum InternalFamily {
     Logistic,
     Zinb(ZINBLss),
     Laplace(LaplaceLss),
+    Merton(MertonJumpDiffusionLss),
+    Shash(SHASHLss),
 }
 
 enum FittedModel {
@@ -131,6 +135,8 @@ enum FittedModel {
     Logistic(Fitted<boostlss::family::LogisticLss>),
     Zinb(Fitted<ZINBLss>),
     Laplace(Fitted<LaplaceLss>),
+    Merton(Fitted<MertonJumpDiffusionLss>),
+    Shash(Fitted<SHASHLss>),
 }
 
 impl FittedModel {
@@ -177,6 +183,12 @@ impl FittedModel {
             Self::Laplace(fitted) => fitted
                 .predict(dataset, param, scale)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Merton(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Shash(fitted) => fitted
+                .predict(dataset, param, scale)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
         }
     }
 
@@ -194,6 +206,8 @@ impl FittedModel {
             Self::Tweedie(fitted) => fitted.feature_importance(),
             Self::Zinb(fitted) => fitted.feature_importance(),
             Self::Laplace(fitted) => fitted.feature_importance(),
+            Self::Merton(fitted) => fitted.feature_importance(),
+            Self::Shash(fitted) => fitted.feature_importance(),
         }
     }
 
@@ -239,6 +253,12 @@ impl FittedModel {
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
             Self::Laplace(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Merton(fitted) => fitted
+                .partial_dependence(dataset, param, feature_idx, grid)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
+            Self::Shash(fitted) => fitted
                 .partial_dependence(dataset, param, feature_idx, grid)
                 .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string())),
         }
@@ -312,6 +332,10 @@ impl BoostLssModel {
             InternalFamily::Zinb(z.inner.clone())
         } else if let Ok(l) = family.extract::<PyLaplaceLss>() {
             InternalFamily::Laplace(l.inner.clone())
+        } else if let Ok(m) = family.extract::<PyMertonJumpDiffusionLss>() {
+            InternalFamily::Merton(m.inner.clone())
+        } else if let Ok(s) = family.extract::<PySHASHLss>() {
+            InternalFamily::Shash(s.inner.clone())
         } else {
             return Err(pyo3::exceptions::PyValueError::new_err("Invalid family"));
         };
@@ -401,6 +425,12 @@ impl BoostLssModel {
             InternalFamily::Laplace(ref l_fam) => {
                 fit_family!(self, &dataset, l_fam.clone(), FittedModel::Laplace)
             }
+            InternalFamily::Merton(ref m_fam) => {
+                fit_family!(self, &dataset, m_fam.clone(), FittedModel::Merton)
+            }
+            InternalFamily::Shash(ref s_fam) => {
+                fit_family!(self, &dataset, s_fam.clone(), FittedModel::Shash)
+            }
         }
         Ok(())
     }
@@ -463,6 +493,12 @@ impl BoostLssModel {
                 InternalFamily::Zip => cvrisk_family!(self, &dataset, ZIPLss::new(), folds, py),
                 InternalFamily::Gev => cvrisk_family!(self, &dataset, GEVLss::new(), folds, py),
                 InternalFamily::Jsu => cvrisk_family!(self, &dataset, JSULss::new(), folds, py),
+                InternalFamily::Merton(ref m_fam) => {
+                    cvrisk_family!(self, &dataset, m_fam.clone(), folds, py)
+                }
+                InternalFamily::Shash(ref s_fam) => {
+                    cvrisk_family!(self, &dataset, s_fam.clone(), folds, py)
+                }
             }
         } else {
             Err(pyo3::exceptions::PyRuntimeError::new_err(
@@ -578,6 +614,12 @@ impl BoostLssModel {
             InternalFamily::Laplace(ref l_fam) => {
                 stabsel_family!(self, &dataset, l_fam.clone(), &config)
             }
+            InternalFamily::Merton(ref m_fam) => {
+                stabsel_family!(self, &dataset, m_fam.clone(), &config)
+            }
+            InternalFamily::Shash(ref s_fam) => {
+                stabsel_family!(self, &dataset, s_fam.clone(), &config)
+            }
         };
 
         let mut probabilities = std::collections::HashMap::new();
@@ -632,6 +674,12 @@ impl BoostLssModel {
                 InternalFamily::Laplace(l) => {
                     crate::family::PyLaplaceLss { inner: l.clone() }.into_py(py)
                 }
+                InternalFamily::Merton(m) => {
+                    crate::family::PyMertonJumpDiffusionLss { inner: m.clone() }.into_py(py)
+                }
+                InternalFamily::Shash(s) => {
+                    crate::family::PySHASHLss { inner: s.clone() }.into_py(py)
+                }
                 f => {
                     let py_fam = match f {
                         InternalFamily::Gaussian => PyFamily::Gaussian,
@@ -646,6 +694,8 @@ impl BoostLssModel {
                         InternalFamily::Tweedie(_) => unreachable!(),
                         InternalFamily::Zinb(_) => unreachable!(),
                         InternalFamily::Laplace(_) => unreachable!(),
+                        InternalFamily::Merton(_) => unreachable!(),
+                        InternalFamily::Shash(_) => unreachable!(),
                     };
                     py_fam.into_py(py)
                 }
@@ -673,6 +723,11 @@ impl BoostLssModel {
             }
             InternalFamily::Zinb(_) => "ZINBLss",
             InternalFamily::Laplace(_) => "LaplaceLss",
+            InternalFamily::Merton(m) => {
+                dict.set_item("merton_max_jumps", m.max_jumps)?;
+                "MertonJumpDiffusionLss"
+            }
+            InternalFamily::Shash(_) => "SHASHLss",
         };
         dict.set_item("family", family_str)?;
         dict.set_item("mstop", self.mstop)?;
@@ -699,6 +754,8 @@ impl BoostLssModel {
                 FittedModel::Tweedie(f) => bincode::serialize(f),
                 FittedModel::Zinb(f) => bincode::serialize(f),
                 FittedModel::Laplace(f) => bincode::serialize(f),
+                FittedModel::Merton(f) => bincode::serialize(f),
+                FittedModel::Shash(f) => bincode::serialize(f),
             }
             .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
             dict.set_item("fitted", PyBytes::new_bound(py, &bytes))?;
@@ -738,6 +795,16 @@ impl BoostLssModel {
             "LogisticLss" => InternalFamily::Logistic,
             "ZINBLss" => InternalFamily::Zinb(boostlss::family::ZINBLss::new()),
             "LaplaceLss" => InternalFamily::Laplace(boostlss::family::LaplaceLss::new()),
+            "MertonJumpDiffusionLss" => {
+                let j: usize = state
+                    .get_item("merton_max_jumps")?
+                    .ok_or_else(|| {
+                        pyo3::exceptions::PyKeyError::new_err("Missing key 'merton_max_jumps'")
+                    })?
+                    .extract()?;
+                InternalFamily::Merton(boostlss::family::MertonJumpDiffusionLss::new(j))
+            }
+            "SHASHLss" => InternalFamily::Shash(boostlss::family::SHASHLss::new()),
             _ => return Err(pyo3::exceptions::PyRuntimeError::new_err("Unknown family")),
         };
         self.mstop = state
@@ -808,6 +875,14 @@ impl BoostLssModel {
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),
                 InternalFamily::Laplace(_) => FittedModel::Laplace(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::Merton(_) => FittedModel::Merton(
+                    bincode::deserialize(bytes)
+                        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
+                ),
+                InternalFamily::Shash(_) => FittedModel::Shash(
                     bincode::deserialize(bytes)
                         .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?,
                 ),

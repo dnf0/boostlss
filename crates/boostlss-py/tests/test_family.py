@@ -64,3 +64,47 @@ def test_laplace():
 
     model.fit(X, y)
     assert len(model.predict(X, "mu")) == 10
+
+
+def test_merton():
+    from boostlss_py import MertonJumpDiffusionLss, BoostLssModel, PyLinearLearner
+    import numpy as np
+
+    fam = MertonJumpDiffusionLss(max_jumps=10)
+    model = BoostLssModel(fam, mstop=2)
+    model.add_learner("mu", PyLinearLearner(0))
+    model.add_learner("sigma", PyLinearLearner(0))
+    model.add_learner("lam", PyLinearLearner(0))
+    model.add_learner("mu_j", PyLinearLearner(0))
+    model.add_learner("sigma_j", PyLinearLearner(0))
+
+    # Generate some jumpy data
+    np.random.seed(42)
+    y = np.random.normal(loc=0.05, scale=0.1, size=20)
+    # add some jumps
+    jumps = np.random.poisson(lam=0.5, size=20)
+    y += jumps * np.random.normal(loc=-0.1, scale=0.2, size=20)
+
+    X = np.random.normal(size=(20, 2))
+
+    model.fit(X, y)
+    assert len(model.predict(X, "mu")) == 20
+
+
+def test_shash():
+    from boostlss_py import SHASHLss, BoostLssModel, PyLinearLearner
+    import numpy as np
+
+    fam = SHASHLss()
+    model = BoostLssModel(fam, mstop=2)
+    model.add_learner("mu", PyLinearLearner(0))
+    model.add_learner("sigma", PyLinearLearner(0))
+    model.add_learner("nu", PyLinearLearner(0))
+    model.add_learner("tau", PyLinearLearner(0))
+
+    np.random.seed(42)
+    y = np.random.normal(size=10)
+    X = np.random.normal(size=(10, 2))
+
+    model.fit(X, y)
+    assert len(model.predict(X, "mu")) == 10

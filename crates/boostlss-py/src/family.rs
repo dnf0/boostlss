@@ -126,3 +126,48 @@ impl PyLaplaceLss {
         pyo3::types::PyTuple::empty_bound(py)
     }
 }
+
+use boostlss::family::MertonJumpDiffusionLss;
+
+#[pyclass(name = "MertonJumpDiffusionLss", module = "boostlss_py")]
+#[derive(Clone)]
+pub struct PyMertonJumpDiffusionLss {
+    pub inner: MertonJumpDiffusionLss,
+}
+
+#[pymethods]
+impl PyMertonJumpDiffusionLss {
+    #[new]
+    #[pyo3(signature = (max_jumps=10))]
+    pub fn new(max_jumps: usize) -> Self {
+        Self {
+            inner: MertonJumpDiffusionLss::new(max_jumps),
+        }
+    }
+
+    fn __getnewargs__(&self) -> (usize,) {
+        (self.inner.max_jumps,)
+    }
+}
+
+use boostlss::family::SHASHLss;
+
+#[pyclass(name = "SHASHLss", module = "boostlss_py")]
+#[derive(Clone)]
+pub struct PySHASHLss {
+    pub inner: SHASHLss,
+}
+
+#[pymethods]
+impl PySHASHLss {
+    #[new]
+    pub fn new() -> Self {
+        Self {
+            inner: SHASHLss::new(),
+        }
+    }
+
+    fn __getnewargs__<'py>(&self, py: Python<'py>) -> pyo3::Bound<'py, pyo3::types::PyTuple> {
+        pyo3::types::PyTuple::empty_bound(py)
+    }
+}

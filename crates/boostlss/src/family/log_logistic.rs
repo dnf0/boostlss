@@ -62,7 +62,7 @@ impl Family for LogLogisticLss {
             let mu = mu_link.response(eta[0][i]).max(EPSILON);
             let sigma = sigma_link.response(eta[1][i]).max(EPSILON);
             let wi = data.weights().map_or(1.0, |w| w[i]);
-            let is_censored = data.censoring().map_or(false, |c| c[i]);
+            let is_censored = data.censoring().is_some_and(|c| c[i]);
 
             let z = (yi / mu).powf(sigma);
 
@@ -96,7 +96,7 @@ impl Family for LogLogisticLss {
             let mu = mu_link.response(eta[0][i]).max(EPSILON);
             let sigma = sigma_link.response(eta[1][i]).max(EPSILON);
             let wi = data.weights().map_or(1.0, |w| w[i]);
-            let is_censored = data.censoring().map_or(false, |c| c[i]);
+            let is_censored = data.censoring().is_some_and(|c| c[i]);
 
             let log_y_over_mu = yi.ln() - mu.ln();
             let z = (yi / mu).powf(sigma);

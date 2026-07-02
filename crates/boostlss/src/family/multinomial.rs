@@ -16,7 +16,7 @@ impl MultinomialLss {
     pub fn new(k: usize) -> Self {
         let mut params = Vec::with_capacity(k);
         for i in 0..k {
-            params.push(ParamSpec::new(&format!("pi_{}", i), IdentityLink));
+            params.push(ParamSpec::new(format!("pi_{}", i), IdentityLink));
         }
         Self { k, params }
     }
@@ -28,9 +28,10 @@ impl MultinomialLss {
         {
             Ok(())
         } else {
-            Err(BoostlssError::DataError(
-                format!("MultinomialLss requires y to be integers in 0..{}", self.k).into(),
-            ))
+            Err(BoostlssError::DataError(format!(
+                "MultinomialLss requires y to be integers in 0..{}",
+                self.k
+            )))
         }
     }
 }
@@ -59,15 +60,15 @@ impl Family for MultinomialLss {
             let y_i = y[i] as usize;
 
             let mut max_eta = f64::NEG_INFINITY;
-            for k in 0..self.k {
-                if eta[k][i] > max_eta {
-                    max_eta = eta[k][i];
+            for eta_k in eta.iter().take(self.k) {
+                if eta_k[i] > max_eta {
+                    max_eta = eta_k[i];
                 }
             }
 
             let mut sum_exp = 0.0;
-            for k in 0..self.k {
-                sum_exp += (eta[k][i] - max_eta).exp();
+            for eta_k in eta.iter().take(self.k) {
+                sum_exp += (eta_k[i] - max_eta).exp();
             }
 
             let log_sum_exp = max_eta + sum_exp.ln();
@@ -95,15 +96,15 @@ impl Family for MultinomialLss {
             let y_i = y[i] as usize;
 
             let mut max_eta = f64::NEG_INFINITY;
-            for k in 0..self.k {
-                if eta[k][i] > max_eta {
-                    max_eta = eta[k][i];
+            for eta_k in eta.iter().take(self.k) {
+                if eta_k[i] > max_eta {
+                    max_eta = eta_k[i];
                 }
             }
 
             let mut sum_exp = 0.0;
-            for k in 0..self.k {
-                sum_exp += (eta[k][i] - max_eta).exp();
+            for eta_k in eta.iter().take(self.k) {
+                sum_exp += (eta_k[i] - max_eta).exp();
             }
 
             let p_target = (eta[target_k][i] - max_eta).exp() / sum_exp;
@@ -135,8 +136,8 @@ impl Family for MultinomialLss {
         }
 
         let mut offsets = Vec::with_capacity(self.k);
-        for k in 0..self.k {
-            let p = (counts[k] / total_weight).max(1e-10);
+        for count in counts.iter().take(self.k) {
+            let p = (*count / total_weight).max(1e-10);
             offsets.push(p.ln());
         }
         Ok(offsets)

@@ -75,14 +75,14 @@ impl Family for MertonJumpDiffusionLss {
 
             // Use LogSumExp trick for stability
             let mut log_terms = Vec::with_capacity(self.max_jumps + 1);
-            for j in 0..=self.max_jumps {
+            for (j, ln_fact_j) in ln_fact.iter().enumerate().take(self.max_jumps + 1) {
                 let j_f64 = j as f64;
                 let mu_total = drift + j_f64 * mu_j;
                 let var_total = var_diff + j_f64 * var_jump;
                 let std_total = var_total.sqrt();
 
                 // ln_prob_jump = -lam + j*ln(lam) - ln(j!)
-                let ln_prob_jump = -lam + j_f64 * lam.ln() - ln_fact[j];
+                let ln_prob_jump = -lam + j_f64 * lam.ln() - ln_fact_j;
 
                 let diff = yi - mu_total;
                 let ln_norm =

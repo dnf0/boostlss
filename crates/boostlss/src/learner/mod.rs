@@ -217,11 +217,11 @@ impl BaseLearner {
 
             let ldl = sprs_ldl::LdlNumeric::new(a.view()).unwrap();
 
-            return Ok(LearnerFit::Linear(SolverState::Sparse {
+            Ok(LearnerFit::Linear(SolverState::Sparse {
                 coef: Array1::zeros(p),
                 ldl: std::sync::Arc::new(ldl),
                 design: design_csc,
-            }));
+            }))
         } else {
             // DENSE PATH
             let design_dense = match design {

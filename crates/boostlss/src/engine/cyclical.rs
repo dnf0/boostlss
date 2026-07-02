@@ -265,7 +265,7 @@ mod tests {
         let fitted = model.fit(&data, Some(&data), Some(5)).unwrap();
 
         assert!(fitted.best_iteration < 1000);
-        assert_eq!(fitted.updates.len(), fitted.best_iteration * 1); // 1 param (sigma is not fitted in this test config to keep it simple)
+        assert_eq!(fitted.updates.len(), fitted.best_iteration); // 1 param (sigma is not fitted in this test config to keep it simple)
         assert!(fitted.eval_results.val_loss.is_some());
         assert_eq!(fitted.eval_results.train_loss.len(), fitted.best_iteration);
     }

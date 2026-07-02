@@ -91,6 +91,7 @@ impl Tree {
             max_depth: self.max_depth,
             min_samples_leaf: self.min_samples_leaf,
             feature_indices: self.feature_indices.clone(),
+            categorical_features: self.categorical_features.clone(),
             sorted_features,
         })
     }
@@ -155,6 +156,7 @@ pub struct TreeFitState {
     pub max_depth: usize,
     pub min_samples_leaf: usize,
     pub feature_indices: Vec<usize>,
+    pub categorical_features: Vec<usize>,
     // Each outer vec corresponds to one feature.
     // Inner vec is the sorted (value, original_row_index) pairs.
     pub sorted_features: Vec<Vec<(f64, usize)>>,
@@ -305,6 +307,7 @@ mod tests {
             max_depth: 2,
             min_samples_leaf: 1,
             feature_indices: vec![0, 1],
+            categorical_features: vec![],
             sorted_features: vec![sorted_f0, sorted_f1],
         };
         let u = array![-1.0, -1.0, 1.0, 1.0];
@@ -348,5 +351,36 @@ mod tests {
         } else {
             panic!("Expected CategoricalSplit");
         }
+    }
+
+    #[test]
+    fn test_tree_predict_categorical() {
+        use ndarray::array;
+        let root = TreeNode::CategoricalSplit {
+            feature_idx: 0,
+            left_categories: vec![1.0, 3.0],
+            left: Box::new(TreeNode::Leaf {
+                value: 10.0,
+                samples: 1,
+            }),
+            right: Box::new(TreeNode::Leaf {
+                value: 20.0,
+                samples: 1,
+            }),
+        };
+        let tree = Tree::new(vec![0]).categorical_features(vec![0]);
+        let data = crate::data::Dataset::new(
+            array![[1.0], [2.0], [3.0], [4.0]],
+            array![0., 0., 0., 0.],
+            None,
+            None,
+        )
+        .unwrap();
+
+        let preds = tree.predict(&root, &data).unwrap();
+        assert_eq!(preds[0], 10.0);
+        assert_eq!(preds[1], 20.0);
+        assert_eq!(preds[2], 10.0);
+        assert_eq!(preds[3], 20.0);
     }
 }

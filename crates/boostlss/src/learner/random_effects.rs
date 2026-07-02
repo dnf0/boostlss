@@ -1,15 +1,10 @@
+use crate::data::{DesignMatrix, SparseMatrix};
 use crate::error::BoostlssError;
-use ndarray::Array2;
+use ndarray::Array1;
 use serde::{Deserialize, Serialize};
 
-const MAX_SAFE_COLS: usize = 100_000;
-const MAX_SAFE_ELEMENTS: usize = 100_000_000;
-
-/// Note: Currently, this relies on a dense matrix for the design matrix, which
-/// means memory usage scales as O(n_obs * n_categories). For datasets with thousands
-/// of categories, this guarantees massive wasted memory and limits the scale of data
-/// that can be processed. A switch to sparse matrices (e.g., using `sprs`) should be
-/// considered for a future refactor.
+/// Note: Now uses sparse matrices (CSC) to efficiently handle categorical features
+/// with many categories, avoiding previous OOM issues on high cardinality datasets.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RandomEffects {
     pub feature_idx: usize,
@@ -29,14 +24,11 @@ impl RandomEffects {
         self
     }
 
-    pub fn build_design(
-        &self,
-        data: &crate::data::Dataset,
-    ) -> Result<crate::data::DesignMatrix, BoostlssError> {
+    pub fn build_design(&self, data: &crate::data::Dataset) -> Result<DesignMatrix, BoostlssError> {
         let col = data.design().get_column(self.feature_idx)?;
         let n_obs = col.len();
         if n_obs == 0 {
-            return Ok(crate::data::DesignMatrix::Dense(Array2::zeros((0, 0))));
+            return Ok(DesignMatrix::Dense(ndarray::Array2::zeros((0, 0))));
         }
 
         let mut max_idx = 0;
@@ -51,37 +43,58 @@ impl RandomEffects {
                 max_idx = idx;
             }
         }
-
-        if max_idx >= MAX_SAFE_COLS {
-            return Err(BoostlssError::DataError(
-                format!("RandomEffects max_idx {} exceeds safe threshold ({}) and would cause excessive memory allocation", max_idx, MAX_SAFE_COLS)
-            ));
-        }
-
         let n_cols = max_idx + 1;
 
-        let total_elements = n_obs.checked_mul(n_cols).ok_or_else(|| {
-            BoostlssError::DataError("Dimensions overflow safe capacity".to_string())
-        })?;
-
-        if total_elements > MAX_SAFE_ELEMENTS {
-            return Err(BoostlssError::DataError(
-                format!("RandomEffects total elements {} exceeds safe threshold ({}) and would cause an OOM", total_elements, MAX_SAFE_ELEMENTS)
-            ));
+        // Construct CSC matrix directly.
+        let mut row_counts = vec![0; n_cols];
+        for &val in col.iter() {
+            row_counts[val as usize] += 1;
         }
 
-        let mut design = Array2::zeros((n_obs, n_cols));
-
-        for (i, &val) in col.iter().enumerate() {
-            let idx = val as usize;
-            design[[i, idx]] = 1.0;
+        let mut indptr = Vec::with_capacity(n_cols + 1);
+        indptr.push(0);
+        let mut current = 0;
+        for &count in row_counts.iter() {
+            current += count;
+            indptr.push(current);
         }
 
-        Ok(crate::data::DesignMatrix::Dense(design))
+        let mut indices = vec![0; n_obs];
+        let data_vals = vec![1.0; n_obs];
+
+        let mut offsets = indptr.clone();
+        for (row_idx, &val) in col.iter().enumerate() {
+            let col_idx = val as usize;
+            let offset = offsets[col_idx];
+            indices[offset] = row_idx;
+            offsets[col_idx] += 1;
+        }
+
+        let sparse = SparseMatrix::new(
+            Array1::from_vec(data_vals),
+            Array1::from_vec(indices),
+            Array1::from_vec(indptr),
+            (n_obs, n_cols),
+        )?;
+
+        Ok(DesignMatrix::Csc(sparse))
     }
 
-    pub fn penalty_matrix(&self, n_cols: usize) -> crate::data::DesignMatrix {
-        crate::data::DesignMatrix::Dense(Array2::eye(n_cols))
+    pub fn penalty_matrix(&self, n_cols: usize) -> DesignMatrix {
+        // Identity matrix as CSC
+        let indptr: Vec<usize> = (0..=n_cols).collect();
+        let indices: Vec<usize> = (0..n_cols).collect();
+        let data_vals: Vec<f64> = vec![1.0; n_cols];
+
+        let sparse = SparseMatrix::new(
+            Array1::from_vec(data_vals),
+            Array1::from_vec(indices),
+            Array1::from_vec(indptr),
+            (n_cols, n_cols),
+        )
+        .unwrap();
+
+        DesignMatrix::Csc(sparse)
     }
 }
 
@@ -97,15 +110,18 @@ mod tests {
         let y = array![0.0, 0.0, 0.0, 0.0];
         let data = crate::data::Dataset::new(x, y, None, None).unwrap();
         let design = match re.build_design(&data).unwrap() {
-            crate::data::DesignMatrix::Dense(d) => d,
-            _ => panic!("Expected Dense"),
+            DesignMatrix::Csc(d) => d,
+            _ => panic!("Expected Csc"),
         };
 
-        assert_eq!(design.shape(), &[4, 3]);
-        assert_eq!(design.row(0), array![1.0, 0.0, 0.0].view());
-        assert_eq!(design.row(1), array![0.0, 0.0, 1.0].view());
-        assert_eq!(design.row(2), array![0.0, 1.0, 0.0].view());
-        assert_eq!(design.row(3), array![1.0, 0.0, 0.0].view());
+        assert_eq!(design.shape, (4, 3));
+
+        // Col 0 has row 0, 3
+        // Col 1 has row 2
+        // Col 2 has row 1
+        assert_eq!(design.indptr.to_vec(), vec![0, 2, 3, 4]);
+        assert_eq!(design.indices.to_vec(), vec![0, 3, 2, 1]);
+        assert_eq!(design.data.to_vec(), vec![1.0, 1.0, 1.0, 1.0]);
     }
 
     #[test]
@@ -123,40 +139,15 @@ mod tests {
     }
 
     #[test]
-    fn test_random_effects_oom_prevention() {
-        let re = RandomEffects::new(0);
-
-        let x1 = array![[1_000_000.0], [0.0]];
-        let y1 = array![0.0, 0.0];
-        let data1 = crate::data::Dataset::new(x1, y1, None, None).unwrap();
-        let result = re.build_design(&data1);
-        assert!(result.is_err());
-        if let Err(e) = result {
-            assert!(e.to_string().contains("exceeds safe threshold"));
-        } else {
-            panic!("Expected an error for large index");
-        }
-
-        let x2 = ndarray::Array2::from_elem((2000, 1), 59_999.0);
-        let y2 = ndarray::Array1::zeros(2000);
-        let data2 = crate::data::Dataset::new(x2, y2, None, None).unwrap();
-        let result2 = re.build_design(&data2);
-        assert!(result2.is_err());
-        if let Err(e) = result2 {
-            assert!(e.to_string().contains("total elements"));
-        } else {
-            panic!("Expected an error for large total elements");
-        }
-    }
-
-    #[test]
     fn test_random_effects_penalty() {
         let re = RandomEffects::new(0);
         let pen = match re.penalty_matrix(3) {
-            crate::data::DesignMatrix::Dense(d) => d,
-            _ => panic!("Expected Dense"),
+            DesignMatrix::Csc(d) => d,
+            _ => panic!("Expected Csc"),
         };
-        assert_eq!(pen.shape(), &[3, 3]);
-        assert_eq!(pen.diag(), array![1.0, 1.0, 1.0].view());
+        assert_eq!(pen.shape, (3, 3));
+        assert_eq!(pen.indptr.to_vec(), vec![0, 1, 2, 3]);
+        assert_eq!(pen.indices.to_vec(), vec![0, 1, 2]);
+        assert_eq!(pen.data.to_vec(), vec![1.0, 1.0, 1.0]);
     }
 }

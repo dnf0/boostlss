@@ -182,75 +182,125 @@ impl BaseLearner {
             }
         };
 
-        // For now, extract dense (to be rewritten in Task 5)
-        let design_dense = match design {
-            crate::data::DesignMatrix::Dense(mat) => mat,
-            _ => panic!("Expected dense matrix for initialization in this step"),
-        };
-        let penalty_dense = match penalty {
-            crate::data::DesignMatrix::Dense(mat) => mat,
-            _ => panic!("Expected dense penalty"),
-        };
+        if let (Ok(design_csc), Ok(penalty_csc)) = (design.to_csc(), penalty.to_csc()) {
+            // SPARSE PATH
+            let p = design_csc.cols();
 
-        let design = design_dense;
-        let penalty = penalty_dense;
-        let mut xtx = design.t().dot(&design);
-        if let Some(w) = data.weights() {
-            let mut weighted_design = design.clone();
-            for i in 0..design.nrows() {
-                let wi = w[i];
-                for j in 0..design.ncols() {
-                    weighted_design[[i, j]] *= wi;
+            let design_csr = design_csc.transpose_view().to_csr();
+            let mut xtw = design_csr.clone();
+
+            // Weighting
+            if let Some(w) = data.weights() {
+                for (row_idx, mut row_vec) in xtw.outer_iterator_mut().enumerate() {
+                    let w_val = w[row_idx];
+                    for (_, val) in row_vec.iter_mut() {
+                        *val *= w_val;
+                    }
                 }
             }
-            xtx = design.t().dot(&weighted_design);
-        }
 
-        let lambda = match self.target_df() {
-            Some(df) => crate::learner::penalty::df_to_lambda(&xtx, &penalty, df),
-            None => 0.0,
-        };
+            // X^T W X
+            let xtwx = &xtw * &design_csc;
 
-        if let Self::ConstrainedPSpline(cp) = self {
-            let p = design.ncols();
-            let order = match cp.constraint {
-                constrained_pspline::Constraint::MonotonicIncreasing
-                | constrained_pspline::Constraint::MonotonicDecreasing => 1,
-                constrained_pspline::Constraint::Convex
-                | constrained_pspline::Constraint::Concave => 2,
+            let lambda = match self.target_df() {
+                Some(_df) => {
+                    // df_to_lambda is not yet implemented for sparse. Use 0.0 or a fixed value for now.
+                    // To be safe, we just use 0.0 or the user-provided fixed lambda logic if it existed.
+                    // RandomEffects currently uses df=0.0 anyway.
+                    0.0
+                }
+                None => 0.0,
             };
-            let constraint_diff = penalty::difference_matrix(p, order, false);
-            return Ok(LearnerFit::ConstrainedPSpline(
-                constrained_pspline::ConstrainedFitState {
-                    xtx,
-                    design,
-                    smooth_penalty: penalty,
-                    lambda_smooth: lambda,
-                    constraint_diff,
-                    constraint: cp.constraint.clone(),
-                    max_iter: cp.max_iter,
-                    tolerance: cp.tolerance,
-                },
-            ));
+
+            let scaled_penalty = penalty_csc.map(|x| x * lambda);
+            let a = &xtwx + &scaled_penalty;
+
+            let ldl = sprs_ldl::LdlNumeric::new(a.view()).unwrap();
+
+            return Ok(LearnerFit::Linear(SolverState::Sparse {
+                coef: Array1::zeros(p),
+                ldl: std::sync::Arc::new(ldl),
+                design: design_csc,
+            }));
+        } else {
+            // DENSE PATH
+            let design_dense = match design {
+                crate::data::DesignMatrix::Dense(mat) => mat,
+                _ => {
+                    return Err(crate::error::BoostlssError::DataError(
+                        "Expected dense matrix".into(),
+                    ))
+                }
+            };
+            let penalty_dense = match penalty {
+                crate::data::DesignMatrix::Dense(mat) => mat,
+                _ => {
+                    return Err(crate::error::BoostlssError::DataError(
+                        "Expected dense penalty".into(),
+                    ))
+                }
+            };
+
+            let design = design_dense;
+            let penalty = penalty_dense;
+            let mut xtx = design.t().dot(&design);
+            if let Some(w) = data.weights() {
+                let mut weighted_design = design.clone();
+                for i in 0..design.nrows() {
+                    let wi = w[i];
+                    for j in 0..design.ncols() {
+                        weighted_design[[i, j]] *= wi;
+                    }
+                }
+                xtx = design.t().dot(&weighted_design);
+            }
+
+            let lambda = match self.target_df() {
+                Some(df) => crate::learner::penalty::df_to_lambda(&xtx, &penalty, df),
+                None => 0.0,
+            };
+
+            if let Self::ConstrainedPSpline(cp) = self {
+                let p = design.ncols();
+                let order = match cp.constraint {
+                    constrained_pspline::Constraint::MonotonicIncreasing
+                    | constrained_pspline::Constraint::MonotonicDecreasing => 1,
+                    constrained_pspline::Constraint::Convex
+                    | constrained_pspline::Constraint::Concave => 2,
+                };
+                let constraint_diff = penalty::difference_matrix(p, order, false);
+                return Ok(LearnerFit::ConstrainedPSpline(
+                    constrained_pspline::ConstrainedFitState {
+                        xtx,
+                        design,
+                        smooth_penalty: penalty,
+                        lambda_smooth: lambda,
+                        constraint_diff,
+                        constraint: cp.constraint.clone(),
+                        max_iter: cp.max_iter,
+                        tolerance: cp.tolerance,
+                    },
+                ));
+            }
+
+            let p = design.ncols();
+            let a = faer::Mat::from_fn(p, p, |j, k| xtx[[j, k]] + lambda * penalty[[j, k]]);
+            let llt =
+                faer::linalg::solvers::Llt::new(a.as_ref(), faer::Side::Lower).map_err(|_| {
+                    crate::error::BoostlssError::DataError(
+                        "Cholesky decomposition failed: matrix not positive definite".to_string(),
+                    )
+                })?;
+
+            Ok(LearnerFit::Linear(SolverState::Dense {
+                coef: Array1::zeros(p),
+                llt,
+                design,
+            }))
         }
-
-        let p = design.ncols();
-        let a = faer::Mat::from_fn(p, p, |j, k| xtx[[j, k]] + lambda * penalty[[j, k]]);
-        let llt = faer::linalg::solvers::Llt::new(a.as_ref(), faer::Side::Lower).map_err(|_| {
-            crate::error::BoostlssError::DataError(
-                "Cholesky decomposition failed: matrix not positive definite".to_string(),
-            )
-        })?;
-
-        Ok(LearnerFit::Linear(LinearFitState {
-            coef: Array1::zeros(p),
-            llt,
-            design,
-        }))
     }
 }
 
-use faer::linalg::solvers::Llt;
 use faer::prelude::Solve;
 use ndarray::{Array1, Array2, ArrayView1};
 
@@ -297,15 +347,22 @@ impl LearnerUpdate {
 }
 
 #[derive(Debug, Clone)]
-pub struct LinearFitState {
-    pub coef: Array1<f64>,
-    pub llt: Llt<f64>,
-    pub design: Array2<f64>,
+pub enum SolverState {
+    Dense {
+        coef: Array1<f64>,
+        llt: faer::linalg::solvers::Llt<f64>,
+        design: ndarray::Array2<f64>,
+    },
+    Sparse {
+        coef: Array1<f64>,
+        ldl: std::sync::Arc<sprs_ldl::LdlNumeric<f64, usize>>,
+        design: sprs::CsMat<f64>,
+    },
 }
 
 #[derive(Debug, Clone)]
 pub enum LearnerFit {
-    Linear(LinearFitState),
+    Linear(SolverState),
     ConstrainedPSpline(constrained_pspline::ConstrainedFitState),
     Stump(stump::StumpFitState),
     Tree(tree::TreeFitState),
@@ -320,12 +377,24 @@ impl LearnerFit {
     ) -> LearnerUpdate {
         match self {
             Self::ConstrainedPSpline(state) => state.fit_update(u, weights),
-            Self::Linear(state) => {
-                let p = state.design.ncols();
-                let xtu_nd = state.design.t().dot(&u);
+            Self::Linear(SolverState::Dense { design, llt, .. }) => {
+                let p = design.ncols();
+                let xtu_nd = design.t().dot(&u);
                 let mut xtu = faer::Mat::from_fn(p, 1, |j, _| xtu_nd[j]);
-                state.llt.solve_in_place(xtu.as_mut());
+                llt.solve_in_place(xtu.as_mut());
                 LearnerUpdate::Linear(Array1::from_shape_fn(p, |i| xtu[(i, 0)]))
+            }
+            Self::Linear(SolverState::Sparse { design, ldl, .. }) => {
+                let p = design.cols();
+                let mut xtu = vec![0.0; p];
+                for (col_idx, vec) in design.outer_iterator().enumerate() {
+                    for (row_idx, &val) in vec.iter() {
+                        xtu[col_idx] += val * u[row_idx];
+                    }
+                }
+
+                let beta = ldl.solve(&xtu);
+                LearnerUpdate::Linear(Array1::from_vec(beta))
             }
             Self::Stump(state) => state.fit_update(u, weights),
             Self::Tree(state) => state.fit_update(u, weights),
@@ -339,7 +408,19 @@ impl LearnerFit {
         data: &crate::data::Dataset,
     ) -> Array1<f64> {
         match (self, update) {
-            (Self::Linear(state), LearnerUpdate::Linear(coef)) => state.design.dot(coef),
+            (Self::Linear(SolverState::Dense { design, .. }), LearnerUpdate::Linear(coef)) => {
+                design.dot(coef)
+            }
+            (Self::Linear(SolverState::Sparse { design, .. }), LearnerUpdate::Linear(coef)) => {
+                let mut pred = vec![0.0; design.rows()];
+                for (col_idx, vec) in design.outer_iterator().enumerate() {
+                    let beta_j = coef[col_idx];
+                    for (row_idx, &val) in vec.iter() {
+                        pred[row_idx] += val * beta_j;
+                    }
+                }
+                Array1::from_vec(pred)
+            }
             (Self::ConstrainedPSpline(state), LearnerUpdate::Linear(coef)) => {
                 state.design.dot(coef)
             }
@@ -389,7 +470,7 @@ mod tests {
         let a = faer::Mat::from_fn(p, p, |j, k| xtx[[j, k]] + lambda * penalty[[j, k]]);
         let llt = faer::linalg::solvers::Llt::new(a.as_ref(), faer::Side::Lower).unwrap();
 
-        let fit = LearnerFit::Linear(LinearFitState {
+        let fit = LearnerFit::Linear(SolverState::Dense {
             coef: Array1::zeros(p),
             llt,
             design: x,

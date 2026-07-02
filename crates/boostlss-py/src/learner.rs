@@ -52,17 +52,24 @@ pub struct PyTreeLearner {
     pub feature_indices: Vec<usize>,
     pub max_depth: usize,
     pub min_samples_leaf: usize,
+    pub categorical_features: Vec<usize>,
 }
 
 #[pymethods]
 impl PyTreeLearner {
     #[new]
-    #[pyo3(signature = (feature_indices, max_depth=3, min_samples_leaf=1))]
-    fn new(feature_indices: Vec<usize>, max_depth: usize, min_samples_leaf: usize) -> Self {
+    #[pyo3(signature = (feature_indices, max_depth=3, min_samples_leaf=1, categorical_features=None))]
+    fn new(
+        feature_indices: Vec<usize>,
+        max_depth: usize,
+        min_samples_leaf: usize,
+        categorical_features: Option<Vec<usize>>,
+    ) -> Self {
         Self {
             feature_indices,
             max_depth,
             min_samples_leaf,
+            categorical_features: categorical_features.unwrap_or_default(),
         }
     }
 }
@@ -72,6 +79,7 @@ impl From<PyTreeLearner> for BaseLearner {
         let mut tree = Tree::new(val.feature_indices);
         tree.max_depth = val.max_depth;
         tree.min_samples_leaf = val.min_samples_leaf;
+        tree.categorical_features = val.categorical_features;
         BaseLearner::Tree(tree)
     }
 }
@@ -83,33 +91,37 @@ pub struct PyHistTreeLearner {
     pub max_bins: usize,
     pub max_depth: usize,
     pub min_samples_leaf: usize,
+    pub categorical_features: Vec<usize>,
 }
 
 #[pymethods]
 impl PyHistTreeLearner {
     #[new]
-    #[pyo3(signature = (feature_indices, max_bins=256, max_depth=3, min_samples_leaf=1))]
+    #[pyo3(signature = (feature_indices, max_bins=256, max_depth=3, min_samples_leaf=1, categorical_features=None))]
     fn new(
         feature_indices: Vec<usize>,
         max_bins: usize,
         max_depth: usize,
         min_samples_leaf: usize,
+        categorical_features: Option<Vec<usize>>,
     ) -> Self {
         Self {
             feature_indices,
             max_bins,
             max_depth,
             min_samples_leaf,
+            categorical_features: categorical_features.unwrap_or_default(),
         }
     }
 }
 
 impl From<PyHistTreeLearner> for BaseLearner {
     fn from(val: PyHistTreeLearner) -> Self {
-        let hist_tree = HistTree::new(val.feature_indices)
+        let mut hist_tree = HistTree::new(val.feature_indices)
             .max_bins(val.max_bins)
             .max_depth(val.max_depth)
             .min_samples_leaf(val.min_samples_leaf);
+        hist_tree.categorical_features = val.categorical_features;
         BaseLearner::HistTree(hist_tree)
     }
 }

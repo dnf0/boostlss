@@ -69,7 +69,20 @@ _Note: You can add multiple learners for a single parameter. The algorithm will 
 Train the model on your data matrix `X` and response array `y`.
 
 ```python
-model.fit(X, y)
+# Create some validation data for early stopping
+X_val = np.random.normal(size=(20, 2))
+y_val = X_val[:, 0] * 2.0 + np.random.normal(size=20) * 0.5
+
+# Fit the model with early stopping
+model.fit(
+    X,
+    y,
+    eval_set=(X_val, y_val),
+    early_stopping_rounds=10
+)
+
+# You can access the iteration where the best loss was achieved
+print(f"Stopped early at iteration: {model.best_iteration_}")
 ```
 
 ## 7. Make Predictions

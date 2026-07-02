@@ -1,19 +1,19 @@
-# Graph Report - boostlss (2026-06-30)
+# Graph Report - boostlss (2026-07-02)
 
 ## Corpus Check
 
-- 213 files · ~190,320 words
+- 232 files · ~203,022 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
 
-- 2223 nodes · 2962 edges · 219 communities (193 shown, 26 thin omitted)
-- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 28 edges (avg confidence: 0.8)
+- 2514 nodes · 3759 edges · 242 communities (216 shown, 26 thin omitted)
+- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 31 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
 
-- Built from commit: `6e20bec7`
+- Built from commit: `5b22552f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -196,6 +196,7 @@
 - [[_COMMUNITY_Community 186|Community 186]]
 - [[_COMMUNITY_Community 187|Community 187]]
 - [[_COMMUNITY_Community 189|Community 189]]
+- [[_COMMUNITY_Community 190|Community 190]]
 - [[_COMMUNITY_Community 191|Community 191]]
 - [[_COMMUNITY_Community 192|Community 192]]
 - [[_COMMUNITY_Community 193|Community 193]]
@@ -204,58 +205,90 @@
 - [[_COMMUNITY_Community 211|Community 211]]
 - [[_COMMUNITY_Community 212|Community 212]]
 - [[_COMMUNITY_Community 213|Community 213]]
+- [[_COMMUNITY_Community 216|Community 216]]
+- [[_COMMUNITY_Community 217|Community 217]]
+- [[_COMMUNITY_PoissonLss|PoissonLss]]
+- [[_COMMUNITY_.new|.new]]
+- [[_COMMUNITY_SHASHLss|SHASHLss]]
+- [[_COMMUNITY_TweedieLss|TweedieLss]]
+- [[_COMMUNITY_GedLss|GedLss]]
+- [[_COMMUNITY_GpdLss|GpdLss]]
+- [[_COMMUNITY_InverseGaussianLss|InverseGaussianLss]]
+- [[_COMMUNITY_ZINBLss|ZINBLss]]
+- [[_COMMUNITY_MultinomialLss|MultinomialLss]]
+- [[_COMMUNITY_noncyclical.rs|noncyclical.rs]]
+- [[_COMMUNITY_model.rs|model.rs]]
+- [[_COMMUNITY_cyclical.rs|cyclical.rs]]
+- [[_COMMUNITY_stabilize|stabilize]]
+- [[_COMMUNITY_Additional Families Design|Additional Families Design]]
+- [[_COMMUNITY_golden_tests.rs|golden_tests.rs]]
+- [[_COMMUNITY_Anti-patterns to avoid|Anti-patterns to avoid]]
 
 ## God Nodes (most connected - your core abstractions)
 
-1. `BoostlssError` - 96 edges
-2. `Dataset` - 90 edges
-3. `ParamSpec` - 45 edges
-4. `Family` - 27 edges
-5. `BoostLssModel` - 22 edges
-6. `Writing Skills` - 22 edges
-7. `Writing Skills` - 22 edges
-8. `ConstrainedPSpline` - 18 edges
-9. `PSpline` - 16 edges
-10. `Testing Skills With Subagents` - 16 edges
+1. `BoostlssError` - 152 edges
+2. `Dataset` - 139 edges
+3. `ParamSpec` - 86 edges
+4. `Family` - 55 edges
+5. `FittedModel` - 31 edges
+6. `BoostLssModel` - 24 edges
+7. `DesignMatrix` - 23 edges
+8. `Writing Skills` - 22 edges
+9. `Writing Skills` - 22 edges
+10. `GaussianLss` - 18 edges
 
 ## Surprising Connections (you probably didn't know these)
 
+- `CachedLearner` --references--> `LearnerFit` [EXTRACTED]
+  crates/boostlss/src/engine/cyclical.rs → crates/boostlss/src/learner/mod.rs
 - `fit_cyclical()` --calls--> `stabilize()` [INFERRED]
   crates/boostlss/src/engine/cyclical.rs → crates/boostlss/src/engine/stabilization.rs
 - `fit_noncyclical()` --calls--> `stabilize()` [INFERRED]
   crates/boostlss/src/engine/noncyclical.rs → crates/boostlss/src/engine/stabilization.rs
 - `fit_noncyclical_outer()` --calls--> `stabilize()` [INFERRED]
   crates/boostlss/src/engine/noncyclical.rs → crates/boostlss/src/engine/stabilization.rs
-- `extract_sparse()` --references--> `SparseMatrix` [EXTRACTED]
-  crates/boostlss-py/src/data.rs → crates/boostlss/src/data.rs
-- `extract_dataset()` --references--> `Dataset` [EXTRACTED]
-  crates/boostlss-py/src/data.rs → crates/boostlss/src/data.rs
+- `stabilize()` --calls--> `weighted_mean()` [INFERRED]
+  crates/boostlss/src/engine/stabilization.rs → crates/boostlss/src/util.rs
 
 ## Import Cycles
 
 - 1-file cycle: `crates/boostlss-py/src/model.rs -> crates/boostlss-py/src/model.rs`
 - 1-file cycle: `crates/boostlss-py/src/learner.rs -> crates/boostlss-py/src/learner.rs`
 - 1-file cycle: `crates/boostlss/src/error.rs -> crates/boostlss/src/error.rs`
+- 2-file cycle: `crates/boostlss/src/learner/hist_tree.rs -> crates/boostlss/src/learner/mod.rs -> crates/boostlss/src/learner/hist_tree.rs`
 - 2-file cycle: `crates/boostlss/src/learner/mod.rs -> crates/boostlss/src/learner/stump.rs -> crates/boostlss/src/learner/mod.rs`
 - 2-file cycle: `crates/boostlss/src/learner/mod.rs -> crates/boostlss/src/learner/tree.rs -> crates/boostlss/src/learner/mod.rs`
-- 2-file cycle: `crates/boostlss-py/src/model.rs -> crates/boostlss/src/engine/noncyclical.rs -> crates/boostlss-py/src/model.rs`
+- 2-file cycle: `crates/boostlss/src/family/logistic.rs -> crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/logistic.rs`
+- 2-file cycle: `crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/weibull.rs -> crates/boostlss/src/family/mod.rs`
+- 2-file cycle: `crates/boostlss/src/family/log_logistic.rs -> crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/log_logistic.rs`
+- 2-file cycle: `crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/student_t.rs -> crates/boostlss/src/family/mod.rs`
+- 2-file cycle: `crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/nbinomial.rs -> crates/boostlss/src/family/mod.rs`
+- 2-file cycle: `crates/boostlss/src/family/beta.rs -> crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/beta.rs`
+- 2-file cycle: `crates/boostlss/src/family/binomial.rs -> crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/binomial.rs`
+- 2-file cycle: `crates/boostlss/src/family/burr12.rs -> crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/burr12.rs`
+- 2-file cycle: `crates/boostlss/src/family/gamma.rs -> crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/gamma.rs`
+- 2-file cycle: `crates/boostlss/src/family/gaussian.rs -> crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/gaussian.rs`
+- 2-file cycle: `crates/boostlss/src/family/ged.rs -> crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/ged.rs`
+- 2-file cycle: `crates/boostlss/src/family/gev.rs -> crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/gev.rs`
+- 2-file cycle: `crates/boostlss/src/family/gpd.rs -> crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/gpd.rs`
+- 2-file cycle: `crates/boostlss/src/family/inverse_gaussian.rs -> crates/boostlss/src/family/mod.rs -> crates/boostlss/src/family/inverse_gaussian.rs`
 
-## Communities (219 total, 26 thin omitted)
+## Communities (242 total, 26 thin omitted)
 
 ### Community 0 - "Community 0"
 
-Cohesion: 0.08
-Nodes (24): BivariatePSpline, kronecker_product(), Array2, Option, Result, Self, test_bspatial_fit_predict(), test_kronecker_product() (+16 more)
+Cohesion: 0.06
+Nodes (33): dataset_accepts_valid_data(), dataset_handles_censoring(), dataset_rejects_invalid_censoring_length(), dataset_rejects_negative_weights(), dataset_validates_dimensions(), DesignMatrix, Array2, test_design_matrix_csc() (+25 more)
 
 ### Community 1 - "Community 1"
 
-Cohesion: 0.11
-Nodes (26): BoostLss, BoostLss<F>, Fitted, Fitted<F>, ParamBuilder, Array1, BaseLearner, F (+18 more)
+Cohesion: 0.15
+Nodes (11): BoostLss<F>, Option, Self, String, test_boostlss_fit_noncyclic_requires_scalar_mstop(), test_boostlss_on_invalid_param(), test_boostlss_on_multiple_learners(), test_boostlss_on_valid_param() (+3 more)
 
 ### Community 2 - "Community 2"
 
-Cohesion: 0.14
-Nodes (10): CachedLearner, CachedLearner, CachedLearner, LearnerFit, LinearFitState, Array1, ArrayView1, Option (+2 more)
+Cohesion: 0.12
+Nodes (12): Arc, CachedLearner, CachedLearner, LearnerFit, Array2, ArrayView1, CsMat, Option (+4 more)
 
 ### Community 3 - "Community 3"
 
@@ -264,8 +297,8 @@ Nodes (38): 10. Python bindings (`boostlss-py`), 11. Testing strategy, 12. Error
 
 ### Community 4 - "Community 4"
 
-Cohesion: 0.18
-Nodes (14): Dataset, dataset_accepts_valid_data(), dataset_rejects_negative_weights(), dataset_validates_dimensions(), DesignMatrix, Array1, Array2, Option (+6 more)
+Cohesion: 0.22
+Nodes (8): Dataset, Array1, CsMat, Option, Result, Self, SparseMatrix, Result
 
 ### Community 5 - "Community 5"
 
@@ -279,7 +312,7 @@ Nodes (32): For --cluster-only, For git commit hook, For /graphify add, For /gra
 
 ### Community 7 - "Community 7"
 
-Cohesion: 0.24
+Cohesion: 0.22
 Nodes (9): default_log_normal_params(), LogNormalLss, Array1, Default, Result, Self, Vec, test_log_normal_gradients() (+1 more)
 
 ### Community 8 - "Community 8"
@@ -294,8 +327,8 @@ Nodes (29): 1. Explicit Negation in Rules, 2. Entry in Rationalization Table, 3.
 
 ### Community 10 - "Community 10"
 
-Cohesion: 0.09
-Nodes (23): Array1, Option, stabilize(), test_empty_array(), test_stabilize_l2(), test_stabilize_mad(), test_stabilize_none(), default_student_t_params() (+15 more)
+Cohesion: 0.08
+Nodes (22): default_gamma_params(), gamma_init_offsets(), gamma_nll_is_accurate(), GammaLss, Array1, Default, Result, Self (+14 more)
 
 ### Community 11 - "Community 11"
 
@@ -314,13 +347,13 @@ Nodes (24): 1. In-process, 2. Local-substitutable, 3. Remote but owned (Ports & 
 
 ### Community 14 - "Community 14"
 
-Cohesion: 0.11
-Nodes (26): CvRisk, CvRisk<F>, CvRiskResult, FamilyBound, make_grid(), Resampling, Array1, BoostLss (+18 more)
+Cohesion: 0.10
+Nodes (26): CvRisk, CvRisk<F>, CvRiskResult, FamilyBound, make_grid(), Resampling, Array1, Clone (+18 more)
 
 ### Community 15 - "Community 15"
 
-Cohesion: 0.16
-Nodes (20): BoostLss, F, HashMap, Option, Result, Self, String, run_stabsel() (+12 more)
+Cohesion: 0.17
+Nodes (19): F, HashMap, Option, Result, Self, String, run_stabsel(), StabselConfig (+11 more)
 
 ### Community 16 - "Community 16"
 
@@ -364,7 +397,7 @@ Nodes (19): Bulletproofing Elements, Creation Log: Systematic Debugging Skill, E
 
 ### Community 24 - "Community 24"
 
-Cohesion: 0.19
+Cohesion: 0.20
 Nodes (9): ConstrainedFitState, ConstrainedPSpline, Constraint, Array2, ArrayView1, Option, Self, test_constrained_pspline_build_design() (+1 more)
 
 ### Community 25 - "Community 25"
@@ -389,8 +422,8 @@ Nodes (17): Anti-Pattern 1: Testing Mock Behavior, Anti-Pattern 2: Test-Only Met
 
 ### Community 29 - "Community 29"
 
-Cohesion: 0.21
-Nodes (13): default_jsu_params(), jsu_ngradient_matches_finite_diff(), JSULss, Array1, Default, Result, Self, Vec (+5 more)
+Cohesion: 0.22
+Nodes (11): default_jsu_params(), jsu_ngradient_matches_finite_diff(), JSULss, Array1, Default, Result, Self, Vec (+3 more)
 
 ### Community 30 - "Community 30"
 
@@ -429,13 +462,13 @@ Nodes (9): BinomialLss, check_response_bounds(), default_binomial_params(), grad
 
 ### Community 37 - "Community 37"
 
-Cohesion: 0.25
-Nodes (10): default_gev_params(), GEVLss, Array1, Default, Result, Self, Vec, test_gev_gradients() (+2 more)
+Cohesion: 0.11
+Nodes (21): Burr12Lss, default_burr12_params(), Array1, Default, Result, Self, Vec, test_burr12_gradients() (+13 more)
 
 ### Community 38 - "Community 38"
 
 Cohesion: 0.14
-Nodes (11): Box, IdentityLink, Link, LogitLink, LogLink, Debug, Self, Send (+3 more)
+Nodes (11): IdentityLink, Link, LogitLink, LogLink, Box, Debug, Self, Send (+3 more)
 
 ### Community 39 - "Community 39"
 
@@ -444,8 +477,8 @@ Nodes (12): Base Rules, boostlss Agent Guidance, Code Review, Debugging, Divisio
 
 ### Community 40 - "Community 40"
 
-Cohesion: 0.21
-Nodes (9): LearnerUpdate, ArrayView1, Option, Self, Vec, test_tree_fit_update(), Tree, TreeFitState (+1 more)
+Cohesion: 0.17
+Nodes (14): Array1, ArrayView1, Box, Option, Result, Self, Vec, test_categorical_treenode_scale() (+6 more)
 
 ### Community 41 - "Community 41"
 
@@ -489,17 +522,17 @@ Nodes (15): Code Examples, Common Rationalizations for Skipping Testing, Directo
 
 ### Community 49 - "Community 49"
 
-Cohesion: 0.13
-Nodes (14): BoostlssError, BetaLss, default_beta_params(), Array1, Default, Result, Self, Vec (+6 more)
+Cohesion: 0.27
+Nodes (8): BetaLss, default_beta_params(), Array1, Default, Result, Self, Vec, test_beta_gradients()
 
 ### Community 50 - "Community 50"
 
-Cohesion: 0.27
+Cohesion: 0.24
 Nodes (9): default_gaussian_params(), gaussian_lss_init_offsets(), gaussian_lss_ngradient_matches_finite_diff(), GaussianLss, Array1, Default, Result, Self (+1 more)
 
 ### Community 51 - "Community 51"
 
-Cohesion: 0.30
+Cohesion: 0.27
 Nodes (8): default_weibull_params(), Array1, Default, Result, Self, Vec, test_weibull_gradients(), WeibullLss
 
 ### Community 52 - "Community 52"
@@ -509,8 +542,8 @@ Nodes (8): default_zip_params(), Array1, Default, Result, Self, Vec, test_zip_gr
 
 ### Community 53 - "Community 53"
 
-Cohesion: 0.20
-Nodes (8): BaseLearner, Array2, From, Result, Self, String, Self, Stump
+Cohesion: 0.26
+Nodes (6): BaseLearner, From, Result, Self, Self, Stump
 
 ### Community 54 - "Community 54"
 
@@ -519,12 +552,12 @@ Nodes (14): boostlss v1 — Plan 1: Foundations & Families — Implementation Pl
 
 ### Community 55 - "Community 55"
 
-Cohesion: 0.12
-Nodes (11): default_gamma_params(), gamma_init_offsets(), gamma_nll_is_accurate(), GammaLss, Array1, Default, Result, Self (+3 more)
+Cohesion: 0.16
+Nodes (6): BoostlssError, String, Family, Debug, Array1, Result
 
 ### Community 56 - "Community 56"
 
-Cohesion: 0.23
+Cohesion: 0.24
 Nodes (9): default_nbinomial_params(), nbinomial_init_offsets(), nbinomial_nll_is_accurate(), NBinomialLss, Array1, Default, Result, Self (+1 more)
 
 ### Community 57 - "Community 57"
@@ -534,13 +567,13 @@ Nodes (13): API Reference, Base Learners, `BoostLssModel`, Core Classes, `PyBiva
 
 ### Community 58 - "Community 58"
 
-Cohesion: 0.32
-Nodes (8): Linear, Array2, Result, Self, test_linear_extracts_correct_column(), test_linear_with_intercept(), test_linear_without_intercept(), test_penalty_matrix()
+Cohesion: 0.33
+Nodes (7): Linear, Result, Self, test_linear_extracts_correct_column(), test_linear_with_intercept(), test_linear_without_intercept(), test_penalty_matrix()
 
 ### Community 59 - "Community 59"
 
-Cohesion: 0.28
-Nodes (8): RandomEffects, Array2, Result, Self, test_random_effects_design(), test_random_effects_invalid_data(), test_random_effects_oom_prevention(), test_random_effects_penalty()
+Cohesion: 0.16
+Nodes (15): extract_dataset(), extract_sparse(), Array1, Bound, Option, PyAny, PyResult, Python (+7 more)
 
 ### Community 60 - "Community 60"
 
@@ -559,8 +592,8 @@ Nodes (7): Assessment, Critical (Must Fix), Important (Should Fix), Issues, Mino
 
 ### Community 63 - "Community 63"
 
-Cohesion: 0.25
-Nodes (6): default_ngradient_is_accurate(), DummyFamily, Array1, Result, Self, Vec
+Cohesion: 0.12
+Nodes (15): default_logistic_params(), LogisticLss, Array1, Default, Result, Self, Vec, default_ngradient_is_accurate() (+7 more)
 
 ### Community 64 - "Community 64"
 
@@ -574,8 +607,8 @@ Nodes (11): Bite-Sized Task Granularity, Execution Handoff, File Structure, No P
 
 ### Community 66 - "Community 66"
 
-Cohesion: 0.17
-Nodes (12): Advanced: Skills with executable code, [Analysis Title], Anti-patterns to avoid, Avoid offering too many options, Avoid Windows-style paths, Conditional workflow pattern, Examples pattern, Executive summary (+4 more)
+Cohesion: 0.15
+Nodes (13): Advanced: Skills with executable code, [Analysis Title], Build evaluations first, Conditional workflow pattern, Develop Skills iteratively with Claude, Evaluation and iteration, Examples pattern, Executive summary (+5 more)
 
 ### Community 67 - "Community 67"
 
@@ -610,7 +643,7 @@ Nodes (6): <!-- Bullet points of the main feature additions, bug fixes, or refac
 ### Community 73 - "Community 73"
 
 Cohesion: 0.14
-Nodes (16): BaseLearner, constrained_pspline(), PyBivariatePSplineLearner, PyConstrainedPSplineLearner, PyLinearLearner, PyPSplineLearner, PyStumpLearner, PyTreeLearner (+8 more)
+Nodes (18): BaseLearner, constrained_pspline(), PyBivariatePSplineLearner, PyConstrainedPSplineLearner, PyHistTreeLearner, PyLinearLearner, PyPSplineLearner, PyStumpLearner (+10 more)
 
 ### Community 74 - "Community 74"
 
@@ -754,8 +787,8 @@ Nodes (7): boostlss v1 — Plan 3: Boosting Engine & Model API — Implementatio
 
 ### Community 104 - "Community 104"
 
-Cohesion: 0.06
-Nodes (41): PyFamily, PyResult, Self, BoostLssModel, FittedModel, PyRandomEffectsLearner, Array1, BaseLearner (+33 more)
+Cohesion: 0.11
+Nodes (21): BoostLssModel, PyRandomEffectsLearner, Array1, BaseLearner, Bound, Option, PyAny, PyResult (+13 more)
 
 ### Community 105 - "Community 105"
 
@@ -789,8 +822,8 @@ Nodes (6): Antigravity CLI (`agy`) Tool Mapping, Invoking a skill — read its `
 
 ### Community 111 - "Community 111"
 
-Cohesion: 0.38
-Nodes (5): ArrayView1, Option, Vec, StumpFitState, test_stump_fit()
+Cohesion: 0.21
+Nodes (8): LearnerUpdate, Array1, String, ArrayView1, Option, Vec, StumpFitState, test_stump_fit()
 
 ### Community 112 - "Community 112"
 
@@ -954,8 +987,8 @@ Nodes (3): Additional Copilot CLI tools, Async shell sessions, Copilot CLI Tool 
 
 ### Community 150 - "Community 150"
 
-Cohesion: 0.50
-Nodes (4): Build evaluations first, Develop Skills iteratively with Claude, Evaluation and iteration, Observe how Claude navigates Skills
+Cohesion: 0.10
+Nodes (19): PyLaplaceLss, PyMertonJumpDiffusionLss, FittedModel, InternalFamily, default_laplace_params(), LaplaceLss, Array1, Default (+11 more)
 
 ### Community 151 - "Community 151"
 
@@ -1017,10 +1050,15 @@ Nodes (4): GREEN: Write Minimal Skill, RED-GREEN-REFACTOR for Skills, RED: Write
 Cohesion: 0.50
 Nodes (4): Pattern, Reference, Skill Types, Technique
 
+### Community 190 - "Community 190"
+
+Cohesion: 0.24
+Nodes (11): HistTree, HistTreeFitState, Array2, ArrayView1, Option, Result, Self, Vec (+3 more)
+
 ### Community 207 - "Community 207"
 
-Cohesion: 0.31
-Nodes (9): extract_dataset(), extract_sparse(), Array1, Bound, Option, PyAny, PyResult, Python (+1 more)
+Cohesion: 0.16
+Nodes (7): PyFamily, PyLogisticLss, Bound, PyResult, Python, Self, PyTuple
 
 ### Community 211 - "Community 211"
 
@@ -1037,9 +1075,99 @@ Nodes (6): API & Architecture (Separate Learner), Histogram Construction (Tree B
 Cohesion: 0.40
 Nodes (4): HistTree Implementation Plan, Task 1: Create the HistTree Structs and Enum Wiring, Task 2: Implement Node Splitting and Histogram Accumulation, Task 3: Python Bindings and Integration
 
+### Community 216 - "Community 216"
+
+Cohesion: 0.26
+Nodes (9): default_log_logistic_params(), LogLogisticLss, Array1, Default, Result, Self, Vec, test_log_logistic_gradients() (+1 more)
+
+### Community 217 - "Community 217"
+
+Cohesion: 0.23
+Nodes (9): default_nig_params(), NigLss, Array1, Default, Result, Self, Vec, test_nig_gradients() (+1 more)
+
+### Community 219 - "PoissonLss"
+
+Cohesion: 0.29
+Nodes (8): default_poisson_params(), PoissonLss, Array1, Default, Result, Self, Vec, test_poisson_gradients()
+
+### Community 220 - ".new"
+
+Cohesion: 0.26
+Nodes (9): Fitted<F>, Array1, Result, test_boostlss_new(), test_feature_importance(), test_fitted_new_and_predict(), test_partial_dependence(), test_partial_dependence_out_of_bounds() (+1 more)
+
+### Community 221 - "SHASHLss"
+
+Cohesion: 0.21
+Nodes (9): PySHASHLss, default_shash_params(), Array1, Default, Result, Self, Vec, SHASHLss (+1 more)
+
+### Community 222 - "TweedieLss"
+
+Cohesion: 0.20
+Nodes (8): PyTweedieLss, default_tweedie_params(), Array1, Default, Result, Self, Vec, TweedieLss
+
+### Community 223 - "GedLss"
+
+Cohesion: 0.26
+Nodes (8): default_ged_params(), GedLss, Array1, Default, Result, Self, Vec, test_ged_gradients()
+
+### Community 224 - "GpdLss"
+
+Cohesion: 0.27
+Nodes (8): default_gpd_params(), GpdLss, Array1, Default, Result, Self, Vec, test_gpd_gradients()
+
+### Community 225 - "InverseGaussianLss"
+
+Cohesion: 0.25
+Nodes (8): default_ig_params(), InverseGaussianLss, Array1, Default, Result, Self, Vec, test_ig_gradients()
+
+### Community 226 - "ZINBLss"
+
+Cohesion: 0.22
+Nodes (8): PyZINBLss, default_zinb_params(), Array1, Default, Result, Self, Vec, ZINBLss
+
+### Community 227 - "MultinomialLss"
+
+Cohesion: 0.27
+Nodes (7): check_multinomial_response_bounds(), multinomial_gradient_matches_finite_difference(), MultinomialLss, Array1, Result, Self, Vec
+
+### Community 228 - "noncyclical.rs"
+
+Cohesion: 0.27
+Nodes (7): fit_noncyclical(), fit_noncyclical_outer(), F, Option, Result, test_fit_noncyclical_outer(), test_fit_noncyclical_selects_best_param()
+
+### Community 229 - "model.rs"
+
+Cohesion: 0.36
+Nodes (8): BoostLss, EvalResults, Fitted, ParamBuilder, BaseLearner, F, Vec, UpdateStep
+
+### Community 230 - "cyclical.rs"
+
+Cohesion: 0.24
+Nodes (8): CachedLearner, fit_cyclical(), F, Option, Result, test_fit_cyclical(), test_risk_reduction_calculation(), Scale
+
+### Community 231 - "stabilize"
+
+Cohesion: 0.43
+Nodes (7): Array1, Option, stabilize(), test_empty_array(), test_stabilize_l2(), test_stabilize_mad(), test_stabilize_none()
+
+### Community 232 - "Additional Families Design"
+
+Cohesion: 0.25
+Nodes (7): 1. Tweedie Distribution (`TweedieLss`), 2. Zero-Inflated Negative Binomial (`ZINBLss`), 3. Logistic Distribution (`LogisticLss`), 4. Laplace Distribution (`LaplaceLss`), Additional Families Design, Integration, Overview
+
+### Community 234 - "golden_tests.rs"
+
+Cohesion: 0.40
+Nodes (3): InputData, Offsets, Vec
+
+### Community 235 - "Anti-patterns to avoid"
+
+Cohesion: 0.67
+Nodes (3): Anti-patterns to avoid, Avoid offering too many options, Avoid Windows-style paths
+
 ## Knowledge Gaps
 
-- **1104 isolated node(s):** `start-server.sh script`, `stop-server.sh script`, `find-polluter.sh script`, `fs`, `path` (+1099 more)
+- **1110 isolated node(s):** `start-server.sh script`, `stop-server.sh script`, `find-polluter.sh script`, `fs`, `path` (+1105 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **26 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -1047,17 +1175,17 @@ Nodes (4): HistTree Implementation Plan, Task 1: Create the HistTree Structs and
 
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `BoostlssError` connect `Community 49` to `Community 0`, `Community 1`, `Community 4`, `Community 7`, `Community 10`, `Community 14`, `Community 15`, `Community 24`, `Community 29`, `Community 36`, `Community 37`, `Community 50`, `Community 51`, `Community 52`, `Community 53`, `Community 55`, `Community 56`, `Community 58`, `Community 59`, `Community 63`, `Community 104`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
-- **Why does `Dataset` connect `Community 4` to `Community 0`, `Community 1`, `Community 2`, `Community 7`, `Community 10`, `Community 14`, `Community 15`, `Community 29`, `Community 36`, `Community 37`, `Community 49`, `Community 50`, `Community 51`, `Community 52`, `Community 53`, `Community 55`, `Community 56`, `Community 58`, `Community 59`, `Community 63`, `Community 207`, `Community 104`?**
-  _High betweenness centrality (0.034) - this node is a cross-community bridge._
-- **Why does `BoostLssModel` connect `Community 104` to `Community 4`, `Community 14`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
+- **Why does `Dataset` connect `Community 4` to `Community 0`, `Community 1`, `Community 7`, `Community 10`, `Community 14`, `Community 15`, `Community 150`, `Community 29`, `Community 36`, `Community 37`, `Community 40`, `Community 49`, `Community 50`, `Community 51`, `Community 52`, `Community 53`, `Community 55`, `Community 56`, `Community 58`, `Community 59`, `Community 190`, `Community 63`, `Community 216`, `Community 217`, `PoissonLss`, `.new`, `SHASHLss`, `TweedieLss`, `GedLss`, `GpdLss`, `InverseGaussianLss`, `ZINBLss`, `MultinomialLss`, `noncyclical.rs`, `model.rs`, `cyclical.rs`, `Community 104`, `Community 111`?**
+  _High betweenness centrality (0.055) - this node is a cross-community bridge._
+- **Why does `BoostlssError` connect `Community 55` to `Community 0`, `Community 1`, `Community 4`, `Community 7`, `Community 10`, `Community 14`, `Community 15`, `Community 150`, `Community 24`, `Community 29`, `Community 36`, `Community 37`, `Community 40`, `Community 49`, `Community 50`, `Community 51`, `Community 52`, `Community 53`, `Community 56`, `Community 58`, `Community 59`, `Community 190`, `Community 63`, `Community 216`, `Community 217`, `PoissonLss`, `.new`, `SHASHLss`, `TweedieLss`, `GedLss`, `GpdLss`, `InverseGaussianLss`, `ZINBLss`, `MultinomialLss`, `noncyclical.rs`, `model.rs`, `cyclical.rs`?**
+  _High betweenness centrality (0.052) - this node is a cross-community bridge._
+- **Why does `ParamSpec` connect `Community 63` to `Community 7`, `Community 10`, `Community 150`, `Community 29`, `Community 36`, `Community 37`, `Community 38`, `Community 49`, `Community 50`, `Community 51`, `Community 52`, `Community 55`, `Community 56`, `Community 216`, `Community 217`, `PoissonLss`, `SHASHLss`, `TweedieLss`, `GedLss`, `GpdLss`, `InverseGaussianLss`, `ZINBLss`, `MultinomialLss`?**
+  _High betweenness centrality (0.015) - this node is a cross-community bridge._
 - **What connects `start-server.sh script`, `stop-server.sh script`, `find-polluter.sh script` to the rest of the system?**
-  _1104 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1110 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.08478513356562137 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05706214689265537 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.1091581868640148 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.14624505928853754 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.13970588235294118 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.12418300653594772 - nodes in this community are weakly interconnected._

@@ -30,11 +30,14 @@ BoostLssModel(family: PyFamily, mstop: int = 100, step_length: float = 0.1, algo
   - `param` (`str`): The name of the parameter to link the learner to (e.g., `"mu"`, `"sigma"`).
   - `learner`: An instance of a base learner (e.g., `PyLinearLearner`, `PyPSplineLearner`).
 
-- `fit(X, y) -> None`
+- `fit(X, y, weights=None, eval_set=None, early_stopping_rounds=None) -> None`
   Fits the model to the training data.
 
   - `X` (`numpy.ndarray` or `scipy.sparse` matrix): The feature matrix/design matrix.
-  - `y` (`numpy.ndarray`): The 1D target/response vector.
+  - `y` (`numpy.ndarray`): The 1D target/response vector (or 2D for multinomial).
+  - `weights` (`numpy.ndarray`, optional): Array of instance weights.
+  - `eval_set` (`tuple`, optional): A tuple of `(X_val, y_val)` to be used as a validation set for early stopping.
+  - `early_stopping_rounds` (`int`, optional): Number of boosting rounds without improvement on the `eval_set` before training is halted.
 
 - `predict(X, param: str) -> numpy.ndarray`
   Predicts the specific distributional parameter for a given feature matrix.
@@ -71,6 +74,11 @@ BoostLssModel(family: PyFamily, mstop: int = 100, step_length: float = 0.1, algo
   - `learner_idx` (`int`): The zero-indexed position of the learner (based on the order added via `add_learner`).
   - _Returns_: A 1D numpy array representing the partial dependence values.
 
+**Properties:**
+
+- `evals_result_` (`dict`): A dictionary containing the training (and validation, if provided) loss evaluated at each boosting iteration. Format: `{"train": {"loss": [...]}, "valid": {"loss": [...]}}`.
+- `best_iteration_` (`int`): The iteration number where the best loss was achieved. If early stopping is not used, this equals `mstop`.
+
 - `save(path: str) -> None`
   Serializes the trained model to disk.
 
@@ -106,6 +114,21 @@ PyFamily(name: str)
 - `"LogNormalLSS"`: Log-Normal distribution (models `mu`, `sigma`).
 - `"ZIPLss"`: Zero-Inflated Poisson distribution (models `mu` for poisson mean, `sigma` for zero-inflation probability).
 - `"GEVLss"`: Generalized Extreme Value distribution (models `mu`, `sigma`, `xi`).
+- `"JSULss"`: Johnson's SU distribution (models `mu`, `sigma`, `nu`, `tau`).
+- `"SHASHLss"`: Sinh-Arcsinh distribution (models `mu`, `sigma`, `nu`, `tau`).
+- `"LaplaceLss"`: Laplace distribution (models `mu`, `sigma`).
+- `"GedLss"`: Generalized Error distribution (models `mu`, `sigma`, `nu`).
+- `"NBinomialLss"`: Negative Binomial distribution (models `mu`, `sigma`).
+- `"PoissonLss"`: Poisson distribution (models `mu`).
+- `"MultinomialLss"`: Multinomial distribution (models `pi` categories).
+- `"LogisticLss"`: Logistic distribution (models `mu`, `sigma`).
+- `"InverseGaussianLss"`: Inverse Gaussian distribution (models `mu`, `sigma`).
+- `"Burr12Lss"`: Burr Type XII distribution (models `mu`, `sigma`, `nu`).
+- `"MertonLss"`: Merton Jump Diffusion distribution (models `mu`, `sigma`, `lambda`, `alpha`, `beta`).
+- `"TweedieLss"`: Tweedie distribution (models `mu`, `phi`, `p`).
+- `"ZinbLss"`: Zero-Inflated Negative Binomial (models `mu`, `sigma`, `nu`).
+- `"NigLss"`: Normal Inverse Gaussian (models `mu`, `sigma`, `nu`, `tau`).
+- `"LogLogisticLss"`: Log-Logistic distribution (models `mu`, `sigma`).
 
 ---
 
@@ -184,15 +207,30 @@ learner = constrained_pspline(
 
 ### `PyTreeLearner`
 
-Models interactions and non-linearities using a standard decision tree.
+Models interactions and non-linearities using a standard decision tree. Supports categorical features natively.
 
 ```python
-PyTreeLearner(feature_indices: list[int], max_depth: int = 3, min_samples_leaf: int = 1)
+PyTreeLearner(feature_indices: list[int], max_depth: int = 3, min_samples_leaf: int = 1, categorical_features: list[int] = None)
 ```
 
 - `feature_indices` (`list[int]`): A list of column indices this tree is allowed to split on.
 - `max_depth` (`int`, default=3): Maximum depth of the tree.
 - `min_samples_leaf` (`int`, default=1): Minimum number of samples required to be at a leaf node.
+- `categorical_features` (`list[int]`, optional): A list of column indices that should be treated as categorical (unordered) features.
+
+### `PyHistTreeLearner`
+
+An optimized decision tree that bins continuous features into histograms for much faster training on large datasets.
+
+```python
+PyHistTreeLearner(feature_indices: list[int], max_depth: int = 3, min_samples_leaf: int = 1, max_bins: int = 256, categorical_features: list[int] = None)
+```
+
+- `feature_indices` (`list[int]`): Column indices this tree is allowed to split on.
+- `max_depth` (`int`, default=3): Maximum depth of the tree.
+- `min_samples_leaf` (`int`, default=1): Minimum number of samples required to be at a leaf node.
+- `max_bins` (`int`, default=256): Maximum number of bins to use for continuous features.
+- `categorical_features` (`list[int]`, optional): A list of column indices that should be treated as categorical.
 
 ### `PyStumpLearner`
 

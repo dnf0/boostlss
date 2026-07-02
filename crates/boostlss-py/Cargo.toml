@@ -9,7 +9,7 @@ name = "boostlss_py"
 crate-type = ["cdylib"]
 
 [dependencies]
-boostlss = { path = "../boostlss" }
+boostlss = { path = "../boostlss", features = ["parallel"] }
 pyo3 = { version = "0.21.2", features = ["extension-module", "abi3-py38"] }
 numpy = "0.21.0"
 ndarray = "0.17.2"

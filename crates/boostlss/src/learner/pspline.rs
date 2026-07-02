@@ -57,7 +57,7 @@ impl PSpline {
     pub fn build_design(
         &mut self,
         data: &crate::data::Dataset,
-    ) -> Result<Array2<f64>, BoostlssError> {
+    ) -> Result<crate::data::DesignMatrix, BoostlssError> {
         let col = data.design().get_column(self.feature_idx)?;
         // use col instead of data.design().column(self.feature_idx)
         let b = build_bspline_design(&col, self.knots, self.degree, &mut self.spline_data)?;
@@ -75,14 +75,14 @@ impl PSpline {
                     b_cyclic[[i, j - c]] += b[[i, j]];
                 }
             }
-            return Ok(b_cyclic);
+            return Ok(crate::data::DesignMatrix::Dense(b_cyclic));
         }
 
-        Ok(b)
+        Ok(crate::data::DesignMatrix::Dense(b))
     }
 
-    pub fn penalty_matrix(&self, n_cols: usize) -> Array2<f64> {
-        penalty_matrix(n_cols, self.differences, self.is_cyclic)
+    pub fn penalty_matrix(&self, n_cols: usize) -> crate::data::DesignMatrix {
+        crate::data::DesignMatrix::Dense(penalty_matrix(n_cols, self.differences, self.is_cyclic))
     }
 }
 
@@ -111,7 +111,10 @@ mod tests {
         let x = array![[0.0], [0.5], [1.0]];
         let y = array![0.0, 0.0, 0.0];
         let data = crate::data::Dataset::new(x, y, None, None).unwrap();
-        let design = ps.build_design(&data).unwrap();
+        let design = match ps.build_design(&data).unwrap() {
+            crate::data::DesignMatrix::Dense(d) => d,
+            _ => panic!("Expected Dense"),
+        };
 
         let p = ps.knots + ps.degree + 1;
         assert_eq!(design.shape(), &[3, p]);
@@ -123,7 +126,10 @@ mod tests {
         let x = array![[0.0], [0.5], [1.0]];
         let y = array![0.0, 0.0, 0.0];
         let data = crate::data::Dataset::new(x, y, None, None).unwrap();
-        let design = ps.build_design(&data).unwrap();
+        let design = match ps.build_design(&data).unwrap() {
+            crate::data::DesignMatrix::Dense(d) => d,
+            _ => panic!("Expected Dense"),
+        };
 
         // Standard dimension is knots + degree + 1 (5 + 3 + 1 = 9)
         // Cyclic dimension drops the rightmost degree columns: knots + 1 = 6

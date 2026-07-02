@@ -52,7 +52,7 @@ impl BivariatePSpline {
     pub fn build_design(
         &mut self,
         data: &crate::data::Dataset,
-    ) -> Result<Array2<f64>, BoostlssError> {
+    ) -> Result<crate::data::DesignMatrix, BoostlssError> {
         let _col1 = data.design().get_column(self.feature1_idx)?;
         let _col2 = data.design().get_column(self.feature2_idx)?;
         let p1 = self.p1.get_or_insert_with(|| {
@@ -61,7 +61,12 @@ impl BivariatePSpline {
                 .with_degree(self.degree)
                 .with_differences(self.differences)
         });
-        let b1 = p1.build_design(data)?;
+
+        // build_design on p1 now returns a DesignMatrix
+        let b1 = match p1.build_design(data)? {
+            crate::data::DesignMatrix::Dense(mat) => mat,
+            _ => panic!("Expected dense matrix from PSpline::build_design"),
+        };
 
         let p2 = self.p2.get_or_insert_with(|| {
             PSpline::new(self.feature2_idx)
@@ -69,7 +74,11 @@ impl BivariatePSpline {
                 .with_degree(self.degree)
                 .with_differences(self.differences)
         });
-        let b2 = p2.build_design(data)?;
+
+        let b2 = match p2.build_design(data)? {
+            crate::data::DesignMatrix::Dense(mat) => mat,
+            _ => panic!("Expected dense matrix from PSpline::build_design"),
+        };
 
         let n_obs = b1.nrows();
         let p_cols1 = b1.ncols();
@@ -85,17 +94,17 @@ impl BivariatePSpline {
                 }
             }
         }
-        Ok(design)
+        Ok(crate::data::DesignMatrix::Dense(design))
     }
 
-    pub fn penalty_matrix(&self, p_cols1: usize, p_cols2: usize) -> Array2<f64> {
+    pub fn penalty_matrix(&self, p_cols1: usize, p_cols2: usize) -> crate::data::DesignMatrix {
         let k1 = crate::learner::penalty::penalty_matrix(p_cols1, self.differences, false);
         let k2 = crate::learner::penalty::penalty_matrix(p_cols2, self.differences, false);
 
         let i1 = Array2::<f64>::eye(p_cols1);
         let i2 = Array2::<f64>::eye(p_cols2);
 
-        kronecker_product(&k1, &i2) + kronecker_product(&i1, &k2)
+        crate::data::DesignMatrix::Dense(kronecker_product(&k1, &i2) + kronecker_product(&i1, &k2))
     }
 }
 

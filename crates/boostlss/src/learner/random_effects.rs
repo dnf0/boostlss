@@ -29,11 +29,14 @@ impl RandomEffects {
         self
     }
 
-    pub fn build_design(&self, data: &crate::data::Dataset) -> Result<Array2<f64>, BoostlssError> {
+    pub fn build_design(
+        &self,
+        data: &crate::data::Dataset,
+    ) -> Result<crate::data::DesignMatrix, BoostlssError> {
         let col = data.design().get_column(self.feature_idx)?;
         let n_obs = col.len();
         if n_obs == 0 {
-            return Ok(Array2::zeros((0, 0)));
+            return Ok(crate::data::DesignMatrix::Dense(Array2::zeros((0, 0))));
         }
 
         let mut max_idx = 0;
@@ -74,11 +77,11 @@ impl RandomEffects {
             design[[i, idx]] = 1.0;
         }
 
-        Ok(design)
+        Ok(crate::data::DesignMatrix::Dense(design))
     }
 
-    pub fn penalty_matrix(&self, n_cols: usize) -> Array2<f64> {
-        Array2::eye(n_cols)
+    pub fn penalty_matrix(&self, n_cols: usize) -> crate::data::DesignMatrix {
+        crate::data::DesignMatrix::Dense(Array2::eye(n_cols))
     }
 }
 
@@ -93,7 +96,10 @@ mod tests {
         let x = array![[0.0], [2.0], [1.0], [0.0]];
         let y = array![0.0, 0.0, 0.0, 0.0];
         let data = crate::data::Dataset::new(x, y, None, None).unwrap();
-        let design = re.build_design(&data).unwrap();
+        let design = match re.build_design(&data).unwrap() {
+            crate::data::DesignMatrix::Dense(d) => d,
+            _ => panic!("Expected Dense"),
+        };
 
         assert_eq!(design.shape(), &[4, 3]);
         assert_eq!(design.row(0), array![1.0, 0.0, 0.0].view());
@@ -146,7 +152,10 @@ mod tests {
     #[test]
     fn test_random_effects_penalty() {
         let re = RandomEffects::new(0);
-        let pen = re.penalty_matrix(3);
+        let pen = match re.penalty_matrix(3) {
+            crate::data::DesignMatrix::Dense(d) => d,
+            _ => panic!("Expected Dense"),
+        };
         assert_eq!(pen.shape(), &[3, 3]);
         assert_eq!(pen.diag(), array![1.0, 1.0, 1.0].view());
     }

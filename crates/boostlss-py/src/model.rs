@@ -3,8 +3,6 @@ use crate::family::{
 };
 use boostlss::cv::{CvRisk, Resampling};
 use boostlss::data::Dataset;
-use boostlss::engine::cyclical::fit_cyclical;
-use boostlss::engine::noncyclical::{fit_noncyclical, fit_noncyclical_outer};
 use boostlss::engine::{Algorithm, Mstop};
 use boostlss::family::{
     BetaLss, BinomialLss, Burr12Lss, GEVLss, GammaLss, GaussianLss, GedLss, GpdLss,

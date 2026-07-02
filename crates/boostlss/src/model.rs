@@ -230,11 +230,17 @@ impl<F: Family> Fitted<F> {
                         }
                         pred = pred + u_hat;
                     } else if let BaseLearner::BivariatePSpline(bp) = learner {
-                        let design = bp.build_design(data)?;
+                        let design = match bp.build_design(data)? {
+                            crate::data::DesignMatrix::Dense(mat) => mat,
+                            _ => panic!("Expected dense matrix for predict in this step"),
+                        };
                         let u_hat = design.dot(coef);
                         pred = pred + u_hat;
                     } else {
-                        let design = learner.build_design(data)?;
+                        let design = match learner.build_design(data)? {
+                            crate::data::DesignMatrix::Dense(mat) => mat,
+                            _ => panic!("Expected dense matrix for predict in this step"),
+                        };
                         let u_hat = design.dot(coef);
                         pred = pred + u_hat;
                     }

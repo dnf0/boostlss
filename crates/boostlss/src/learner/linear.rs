@@ -21,7 +21,10 @@ impl Linear {
         self
     }
 
-    pub fn build_design(&self, data: &crate::data::Dataset) -> Result<Array2<f64>, BoostlssError> {
+    pub fn build_design(
+        &self,
+        data: &crate::data::Dataset,
+    ) -> Result<crate::data::DesignMatrix, BoostlssError> {
         let n_obs = data.n_obs();
         let n_cols = if self.intercept { 2 } else { 1 };
         let mut design = Array2::zeros((n_obs, n_cols));
@@ -32,11 +35,11 @@ impl Linear {
             offset = 1;
         }
         design.column_mut(offset).assign(&col);
-        Ok(design)
+        Ok(crate::data::DesignMatrix::Dense(design))
     }
 
-    pub fn penalty_matrix(&self, n_cols: usize) -> Array2<f64> {
-        Array2::zeros((n_cols, n_cols))
+    pub fn penalty_matrix(&self, n_cols: usize) -> crate::data::DesignMatrix {
+        crate::data::DesignMatrix::Dense(Array2::zeros((n_cols, n_cols)))
     }
 }
 
@@ -51,7 +54,10 @@ mod tests {
         let x = array![[1.0], [2.0], [3.0]];
         let y = array![0.0, 0.0, 0.0];
         let data = crate::data::Dataset::new(x, y, None, None).unwrap();
-        let design = linear.build_design(&data).unwrap();
+        let design = match linear.build_design(&data).unwrap() {
+            crate::data::DesignMatrix::Dense(d) => d,
+            _ => panic!("Expected Dense"),
+        };
 
         assert_eq!(design, array![[1.0, 1.0], [1.0, 2.0], [1.0, 3.0]]);
     }
@@ -64,7 +70,10 @@ mod tests {
         let x = array![[1.0], [2.0], [3.0]];
         let y = array![0.0, 0.0, 0.0];
         let data = crate::data::Dataset::new(x, y, None, None).unwrap();
-        let design = linear.build_design(&data).unwrap();
+        let design = match linear.build_design(&data).unwrap() {
+            crate::data::DesignMatrix::Dense(d) => d,
+            _ => panic!("Expected Dense"),
+        };
 
         assert_eq!(design, array![[1.0], [2.0], [3.0]]);
     }
@@ -72,7 +81,10 @@ mod tests {
     #[test]
     fn test_penalty_matrix() {
         let linear = Linear::new(0);
-        let penalty = linear.penalty_matrix(2);
+        let penalty = match linear.penalty_matrix(2) {
+            crate::data::DesignMatrix::Dense(d) => d,
+            _ => panic!("Expected Dense"),
+        };
         assert_eq!(penalty, array![[0.0, 0.0], [0.0, 0.0]]);
     }
 }
@@ -93,7 +105,10 @@ mod tests_new {
         // Linear learner on feature_idx = 1
         let linear = Linear::new(1).intercept(false);
 
-        let design = linear.build_design(&data).unwrap();
+        let design = match linear.build_design(&data).unwrap() {
+            crate::data::DesignMatrix::Dense(d) => d,
+            _ => panic!("Expected Dense"),
+        };
         assert_eq!(design, array![[10.0], [20.0], [30.0]]);
     }
 }

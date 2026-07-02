@@ -90,7 +90,7 @@ impl BaseLearner {
     pub fn build_design(
         &mut self,
         data: &crate::data::Dataset,
-    ) -> Result<Array2<f64>, crate::error::BoostlssError> {
+    ) -> Result<crate::data::DesignMatrix, crate::error::BoostlssError> {
         match self {
             Self::Linear(l) => l.build_design(data),
             Self::PSpline(p) => p.build_design(data),
@@ -126,16 +126,16 @@ impl BaseLearner {
         }
     }
 
-    pub fn penalty_matrix(&self, n_cols: usize) -> Array2<f64> {
+    pub fn penalty_matrix(&self, n_cols: usize) -> crate::data::DesignMatrix {
         match self {
             Self::Linear(l) => l.penalty_matrix(n_cols),
             Self::PSpline(p) => p.penalty_matrix(n_cols),
             Self::ConstrainedPSpline(c) => c.penalty_matrix(n_cols),
             Self::RandomEffects(r) => r.penalty_matrix(n_cols),
-            Self::Stump(_) => Array2::zeros((0, 0)),
-            Self::Tree(_) => Array2::zeros((0, 0)),
-            Self::HistTree(_) => Array2::zeros((0, 0)),
-            Self::BivariatePSpline(_) => Array2::zeros((0, 0)),
+            Self::Stump(_) => crate::data::DesignMatrix::Dense(Array2::zeros((0, 0))),
+            Self::Tree(_) => crate::data::DesignMatrix::Dense(Array2::zeros((0, 0))),
+            Self::HistTree(_) => crate::data::DesignMatrix::Dense(Array2::zeros((0, 0))),
+            Self::BivariatePSpline(_) => crate::data::DesignMatrix::Dense(Array2::zeros((0, 0))),
         }
     }
 
@@ -181,6 +181,19 @@ impl BaseLearner {
                 (d, p)
             }
         };
+
+        // For now, extract dense (to be rewritten in Task 5)
+        let design_dense = match design {
+            crate::data::DesignMatrix::Dense(mat) => mat,
+            _ => panic!("Expected dense matrix for initialization in this step"),
+        };
+        let penalty_dense = match penalty {
+            crate::data::DesignMatrix::Dense(mat) => mat,
+            _ => panic!("Expected dense penalty"),
+        };
+
+        let design = design_dense;
+        let penalty = penalty_dense;
         let mut xtx = design.t().dot(&design);
         if let Some(w) = data.weights() {
             let mut weighted_design = design.clone();

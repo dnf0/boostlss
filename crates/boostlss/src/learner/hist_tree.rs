@@ -9,6 +9,7 @@ pub struct HistTree {
     pub max_depth: usize,
     pub min_samples_leaf: usize,
     pub max_bins: usize,
+    pub categorical_features: Vec<usize>,
 }
 
 impl HistTree {
@@ -18,7 +19,13 @@ impl HistTree {
             max_depth: 3,
             min_samples_leaf: 1,
             max_bins: 256,
+            categorical_features: Vec::new(),
         }
+    }
+
+    pub fn categorical_features(mut self, cat_features: Vec<usize>) -> Self {
+        self.categorical_features = cat_features;
+        self
     }
 
     pub fn max_bins(mut self, max_bins: usize) -> Self {

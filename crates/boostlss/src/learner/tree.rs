@@ -12,6 +12,12 @@ pub enum TreeNode {
         left: Box<TreeNode>,
         right: Box<TreeNode>,
     },
+    CategoricalSplit {
+        feature_idx: usize,
+        left_categories: Vec<f64>,
+        left: Box<TreeNode>,
+        right: Box<TreeNode>,
+    },
 }
 
 impl TreeNode {
@@ -24,6 +30,10 @@ impl TreeNode {
                 left.scale(factor);
                 right.scale(factor);
             }
+            TreeNode::CategoricalSplit { left, right, .. } => {
+                left.scale(factor);
+                right.scale(factor);
+            }
         }
     }
 }
@@ -33,6 +43,7 @@ pub struct Tree {
     pub max_depth: usize,
     pub min_samples_leaf: usize,
     pub feature_indices: Vec<usize>,
+    pub categorical_features: Vec<usize>,
 }
 
 impl Tree {
@@ -41,7 +52,13 @@ impl Tree {
             max_depth: 3,
             min_samples_leaf: 1,
             feature_indices,
+            categorical_features: Vec::new(),
         }
+    }
+
+    pub fn categorical_features(mut self, cat_features: Vec<usize>) -> Self {
+        self.categorical_features = cat_features;
+        self
     }
 
     pub fn max_depth(mut self, depth: usize) -> Self {
@@ -105,6 +122,19 @@ impl Tree {
                     } => {
                         let val = features_data[*feature_idx][i];
                         if val <= *threshold {
+                            node_ptr = left;
+                        } else {
+                            node_ptr = right;
+                        }
+                    }
+                    TreeNode::CategoricalSplit {
+                        feature_idx,
+                        left_categories,
+                        left,
+                        right,
+                    } => {
+                        let val = features_data[*feature_idx][i];
+                        if left_categories.contains(&val) {
                             node_ptr = left;
                         } else {
                             node_ptr = right;
@@ -290,6 +320,33 @@ mod tests {
             assert!(matches!(*right, TreeNode::Leaf { value: v, .. } if v == 1.0));
         } else {
             panic!("Expected Tree update");
+        }
+    }
+
+    #[test]
+    fn test_categorical_treenode_scale() {
+        let mut node = TreeNode::CategoricalSplit {
+            feature_idx: 0,
+            left_categories: vec![1.0, 3.0],
+            left: Box::new(TreeNode::Leaf {
+                value: 2.0,
+                samples: 10,
+            }),
+            right: Box::new(TreeNode::Leaf {
+                value: 4.0,
+                samples: 10,
+            }),
+        };
+        node.scale(0.5);
+        if let TreeNode::CategoricalSplit { left, right, .. } = node {
+            if let TreeNode::Leaf { value, .. } = *left {
+                assert_eq!(value, 1.0);
+            }
+            if let TreeNode::Leaf { value, .. } = *right {
+                assert_eq!(value, 2.0);
+            }
+        } else {
+            panic!("Expected CategoricalSplit");
         }
     }
 }

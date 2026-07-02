@@ -212,73 +212,169 @@ impl TreeFitState {
         } else {
             -1.0
         };
-        let mut best_split = None;
+        enum SplitCandidate {
+            Continuous(f64),
+            Categorical(Vec<f64>),
+        }
+        let mut best_split: Option<(usize, SplitCandidate)> = None;
 
         let mut active_mask = vec![false; u.len()];
         for &idx in active_indices {
             active_mask[idx] = true;
         }
 
-        for (feat_idx, sorted) in self.sorted_features.iter().enumerate() {
+        for (feat_idx_out, sorted) in self.sorted_features.iter().enumerate() {
+            let feat_idx_in = self.feature_indices[feat_idx_out];
+            let is_categorical = self.categorical_features.contains(&feat_idx_in);
+
             // Filter sorted elements to only active ones using the O(1) mask
             let active_sorted: Vec<&(f64, usize)> = sorted
                 .iter()
                 .filter(|(_, orig_idx)| active_mask[*orig_idx])
                 .collect();
 
-            let mut left_w = 0.0;
-            let mut left_wu = 0.0;
-            let mut left_count = 0;
+            if is_categorical {
+                use std::collections::HashMap;
 
-            for i in 0..active_sorted.len().saturating_sub(1) {
-                let (val, orig_idx) = active_sorted[i];
-                let weight = w[*orig_idx];
-                left_w += weight;
-                left_wu += weight * u[*orig_idx];
-                left_count += 1;
-
-                let right_count = active_sorted.len() - left_count;
-                if left_count < self.min_samples_leaf || right_count < self.min_samples_leaf {
-                    continue;
+                // 1. Aggregate stats per category
+                let mut cat_stats: HashMap<u64, (f64, f64, usize)> = HashMap::new();
+                for &&(val, orig_idx) in &active_sorted {
+                    let weight = w[orig_idx];
+                    let grad = u[orig_idx];
+                    let entry = cat_stats.entry(val.to_bits()).or_insert((0.0, 0.0, 0));
+                    entry.0 += weight;
+                    entry.1 += weight * grad;
+                    entry.2 += 1;
                 }
 
-                let next_val = active_sorted[i + 1].0;
-                if (val - next_val).abs() < 1e-9 {
-                    continue;
+                // 2. Sort categories by mean gradient
+                let mut categories: Vec<(f64, f64, f64, usize)> = cat_stats
+                    .into_iter()
+                    .map(|(bits, (w_sum, wu_sum, count))| {
+                        let val = f64::from_bits(bits);
+                        (val, w_sum, wu_sum, count)
+                    })
+                    .collect();
+
+                categories.sort_by(|a, b| {
+                    let mean_a = if a.1 > 1e-9 { a.2 / a.1 } else { 0.0 };
+                    let mean_b = if b.1 > 1e-9 { b.2 / b.1 } else { 0.0 };
+                    mean_a
+                        .partial_cmp(&mean_b)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                });
+
+                // 3. Evaluate subset splits
+                let mut left_w = 0.0;
+                let mut left_wu = 0.0;
+                let mut left_count = 0;
+
+                for i in 0..categories.len().saturating_sub(1) {
+                    let (_, cat_w, cat_wu, cat_count) = categories[i];
+                    left_w += cat_w;
+                    left_wu += cat_wu;
+                    left_count += cat_count;
+
+                    let right_count = active_sorted.len() - left_count;
+                    if left_count < self.min_samples_leaf || right_count < self.min_samples_leaf {
+                        continue;
+                    }
+
+                    let right_w = total_w - left_w;
+                    let right_wu = total_wu - left_wu;
+
+                    if left_w > 1e-9 && right_w > 1e-9 {
+                        let gain = (left_wu * left_wu) / left_w + (right_wu * right_wu) / right_w;
+                        if gain > best_gain {
+                            best_gain = gain;
+                            let left_cats: Vec<f64> =
+                                categories[0..=i].iter().map(|c| c.0).collect();
+                            best_split =
+                                Some((feat_idx_out, SplitCandidate::Categorical(left_cats)));
+                        }
+                    }
                 }
+            } else {
+                let mut left_w = 0.0;
+                let mut left_wu = 0.0;
+                let mut left_count = 0;
 
-                let right_w = total_w - left_w;
-                let right_wu = total_wu - left_wu;
+                for i in 0..active_sorted.len().saturating_sub(1) {
+                    let (val, orig_idx) = active_sorted[i];
+                    let weight = w[*orig_idx];
+                    left_w += weight;
+                    left_wu += weight * u[*orig_idx];
+                    left_count += 1;
 
-                if left_w > 1e-9 && right_w > 1e-9 {
-                    let gain = (left_wu * left_wu) / left_w + (right_wu * right_wu) / right_w;
-                    if gain > best_gain {
-                        best_gain = gain;
-                        best_split = Some((feat_idx, (val + next_val) / 2.0));
+                    let right_count = active_sorted.len() - left_count;
+                    if left_count < self.min_samples_leaf || right_count < self.min_samples_leaf {
+                        continue;
+                    }
+
+                    let next_val = active_sorted[i + 1].0;
+                    if (val - next_val).abs() < 1e-9 {
+                        continue;
+                    }
+
+                    let right_w = total_w - left_w;
+                    let right_wu = total_wu - left_wu;
+
+                    if left_w > 1e-9 && right_w > 1e-9 {
+                        let gain = (left_wu * left_wu) / left_w + (right_wu * right_wu) / right_w;
+                        if gain > best_gain {
+                            best_gain = gain;
+                            best_split = Some((
+                                feat_idx_out,
+                                SplitCandidate::Continuous((val + next_val) / 2.0),
+                            ));
+                        }
                     }
                 }
             }
         }
 
-        if let Some((feat_idx, split_val)) = best_split {
+        if let Some((feat_idx_out, split_val)) = best_split {
             let mut left_indices = Vec::new();
             let mut right_indices = Vec::new();
-            for &(val, idx) in &self.sorted_features[feat_idx] {
-                if active_mask[idx] {
-                    if val <= split_val {
-                        left_indices.push(idx);
-                    } else {
-                        right_indices.push(idx);
+            match split_val {
+                SplitCandidate::Continuous(threshold) => {
+                    for &(val, idx) in &self.sorted_features[feat_idx_out] {
+                        if active_mask[idx] {
+                            if val <= threshold {
+                                left_indices.push(idx);
+                            } else {
+                                right_indices.push(idx);
+                            }
+                        }
+                    }
+                    let left = Box::new(self.build_tree(depth + 1, &left_indices, u, w));
+                    let right = Box::new(self.build_tree(depth + 1, &right_indices, u, w));
+                    TreeNode::Split {
+                        feature_idx: feat_idx_out,
+                        threshold,
+                        left,
+                        right,
                     }
                 }
-            }
-            let left = Box::new(self.build_tree(depth + 1, &left_indices, u, w));
-            let right = Box::new(self.build_tree(depth + 1, &right_indices, u, w));
-            TreeNode::Split {
-                feature_idx: feat_idx,
-                threshold: split_val,
-                left,
-                right,
+                SplitCandidate::Categorical(left_cats) => {
+                    for &(val, idx) in &self.sorted_features[feat_idx_out] {
+                        if active_mask[idx] {
+                            if left_cats.contains(&val) {
+                                left_indices.push(idx);
+                            } else {
+                                right_indices.push(idx);
+                            }
+                        }
+                    }
+                    let left = Box::new(self.build_tree(depth + 1, &left_indices, u, w));
+                    let right = Box::new(self.build_tree(depth + 1, &right_indices, u, w));
+                    TreeNode::CategoricalSplit {
+                        feature_idx: feat_idx_out,
+                        left_categories: left_cats,
+                        left,
+                        right,
+                    }
+                }
             }
         } else {
             let mean = if total_w > 1e-9 {
@@ -382,5 +478,38 @@ mod tests {
         assert_eq!(preds[1], 20.0);
         assert_eq!(preds[2], 10.0);
         assert_eq!(preds[3], 20.0);
+    }
+
+    #[test]
+    fn test_tree_categorical_split() {
+        use ndarray::array;
+        let sorted_f0 = vec![(0.0, 0), (1.0, 1), (2.0, 2), (3.0, 3)];
+        let state = TreeFitState {
+            max_depth: 2,
+            min_samples_leaf: 1,
+            feature_indices: vec![0],
+            categorical_features: vec![0],
+            sorted_features: vec![sorted_f0],
+        };
+        // Categories: 0, 1, 2, 3
+        // u values:   10, -10, 10, -10
+        // Best split should group (0, 2) together and (1, 3) together.
+        let u = array![10.0, -10.0, 10.0, -10.0];
+
+        let update = state.fit_update(u.view(), None);
+        if let LearnerUpdate::Tree {
+            node: TreeNode::CategoricalSplit {
+                left_categories, ..
+            },
+            ..
+        } = update
+        {
+            assert!(
+                left_categories.contains(&0.0) && left_categories.contains(&2.0)
+                    || left_categories.contains(&1.0) && left_categories.contains(&3.0)
+            );
+        } else {
+            panic!("Expected CategoricalSplit");
+        }
     }
 }

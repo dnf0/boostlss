@@ -140,6 +140,23 @@ impl DesignMatrix {
             )),
         }
     }
+
+    pub fn dot(&self, coef: &Array1<f64>) -> Array1<f64> {
+        match self {
+            Self::Dense(mat) => mat.dot(coef),
+            Self::Csc(sparse) | Self::Csr(sparse) => {
+                let sprs_mat = self.to_csc().unwrap();
+                let mut pred = vec![0.0; sprs_mat.rows()];
+                for (col_idx, vec) in sprs_mat.outer_iterator().enumerate() {
+                    let beta_j = coef[col_idx];
+                    for (row_idx, &val) in vec.iter() {
+                        pred[row_idx] += val * beta_j;
+                    }
+                }
+                Array1::from_vec(pred)
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

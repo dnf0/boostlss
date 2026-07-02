@@ -48,6 +48,29 @@ impl SparseMatrix {
             shape,
         })
     }
+
+    pub fn to_csc(&self) -> Result<sprs::CsMat<f64>, BoostlssError> {
+        let expected_csr = self.shape.0 + 1;
+        let expected_csc = self.shape.1 + 1;
+        if self.indptr.len() == expected_csc {
+            Ok(sprs::CsMat::new_csc(
+                self.shape,
+                self.indptr.to_vec(),
+                self.indices.to_vec(),
+                self.data.to_vec(),
+            ))
+        } else if self.indptr.len() == expected_csr {
+            let csr = sprs::CsMat::new(
+                self.shape,
+                self.indptr.to_vec(),
+                self.indices.to_vec(),
+                self.data.to_vec(),
+            );
+            Ok(csr.to_csc())
+        } else {
+            Err(BoostlssError::DataError("Invalid sparse shape".into()))
+        }
+    }
 }
 #[derive(Clone, Debug, PartialEq)]
 pub enum DesignMatrix {
@@ -106,6 +129,15 @@ impl DesignMatrix {
             Self::Dense(mat) => mat.ncols(),
             Self::Csr(sparse) => sparse.shape.1,
             Self::Csc(sparse) => sparse.shape.1,
+        }
+    }
+
+    pub fn to_csc(&self) -> Result<sprs::CsMat<f64>, BoostlssError> {
+        match self {
+            Self::Csc(sparse) | Self::Csr(sparse) => sparse.to_csc(),
+            Self::Dense(_) => Err(BoostlssError::DataError(
+                "Cannot convert dense to csc trivially".into(),
+            )),
         }
     }
 }

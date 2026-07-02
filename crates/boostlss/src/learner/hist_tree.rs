@@ -60,7 +60,13 @@ impl HistTree {
             unique_vals.dedup();
 
             // 2. Sample to get quantiles if there are too many unique values
-            let boundaries = if unique_vals.len() <= self.max_bins {
+            let boundaries = if self.categorical_features.contains(&feat_idx_in) {
+                let mut b = unique_vals;
+                if b.len() > self.max_bins {
+                    b.truncate(self.max_bins);
+                }
+                b
+            } else if unique_vals.len() <= self.max_bins {
                 unique_vals
             } else {
                 let step = unique_vals.len() as f64 / self.max_bins as f64;
@@ -98,6 +104,7 @@ impl HistTree {
             max_depth: self.max_depth,
             min_samples_leaf: self.min_samples_leaf,
             max_bins: self.max_bins,
+            categorical_features: self.categorical_features.clone(),
         })
     }
 }
@@ -110,6 +117,7 @@ pub struct HistTreeFitState {
     pub max_depth: usize,
     pub min_samples_leaf: usize,
     pub max_bins: usize,
+    pub categorical_features: Vec<usize>,
 }
 
 impl HistTreeFitState {
@@ -179,18 +187,27 @@ impl HistTreeFitState {
         } else {
             -1.0
         };
-        let mut best_split: Option<(usize, u8, f64, f64)> = None;
+        enum SplitCandidate {
+            Continuous(u8),
+            Categorical(Vec<u8>),
+        }
+        let mut best_split: Option<(usize, SplitCandidate)> = None;
 
         let max_possible_bins = self.max_bins + 1;
         let mut hist_w = vec![0.0; max_possible_bins];
         let mut hist_wu = vec![0.0; max_possible_bins];
+        let mut hist_count = vec![0; max_possible_bins];
 
         for (feat_out, _) in self.feature_indices.iter().enumerate() {
             let max_bin = self.thresholds[feat_out].len();
+            let is_categorical = self
+                .categorical_features
+                .contains(&self.feature_indices[feat_out]);
 
             // Fast reset
             hist_w[..max_bin].fill(0.0);
             hist_wu[..max_bin].fill(0.0);
+            hist_count[..max_bin].fill(0);
 
             let col = self.quantized_data.column(feat_out);
             let col_slice = col.as_slice().unwrap();
@@ -200,66 +217,149 @@ impl HistTreeFitState {
                     let bin = col_slice[idx] as usize;
                     hist_w[bin] += w[idx];
                     hist_wu[bin] += w[idx] * u_slice[idx];
+                    hist_count[bin] += 1;
                 }
             } else {
                 for &idx in &active_indices {
                     let bin = col_slice[idx] as usize;
                     hist_w[bin] += 1.0;
                     hist_wu[bin] += u_slice[idx];
+                    hist_count[bin] += 1;
                 }
             }
 
             // 2. Scan Histogram for split
-            let mut left_w = 0.0;
-            let mut left_wu = 0.0;
-
-            for bin in 0..max_bin {
-                left_w += hist_w[bin];
-                left_wu += hist_wu[bin];
-
-                let right_w = total_w - left_w;
-                let right_wu = total_wu - left_wu;
-
-                if left_w <= 1e-9 || right_w <= 1e-9 {
-                    continue;
+            if is_categorical {
+                let mut cat_bins = Vec::new();
+                for bin in 0..max_bin {
+                    if hist_count[bin] > 0 {
+                        cat_bins.push((bin as u8, hist_w[bin], hist_wu[bin], hist_count[bin]));
+                    }
                 }
 
-                let gain = (left_wu * left_wu / left_w) + (right_wu * right_wu / right_w);
+                cat_bins.sort_by(|a, b| {
+                    let mean_a = if a.1 > 1e-9 { a.2 / a.1 } else { 0.0 };
+                    let mean_b = if b.1 > 1e-9 { b.2 / b.1 } else { 0.0 };
+                    mean_a
+                        .partial_cmp(&mean_b)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                });
 
-                if gain > best_gain {
-                    best_gain = gain;
-                    best_split = Some((feat_out, bin as u8, left_w, right_w));
+                let mut left_w = 0.0;
+                let mut left_wu = 0.0;
+                let mut left_count = 0;
+
+                for i in 0..cat_bins.len().saturating_sub(1) {
+                    left_w += cat_bins[i].1;
+                    left_wu += cat_bins[i].2;
+                    left_count += cat_bins[i].3;
+
+                    let right_count = active_indices.len() - left_count;
+                    if left_count < self.min_samples_leaf || right_count < self.min_samples_leaf {
+                        continue;
+                    }
+
+                    let right_w = total_w - left_w;
+                    let right_wu = total_wu - left_wu;
+
+                    if left_w <= 1e-9 || right_w <= 1e-9 {
+                        continue;
+                    }
+
+                    let gain = (left_wu * left_wu / left_w) + (right_wu * right_wu / right_w);
+                    if gain > best_gain {
+                        best_gain = gain;
+                        let left_bins: Vec<u8> = cat_bins[0..=i].iter().map(|c| c.0).collect();
+                        best_split = Some((feat_out, SplitCandidate::Categorical(left_bins)));
+                    }
+                }
+            } else {
+                let mut left_w = 0.0;
+                let mut left_wu = 0.0;
+
+                for bin in 0..max_bin {
+                    left_w += hist_w[bin];
+                    left_wu += hist_wu[bin];
+
+                    let right_w = total_w - left_w;
+                    let right_wu = total_wu - left_wu;
+
+                    if left_w <= 1e-9 || right_w <= 1e-9 {
+                        continue;
+                    }
+
+                    let gain = (left_wu * left_wu / left_w) + (right_wu * right_wu / right_w);
+
+                    if gain > best_gain {
+                        best_gain = gain;
+                        best_split = Some((feat_out, SplitCandidate::Continuous(bin as u8)));
+                    }
                 }
             }
         }
 
-        if let Some((feat_out, best_bin, _lw, _rw)) = best_split {
+        if let Some((feat_out, split_val)) = best_split {
             // Reconstruct the indices only for the chosen best split
             let col = self.quantized_data.column(feat_out);
             let col_slice = col.as_slice().unwrap();
 
             let mut left_idx = Vec::with_capacity(active_indices.len() / 2);
             let mut right_idx = Vec::with_capacity(active_indices.len() / 2);
-            for &idx in &active_indices {
-                if col_slice[idx] <= best_bin {
-                    left_idx.push(idx);
-                } else {
-                    right_idx.push(idx);
+
+            match split_val {
+                SplitCandidate::Continuous(best_bin) => {
+                    for &idx in &active_indices {
+                        if col_slice[idx] <= best_bin {
+                            left_idx.push(idx);
+                        } else {
+                            right_idx.push(idx);
+                        }
+                    }
+
+                    if left_idx.len() >= self.min_samples_leaf
+                        && right_idx.len() >= self.min_samples_leaf
+                    {
+                        let threshold = self.thresholds[feat_out][best_bin as usize];
+
+                        let left = Box::new(self.build_tree(left_idx, depth + 1, u, weights));
+                        let right = Box::new(self.build_tree(right_idx, depth + 1, u, weights));
+
+                        return crate::learner::tree::TreeNode::Split {
+                            feature_idx: feat_out,
+                            threshold,
+                            left,
+                            right,
+                        };
+                    }
                 }
-            }
+                SplitCandidate::Categorical(left_bins) => {
+                    for &idx in &active_indices {
+                        if left_bins.contains(&col_slice[idx]) {
+                            left_idx.push(idx);
+                        } else {
+                            right_idx.push(idx);
+                        }
+                    }
 
-            if left_idx.len() >= self.min_samples_leaf && right_idx.len() >= self.min_samples_leaf {
-                let threshold = self.thresholds[feat_out][best_bin as usize];
+                    if left_idx.len() >= self.min_samples_leaf
+                        && right_idx.len() >= self.min_samples_leaf
+                    {
+                        let left_categories: Vec<f64> = left_bins
+                            .iter()
+                            .map(|&b| self.thresholds[feat_out][b as usize])
+                            .collect();
 
-                let left = Box::new(self.build_tree(left_idx, depth + 1, u, weights));
-                let right = Box::new(self.build_tree(right_idx, depth + 1, u, weights));
+                        let left = Box::new(self.build_tree(left_idx, depth + 1, u, weights));
+                        let right = Box::new(self.build_tree(right_idx, depth + 1, u, weights));
 
-                return crate::learner::tree::TreeNode::Split {
-                    feature_idx: feat_out,
-                    threshold,
-                    left,
-                    right,
-                };
+                        return crate::learner::tree::TreeNode::CategoricalSplit {
+                            feature_idx: feat_out,
+                            left_categories,
+                            left,
+                            right,
+                        };
+                    }
+                }
             }
         }
 
@@ -321,6 +421,53 @@ mod tests {
                     );
                 } else {
                     panic!("Expected root to be a Split node");
+                }
+            }
+            _ => panic!("Wrong update type"),
+        }
+    }
+
+    #[test]
+    fn test_hist_tree_categorical_split() {
+        let x = array![[1.0], [2.0], [3.0], [1.0], [2.0]];
+        let y = array![10.0, 20.0, 30.0, 10.0, 20.0];
+        let data = crate::data::Dataset::new(x, y.clone(), None, None).unwrap();
+
+        let hist_tree = HistTree::new(vec![0])
+            .categorical_features(vec![0])
+            .max_bins(5)
+            .max_depth(1);
+        let state = hist_tree.build_fit_state(&data).unwrap();
+
+        // 1.0 and 3.0 have positive residuals, 2.0 has negative
+        let u = array![10.0, -10.0, 10.0, 10.0, -10.0];
+        let weights = ndarray::Array1::ones(5);
+
+        let update = state.fit_update(u.view(), Some(weights.view()));
+
+        match update {
+            crate::learner::LearnerUpdate::HistTree { node, .. } => {
+                if let crate::learner::tree::TreeNode::CategoricalSplit {
+                    feature_idx,
+                    left_categories,
+                    ..
+                } = node
+                {
+                    assert_eq!(feature_idx, 0);
+                    let has_1 = left_categories.contains(&1.0);
+                    let has_2 = left_categories.contains(&2.0);
+                    let has_3 = left_categories.contains(&3.0);
+
+                    if has_1 {
+                        assert!(has_3);
+                        assert!(!has_2);
+                    } else {
+                        assert!(has_2);
+                        assert!(!has_1);
+                        assert!(!has_3);
+                    }
+                } else {
+                    panic!("Expected root to be a CategoricalSplit node");
                 }
             }
             _ => panic!("Wrong update type"),
